@@ -134,7 +134,7 @@ vidmode_t vid_modes[] =
     { "Mode 8: 1280x960",  1280, 960, 8 },
     { "Mode 9: 1600x1200", 1600, 1200, 9 }
 */
-    { "Mode 0: 400x240",   400, 240,   0 }
+    { "Mode 0: 480x272",   480, 272,   0 }
 };
 #define VID_NUM_MODES ( sizeof( vid_modes ) / sizeof( vid_modes[0] ) )
 
@@ -215,8 +215,8 @@ void    VID_Init (void)
 {
     refimport_t ri;
 
-    viddef.width = 400;
-    viddef.height = 240; //was originally 240
+    viddef.width = 480;
+    viddef.height = 272; //was originally 240
 
     ri.Cmd_AddCommand = Cmd_AddCommand;
     ri.Cmd_RemoveCommand = Cmd_RemoveCommand;

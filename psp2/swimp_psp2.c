@@ -53,12 +53,13 @@ void		SWimp_SetPalette( const unsigned char *palette)
 	
 	// SetPalette seems to be called before SetMode, so we save the palette on a temp location
 	if (tex_buffer == NULL){
-		memcpy(start_palette, palette, 3*256);
+		memcpy(start_palette, palette, sizeof(uint32_t)*256);
 		return;
 	}
 	
 	int i;
 	uint32_t* palette_tbl = vita2d_texture_get_palette(tex_buffer);
+
 	uint8_t* pal = (uint8_t*)palette;
 	unsigned char r, g, b;
 
@@ -67,7 +68,7 @@ void		SWimp_SetPalette( const unsigned char *palette)
 		g = pal[1];
 		b = pal[2];
 		palette_tbl[i] = r | (g << 8) | (b << 16) | (0xFF << 24);
-		pal += 3;
+		pal += 4;
 	}
 }
 
