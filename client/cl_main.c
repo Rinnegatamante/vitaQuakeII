@@ -1800,18 +1800,22 @@ void CL_Init (void)
 	
 	net_message.data = net_message_buffer;
 	net_message.maxsize = sizeof(net_message_buffer);
-
+	Com_Printf("M_Init called");
 	M_Init ();	
-	
+	Com_Printf("SCR_Init called");
 	SCR_Init ();
 	cls.disable_screen = true;	// don't draw yet
-
+	Com_Printf("CDAudio_Init called");
 	CDAudio_Init ();
+	Com_Printf("CL_InitLocal called");
 	CL_InitLocal ();
+	Com_Printf("IN_Init called");
 	IN_Init ();
 
 //	Cbuf_AddText ("exec autoexec.cfg\n");
+	Com_Printf("FS_ExecAutoexec called");
 	FS_ExecAutoexec ();
+	Com_Printf("Cbuf_Execute called");
 	Cbuf_Execute ();
 
 }
