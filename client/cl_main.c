@@ -1094,8 +1094,8 @@ new parameters and flush all sounds
 */
 void CL_Snd_Restart_f (void)
 {
-	S_Shutdown ();
-	S_Init ();
+	//S_Shutdown ();
+	//S_Init ();
 	CL_RegisterSounds ();
 }
 
@@ -1787,14 +1787,9 @@ void CL_Init (void)
 
 	// all archived variables will now be loaded
 
-	Con_Init ();	
-#if defined __linux__ || defined __sgi
-	S_Init ();	
-	VID_Init ();
-#else
-	VID_Init ();
+	Con_Init ();
 	S_Init ();	// sound must be initialized after window is created
-#endif
+	VID_Init ();
 	
 	V_Init ();
 	
