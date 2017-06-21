@@ -47,7 +47,7 @@ void *GetGameAPI (void *import);
 vita2d_pgf* fnt;
 int y = 20;
 void vita2d_printf(const char *format, ...){
-	#ifndef DEBUG
+	#ifdef DEBUG
 	char str[512] = { 0 };
 	va_list va;
 
@@ -424,6 +424,9 @@ int main (int argc, char **argv)
 	scePowerSetBusClockFrequency(222);
 	scePowerSetGpuClockFrequency(222);
 	scePowerSetGpuXbarClockFrequency(166);
+	
+	sceSysmoduleLoadModule(SCE_SYSMODULE_NET);
+	sceCtrlSetSamplingMode(SCE_CTRL_MODE_ANALOG);
 	
 	vita2d_init();
 	fnt = vita2d_load_default_pgf();
