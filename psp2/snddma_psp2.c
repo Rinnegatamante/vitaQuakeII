@@ -24,7 +24,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include <vitasdk.h>
 
 #define SAMPLE_RATE   	48000
-#define BUFFER_SIZE 	32768
+#define BUFFER_SIZE 	16384
 
 static volatile int sound_initialized = 0;
 static byte *audio_buffer;
@@ -34,7 +34,7 @@ static float tickRate;
 
 static int audio_thread(int args, void *argp)
 {
-	int chn = sceAudioOutOpenPort(SCE_AUDIO_OUT_PORT_TYPE_MAIN, BUFFER_SIZE / 4, SAMPLE_RATE, SCE_AUDIO_OUT_MODE_MONO);
+	int chn = sceAudioOutOpenPort(SCE_AUDIO_OUT_PORT_TYPE_MAIN, BUFFER_SIZE / 4, SAMPLE_RATE, SCE_AUDIO_OUT_MODE_STEREO);
 	sceAudioOutSetConfig(chn, -1, -1, -1);
 	int vol[] = {32767, 32767};
     sceAudioOutSetVolume(chn, SCE_AUDIO_VOLUME_FLAG_L_CH | SCE_AUDIO_VOLUME_FLAG_R_CH, vol);
@@ -63,7 +63,7 @@ qboolean SNDDMA_Init(void)
 	dma.samplebits = 16;
 	dma.speed = SAMPLE_RATE;
 	dma.channels = 2;
-	dma.samples = BUFFER_SIZE / 4;
+	dma.samples = BUFFER_SIZE / 2;
 	dma.samplepos = 0;
 	dma.submission_chunk = 1;
 	dma.buffer = audio_buffer;
