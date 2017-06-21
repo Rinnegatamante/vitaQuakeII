@@ -158,7 +158,7 @@ const char *Default_MenuKey( menuframework_s *m, int key )
 
 	switch ( key )
 	{
-	case K_ESCAPE:
+	case K_AUX4:
 		M_PopMenu();
 		return menu_out_sound;
 	case K_KP_UPARROW:
@@ -211,10 +211,8 @@ const char *Default_MenuKey( menuframework_s *m, int key )
 	case K_JOY2:
 	case K_JOY3:
 	case K_JOY4:
-	case K_AUX1:
 	case K_AUX2:
 	case K_AUX3:
-	case K_AUX4:
 	case K_AUX5:
 	case K_AUX6:
 	case K_AUX7:
@@ -245,7 +243,7 @@ const char *Default_MenuKey( menuframework_s *m, int key )
 	case K_AUX32:
 		
 	case K_KP_ENTER:
-	case K_ENTER:
+	case K_AUX1:
 		if ( m )
 			Menu_SelectItem( m );
 		sound = menu_move_sound;
@@ -437,7 +435,7 @@ const char *M_Main_Key (int key)
 
 	switch (key)
 	{
-	case K_ESCAPE:
+	case K_AUX4:
 		M_PopMenu ();
 		break;
 
@@ -454,7 +452,7 @@ const char *M_Main_Key (int key)
 		return sound;
 
 	case K_KP_ENTER:
-	case K_ENTER:
+	case K_AUX1:
 		m_entersound = true;
 
 		switch (m_main_cursor)
@@ -969,7 +967,7 @@ static const char *Keys_MenuKey( int key )
 
 	if ( bind_grab )
 	{	
-		if ( key != K_ESCAPE && key != '`' )
+		if ( key != K_AUX4 && key != '`' )
 		{
 			char cmd[1024];
 
@@ -985,7 +983,7 @@ static const char *Keys_MenuKey( int key )
 	switch ( key )
 	{
 	case K_KP_ENTER:
-	case K_ENTER:
+	case K_AUX1:
 		KeyBindingFunc( item );
 		return menu_in_sound;
 	case K_BACKSPACE:		// delete bindings
@@ -1923,7 +1921,7 @@ const char *M_Credits_Key( int key )
 {
 	switch (key)
 	{
-	case K_ESCAPE:
+	case K_AUX4:
 		if (creditsBuffer)
 			FS_FreeFile (creditsBuffer);
 		M_PopMenu ();
@@ -2231,7 +2229,7 @@ void LoadGame_MenuDraw( void )
 
 const char *LoadGame_MenuKey( int key )
 {
-	if ( key == K_ESCAPE || key == K_ENTER )
+	if ( key == K_AUX4 || key == K_AUX1 )
 	{
 		s_savegame_menu.cursor = s_loadgame_menu.cursor - 1;
 		if ( s_savegame_menu.cursor < 0 )
@@ -2301,7 +2299,7 @@ void SaveGame_MenuInit( void )
 
 const char *SaveGame_MenuKey( int key )
 {
-	if ( key == K_ENTER || key == K_ESCAPE )
+	if ( key == K_AUX1 || key == K_AUX4 )
 	{
 		s_loadgame_menu.cursor = s_savegame_menu.cursor - 1;
 		if ( s_loadgame_menu.cursor < 0 )
@@ -2834,7 +2832,7 @@ void StartServer_MenuDraw(void)
 
 const char *StartServer_MenuKey( int key )
 {
-	if ( key == K_ESCAPE )
+	if ( key == K_AUX4 )
 	{
 		if ( mapnames )
 		{
@@ -3438,7 +3436,7 @@ void AddressBook_MenuInit( void )
 
 const char *AddressBook_MenuKey( int key )
 {
-	if ( key == K_ESCAPE )
+	if ( key == K_AUX4 )
 	{
 		int index;
 		char buffer[20];
@@ -3946,7 +3944,7 @@ const char *PlayerConfig_MenuKey (int key)
 {
 	int i;
 
-	if ( key == K_ESCAPE )
+	if ( key == K_AUX4 )
 	{
 		char scratch[1024];
 
@@ -4019,13 +4017,13 @@ const char *M_Quit_Key (int key)
 	switch (key)
 	{
 		case K_AUX2:
-		case K_ESCAPE:
+		case K_AUX4:
 		case 'n':
 		case 'N':
 			M_PopMenu ();
 			break;
 
-		case K_AUX4:
+		case K_AUX1:
 		case 'Y':
 		case 'y':
 			cls.key_dest = key_console;

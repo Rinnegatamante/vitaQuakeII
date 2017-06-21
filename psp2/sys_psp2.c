@@ -32,7 +32,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include <vitasdk.h>
 #include <vita2d.h>
 
-int _newlib_heap_size_user = 128 * 1024 * 1024;
+int _newlib_heap_size_user = 192 * 1024 * 1024;
 int	curtime;
 unsigned	sys_frame_time;
 
@@ -96,7 +96,6 @@ void Sys_Error (char *error, ...)
 				break;
 	}
 
-	//gfxExit();
 }
 
 void Sys_Quit (void)
@@ -133,20 +132,18 @@ void Sys_DefaultConfig(void)
 	//Cbuf_AddText("sw_mipcap 1\n");
 
 	Cbuf_AddText ("bind PADUP \"invuse\"\n");
-	Cbuf_AddText ("bind PADDOWN \"invdrop\"\n");
+	Cbuf_AddText ("bind PADDOWN \"inven\"\n");
 	Cbuf_AddText ("bind PADLEFT \"invprev\"\n");
 	Cbuf_AddText ("bind PADRIGHT \"invnext\"\n");
 
-	Cbuf_AddText ("bind CROSS \"+right\"\n");
-	Cbuf_AddText ("bind CIRCLE \"+lookdown\"\n");
-	Cbuf_AddText ("bind SQUARE \"+lookup\"\n");
-	Cbuf_AddText ("bind TRIANGLE \"+left\"\n");
-	Cbuf_AddText ("bind LTRIGGER \"+moveup\"\n");
+	Cbuf_AddText ("bind CROSS \"+moveup\"\n");
+	Cbuf_AddText ("bind CIRCLE \"movedown\"\n");
+	Cbuf_AddText ("bind SQUARE \"+attack\"\n");
+	Cbuf_AddText ("bind TRIANGLE \"weapnext\"\n");
+	Cbuf_AddText ("bind LTRIGGER \"+speed\"\n");
 	Cbuf_AddText ("bind RTRIGGER \"+attack\"\n");
 
-	Cbuf_AddText ("bind T1 \"weapnext\"\n");
-	Cbuf_AddText ("bind T2 \"inven\"\n");
-	Cbuf_AddText ("bind T5 \"+movedown\"\n");
+	Cbuf_AddText ("bind SELECT \"+showscores\"\n");
 
 	Cbuf_AddText ("lookstrafe \"1.000000\"\n");
 	Cbuf_AddText ("lookspring \"0.000000\"\n");
@@ -411,7 +408,6 @@ int quake_main (unsigned int argc, void* argv){
 		oldtime = newtime;
 	}
 
-	//gfxExit();
 	return 0;
 }
 
@@ -430,16 +426,11 @@ int main (int argc, char **argv)
 	
 	vita2d_init();
 	fnt = vita2d_load_default_pgf();
-	
-	/*gfxInit(GSP_RGB565_OES,GSP_RGB565_OES,false);
-	gfxSetDoubleBuffering(GFX_TOP, false);
-	gfxSetDoubleBuffering(GFX_BOTTOM, false);
-	gfxSwapBuffersGpu();*/
 
 	Sys_MkdirRecursive("ux0:/data/quake2/baseq2");
 	
 	// We need a bigger stack to run Quake 2, so we create a new thread with a proper stack size
-	SceUID main_thread = sceKernelCreateThread("Quake II", quake_main, 0x40, 0xC00000, 0, 0, NULL);
+	SceUID main_thread = sceKernelCreateThread("Quake II", quake_main, 0x40, 0x800000, 0, 0, NULL);
 	if (main_thread >= 0){
 		sceKernelStartThread(main_thread, 0, NULL);
 		sceKernelWaitThreadEnd(main_thread, NULL, NULL);
