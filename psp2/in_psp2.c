@@ -67,7 +67,7 @@ void IN_Move (usercmd_t *cmd)
 	if(abs(left_y) > 30)
 	{
 		float y_value = left_y - 15;
-		cmd->forwardmove += (y_value * leftanalog_sensitivity->value) * m_forward->value;
+		cmd->forwardmove -= (y_value * leftanalog_sensitivity->value) * m_forward->value;
 	}
 
 	if(abs(left_x) > 30)
@@ -83,7 +83,7 @@ void IN_Move (usercmd_t *cmd)
 		right_y = -right_y;
 
 	right_x = abs(right_x) < 10 ? 0 : right_x * 0.01 * rightanalog_sensitivity->value;
-	right_y = abs(right_y) < 10 ? 0 : right_y * 0.01 * rightanalog_sensitivity->value;
+	right_y = abs(right_y) < 10 ? 0 : (-right_y) * 0.01 * rightanalog_sensitivity->value;
 
 	cl.viewangles[YAW] -= right_x;
 	cl.viewangles[PITCH] -= right_y;
