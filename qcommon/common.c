@@ -1427,9 +1427,9 @@ void Qcommon_Init (int argc, char **argv)
 
 	Cbuf_AddText ("exec default.cfg\n");
 
-	#ifdef _3DS
+	//#ifdef _3DS
 	Sys_DefaultConfig();
-	#endif
+	//#endif
 	
 	Cbuf_AddText ("exec config.cfg\n");
 

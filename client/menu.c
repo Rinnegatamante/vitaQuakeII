@@ -1040,6 +1040,13 @@ static menuslider_s		s_options_circlepad_slider;
 static menuslider_s		s_options_cstick_slider;
 #endif
 
+#ifdef PSP2
+extern cvar_t 	*leftanalog_sensitivity;
+extern cvar_t	*rightanalog_sensitivity;
+static menuslider_s		s_options_leftanalog_slider;
+static menuslider_s		s_options_rightanalog_slider;
+#endif
+
 static void CrosshairFunc( void *unused )
 {
 	Cvar_SetValue( "crosshair", s_options_crosshair_box.curvalue );
@@ -1079,6 +1086,18 @@ static void CirclepadSpeedFunc( void *unused )
 static void CStickSpeedFunc( void *unused )
 {
 	Cvar_SetValue( "cstick_sensitivity", s_options_circlepad_slider.curvalue / 2.0F );
+}
+#endif
+
+#ifdef PSP2
+static void LeftAnalogSpeedFunc( void *unused )
+{
+	Cvar_SetValue( "leftanalog_sensitivity", s_options_leftanalog_slider.curvalue / 2.0F );
+}
+
+static void RightAnalogSpeedFunc( void *unused )
+{
+	Cvar_SetValue( "rightanalog_sensitivity", s_options_rightanalog_slider.curvalue / 2.0F );
 }
 #endif
 
@@ -1132,15 +1151,20 @@ static void ControlsSetMenuItemValues( void )
 	#ifdef _3DS
 	s_options_circlepad_slider.curvalue 	= ( circlepad_sensitivity->value ) * 2;
 	#endif
+	
+	#ifdef PSP2
+	s_options_leftanalog_slider.curvalue 	= ( leftanalog_sensitivity->value ) * 2;
+	#endif
+	
 }
 
 static void ControlsResetDefaultsFunc( void *unused )
 {
 	Cbuf_AddText ("exec default.cfg\n");
 
-	#ifdef _3DS
+	//#ifdef _3DS
 	Sys_DefaultConfig();
-	#endif
+	//#endif
 	
 	Cbuf_Execute();
 
@@ -1329,7 +1353,31 @@ void Options_MenuInit( void )
 
 
 	#else
+		#ifdef PSP2
+	s_options_leftanalog_slider.generic.type	= MTYPE_SLIDER;
+	s_options_leftanalog_slider.generic.x		= 0;
+	s_options_leftanalog_slider.generic.y		= 30;
+	s_options_leftanalog_slider.generic.name	= "left analog speed";
+	s_options_leftanalog_slider.generic.callback = LeftAnalogSpeedFunc;
+	s_options_leftanalog_slider.minvalue		= 1;
+	s_options_leftanalog_slider.maxvalue		= 10;
 
+	s_options_rightanalog_slider.generic.type	= MTYPE_SLIDER;
+	s_options_rightanalog_slider.generic.x		= 0;
+	s_options_rightanalog_slider.generic.y		= 40;
+	s_options_rightanalog_slider.generic.name	= "right analog speed";
+	s_options_rightanalog_slider.generic.callback = LeftAnalogSpeedFunc;
+	s_options_rightanalog_slider.minvalue		= 1;
+	s_options_rightanalog_slider.maxvalue		= 10;
+
+	s_options_sensitivity_slider.generic.type	= MTYPE_SLIDER;
+	s_options_sensitivity_slider.generic.x		= 0;
+	s_options_sensitivity_slider.generic.y		= 50;
+	s_options_sensitivity_slider.generic.name	= "look speed";
+	s_options_sensitivity_slider.generic.callback = RightAnalogSpeedFunc;
+	s_options_sensitivity_slider.minvalue		= 2;
+	s_options_sensitivity_slider.maxvalue		= 22;
+		#else
 	s_options_sensitivity_slider.generic.type	= MTYPE_SLIDER;
 	s_options_sensitivity_slider.generic.x		= 0;
 	s_options_sensitivity_slider.generic.y		= 50;
@@ -1337,7 +1385,7 @@ void Options_MenuInit( void )
 	s_options_sensitivity_slider.generic.callback = MouseSpeedFunc;
 	s_options_sensitivity_slider.minvalue		= 2;
 	s_options_sensitivity_slider.maxvalue		= 22;
-
+		#endif
 	#endif
 
 	s_options_alwaysrun_box.generic.type = MTYPE_SPINCONTROL;
@@ -1417,14 +1465,14 @@ void Options_MenuInit( void )
 	ControlsSetMenuItemValues();
 
 	Menu_AddItem( &s_options_menu, ( void * ) &s_options_sfxvolume_slider );
-	#ifndef _3DS
+	/*#ifndef _3DS
 	Menu_AddItem( &s_options_menu, ( void * ) &s_options_cdvolume_box );
 	Menu_AddItem( &s_options_menu, ( void * ) &s_options_quality_list );
 	Menu_AddItem( &s_options_menu, ( void * ) &s_options_compatibility_list );
-	#else
-	Menu_AddItem( &s_options_menu, ( void * ) &s_options_circlepad_slider );
-	Menu_AddItem( &s_options_menu, ( void * ) &s_options_cstick_slider );
-	#endif
+	#else*/
+	Menu_AddItem( &s_options_menu, ( void * ) &s_options_leftanalog_slider );
+	Menu_AddItem( &s_options_menu, ( void * ) &s_options_rightanalog_slider );
+	//#endif
 	Menu_AddItem( &s_options_menu, ( void * ) &s_options_sensitivity_slider );
 	Menu_AddItem( &s_options_menu, ( void * ) &s_options_alwaysrun_box );
 	Menu_AddItem( &s_options_menu, ( void * ) &s_options_invertmouse_box );

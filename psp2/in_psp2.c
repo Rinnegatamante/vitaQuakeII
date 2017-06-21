@@ -19,14 +19,14 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 SceCtrlData pad;
 cvar_t *in_joystick;
-cvar_t *la_sensitivity;
-cvar_t *ra_sensitivity;
+cvar_t *leftanalog_sensitivity;
+cvar_t *rightanalog_sensitivity;
 
 void IN_Init (void)
 {
 	in_joystick	= Cvar_Get ("in_joystick", "1",	CVAR_ARCHIVE);
-	la_sensitivity = Cvar_Get ("leftanalog_sensitivity", "2.0", CVAR_ARCHIVE);
-	ra_sensitivity = Cvar_Get ("rightanalog_sensitivity", "2.0", CVAR_ARCHIVE);
+	leftanalog_sensitivity = Cvar_Get ("leftanalog_sensitivity", "2.0", CVAR_ARCHIVE);
+	rightanalog_sensitivity = Cvar_Get ("rightanalog_sensitivity", "2.0", CVAR_ARCHIVE);
 }
 
 void IN_Shutdown (void)
@@ -67,14 +67,14 @@ void IN_Move (usercmd_t *cmd)
 	if(abs(left_y) > 30)
 	{
 		float y_value = left_y - 15;
-		cmd->forwardmove += (y_value * la_sensitivity->value) * m_forward->value;
+		cmd->forwardmove += (y_value * leftanalog_sensitivity->value) * m_forward->value;
 	}
 
 	if(abs(left_x) > 30)
 	{
 		float x_value = left_x - 15;
 		if((in_strafe.state & 1) || (lookstrafe->value))
-			cmd->sidemove += (x_value * la_sensitivity->value) * m_forward->value;
+			cmd->sidemove += (x_value * leftanalog_sensitivity->value) * m_forward->value;
 		else
 			cl.viewangles[YAW] -= m_side->value * x_value * 0.025f;
 	}
@@ -82,8 +82,8 @@ void IN_Move (usercmd_t *cmd)
 	if(m_pitch->value < 0)
 		right_y = -right_y;
 
-	right_x = abs(right_x) < 10 ? 0 : right_x * 0.01 * ra_sensitivity->value;
-	right_y = abs(right_y) < 10 ? 0 : right_y * 0.01 * ra_sensitivity->value;
+	right_x = abs(right_x) < 10 ? 0 : right_x * 0.01 * rightanalog_sensitivity->value;
+	right_y = abs(right_y) < 10 ? 0 : right_y * 0.01 * rightanalog_sensitivity->value;
 
 	cl.viewangles[YAW] -= right_x;
 	cl.viewangles[PITCH] -= right_y;
