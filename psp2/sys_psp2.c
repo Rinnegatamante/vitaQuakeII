@@ -47,7 +47,7 @@ void *GetGameAPI (void *import);
 vita2d_pgf* fnt;
 int y = 20;
 void vita2d_printf(const char *format, ...){
-	#ifndef RELEASE
+	#ifndef DEBUG
 	char str[512] = { 0 };
 	va_list va;
 
@@ -64,7 +64,16 @@ void vita2d_printf(const char *format, ...){
 		vita2d_swap_buffers();
 	}
 	y += 15;
-	if (y > 540) y = 5;
+	if (y > 540){
+		y = 20;
+		for (i=0;i<3;i++){
+			vita2d_start_drawing();
+			vita2d_clear_screen();
+			vita2d_end_drawing();
+			vita2d_wait_rendering_done();
+			vita2d_swap_buffers();
+		}
+	}
 	#endif
 
 }
@@ -339,7 +348,7 @@ char *Sys_FindFirst (char *path, unsigned musthave, unsigned canhave)
 	fdir = sceIoDopen(findbase);
 	if (fdir <= 0)
 		return NULL;
-	while ((sceIoDread(fdir, &d)) >= 0) {
+	while ((sceIoDread(fdir, &d)) > 0) {
 		if (!*findpattern || glob_match(findpattern, d.d_name)) {
 //			if (*findpattern)
 //				printf("%s matched %s\n", findpattern, d->d_name);
@@ -358,7 +367,7 @@ char *Sys_FindNext (unsigned musthave, unsigned canhave)
 
 	if (fdir <= 0)
 		return NULL;
-	while ((sceIoDread(fdir, &d)) >= 0) {
+	while ((sceIoDread(fdir, &d)) > 0) {
 		if (!*findpattern || glob_match(findpattern, d.d_name)) {
 //			if (*findpattern)
 //				printf("%s matched %s\n", findpattern, d->d_name);
