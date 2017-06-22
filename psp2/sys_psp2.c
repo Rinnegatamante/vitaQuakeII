@@ -137,7 +137,7 @@ void Sys_DefaultConfig(void)
 	Cbuf_AddText ("bind PADRIGHT \"invnext\"\n");
 
 	Cbuf_AddText ("bind CROSS \"+moveup\"\n");
-	Cbuf_AddText ("bind CIRCLE \"movedown\"\n");
+	Cbuf_AddText ("bind CIRCLE \"+movedown\"\n");
 	Cbuf_AddText ("bind SQUARE \"+attack\"\n");
 	Cbuf_AddText ("bind TRIANGLE \"weapnext\"\n");
 	Cbuf_AddText ("bind LTRIGGER \"+speed\"\n");
