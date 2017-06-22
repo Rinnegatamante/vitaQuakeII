@@ -3,14 +3,14 @@ TITLE		:= QUAKE0002
 SOURCES		:= source
 INCLUDES	:= include
 
-LIBS = -lvita2d -lvitashaders -lSceLibKernel_stub \
+LIBS = -lvorbisfile -lvorbis -logg -lspeexdsp -lmpg123 \
+	-lvita2d -lvitashaders -lSceLibKernel_stub \
 	-lSceAppMgr_stub -lSceSysmodule_stub -lSceCtrl_stub -lSceTouch_stub \
 	-lm -lSceNet_stub -lSceNetCtl_stub -lSceAppUtil_stub -lScePgf_stub \
 	-ljpeg -lfreetype -lc -lScePower_stub -lSceCommonDialog_stub -lpng16 -lz \
-	-lSceAudio_stub -lSceGxm_stub -lSceDisplay_stub
+	-lSceAudio_stub -lSceGxm_stub -lSceDisplay_stub -lSceNet_stub -lSceNetCtl_stub
 
-SYSTEM = 	psp2/cd_psp2.o \
-			psp2/vid_psp2.o \
+SYSTEM = 	psp2/vid_psp2.o \
 			psp2/snddma_psp2.o \
 			psp2/sys_psp2.o \
 			psp2/in_psp2.o \
@@ -125,15 +125,18 @@ GAME = 		game/m_tank.o \
 			game/m_supertank.o
 
 
+CPPSOURCES	:= audiodec
+
 CFILES		:=	$(CLIENT) $(QCOMMON) $(SERVER) $(GAME) $(REFSOFT) $(SYSTEM)
-CPPFILES   := $(foreach dir,$(SOURCES), $(wildcard $(dir)/*.cpp))
+CPPFILES   := $(foreach dir,$(CPPSOURCES), $(wildcard $(dir)/*.cpp))
 BINFILES := $(foreach dir,$(DATA), $(wildcard $(dir)/*.bin))
 OBJS     := $(addsuffix .o,$(BINFILES)) $(CFILES:.c=.o) $(CPPFILES:.cpp=.o) 
 
 PREFIX  = arm-vita-eabi
 CC      = $(PREFIX)-gcc
 CXX      = $(PREFIX)-g++
-CFLAGS  = -fno-lto -g -Wl,-q -O3 -DREF_HARD_LINKED -DGAME_HARD_LINKED -DPSP2
+CFLAGS  = -fno-lto -g -Wl,-q -O3 -DREF_HARD_LINKED -DGAME_HARD_LINKED -DPSP2 \
+		-DHAVE_OGGVORBIS -DHAVE_MPG123 -DHAVE_LIBSPEEXDSP -DUSE_AUDIO_RESAMPLER
 
 CXXFLAGS  = $(CFLAGS) -fno-exceptions -std=gnu++11 -fpermissive
 ASFLAGS = $(CFLAGS)

@@ -1468,6 +1468,7 @@ void Options_MenuInit( void )
 	Menu_AddItem( &s_options_menu, ( void * ) &s_options_quality_list );
 	Menu_AddItem( &s_options_menu, ( void * ) &s_options_compatibility_list );
 	#else*/
+	Menu_AddItem( &s_options_menu, ( void * ) &s_options_cdvolume_box );
 	Menu_AddItem( &s_options_menu, ( void * ) &s_options_leftanalog_slider );
 	Menu_AddItem( &s_options_menu, ( void * ) &s_options_rightanalog_slider );
 	//#endif
