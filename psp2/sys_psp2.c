@@ -425,6 +425,7 @@ int main (int argc, char **argv)
 	sceCtrlSetSamplingMode(SCE_CTRL_MODE_ANALOG);
 	
 	vita2d_init();
+	vita2d_set_vblank_wait(0);
 	fnt = vita2d_load_default_pgf();
 
 	Sys_MkdirRecursive("ux0:/data/quake2/baseq2");

@@ -36,7 +36,7 @@ void SWimp_EndFrame (void)
 	vita2d_start_drawing();
 	vita2d_draw_texture_scale(tex_buffer, 0, 0, 2.0, 2.0);
 	vita2d_end_drawing();
-	vita2d_wait_rendering_done();
+	//vita2d_wait_rendering_done();
 	vita2d_swap_buffers(); 
 }
 
