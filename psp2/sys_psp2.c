@@ -37,6 +37,7 @@ int	curtime;
 unsigned	sys_frame_time;
 
 int		hunkcount;
+int vita2d_console = 1;
 
 static byte	*membase;
 static int		hunkmaxsize;
@@ -47,7 +48,9 @@ void *GetGameAPI (void *import);
 vita2d_pgf* fnt;
 int y = 20;
 void vita2d_printf(const char *format, ...){
-	#ifdef DEBUG
+	
+	if (!vita2d_console) return;
+	
 	char str[512] = { 0 };
 	va_list va;
 
@@ -74,7 +77,6 @@ void vita2d_printf(const char *format, ...){
 			vita2d_swap_buffers();
 		}
 	}
-	#endif
 
 }
 

@@ -19,6 +19,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 #include "client.h"
 
+extern int vita2d_console;
+
 typedef struct
 {
 	byte	*data;
@@ -489,6 +491,10 @@ SCR_RunCinematic
 */
 void SCR_RunCinematic (void)
 {
+	
+	// First cinematic is the id logo on startup, we disable console on that occurrance
+	vita2d_console = 0;
+	
 	int		frame;
 
 	if (cl.cinematictime <= 0)
