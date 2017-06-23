@@ -1484,6 +1484,7 @@ void CL_InitLocal (void)
 	sceAppUtilInit(&init_param, &boot_param);
 	char nick[SCE_SYSTEM_PARAM_USERNAME_MAXSIZE];
 	sceAppUtilSystemParamGetString(SCE_SYSTEM_PARAM_ID_USERNAME, nick, SCE_SYSTEM_PARAM_USERNAME_MAXSIZE);
+	nick[20] = 0; // Max nickname length == 20
 	Cvar_Set ("name", nick);
 	
 	skin = Cvar_Get ("skin", "male/grunt", CVAR_USERINFO | CVAR_ARCHIVE);
