@@ -328,7 +328,7 @@ void Sys_MkdirRecursive(char *path) {
 static	char	findbase[MAX_OSPATH];
 static	char	findpath[MAX_OSPATH];
 static	char	findpattern[MAX_OSPATH];
-static	SceUID	fdir;
+static	SceUID	fdir = -1;
 
 int glob_match(char *pattern, char *text);
 
@@ -343,7 +343,7 @@ static qboolean CompareAttributes(char *path, char *name,
 		return false;
 
 	sprintf(fn, "%s/%s", path, name);
-	if (sceIoGetstat(fn, &st) == -1)
+	if (sceIoGetstat(fn, &st) < 0)
 		return false; // shouldn't happen
 
 	if ( ( st.st_mode & SCE_SO_IFDIR ) && ( canthave & SFF_SUBDIR ) )
@@ -360,10 +360,10 @@ char *Sys_FindFirst (char *path, unsigned musthave, unsigned canhave)
 	SceIoDirent d;
 	char *p;
 
-	if (fdir)
+	if (fdir >= 0)
 		Sys_Error ("Sys_BeginFind without close");
 
-//	COM_FilePath (path, findbase);
+	COM_FilePath (path, findbase);
 	strcpy(findbase, path);
 
 	if ((p = strrchr(findbase, '/')) != NULL) {
@@ -376,16 +376,16 @@ char *Sys_FindFirst (char *path, unsigned musthave, unsigned canhave)
 		strcpy(findpattern, "*");
 	
 	fdir = sceIoDopen(findbase);
-	if (fdir <= 0)
+	if (fdir < 0)
 		return NULL;
 	while ((sceIoDread(fdir, &d)) > 0) {
 		if (!*findpattern || glob_match(findpattern, d.d_name)) {
-//			if (*findpattern)
-//				printf("%s matched %s\n", findpattern, d->d_name);
-			if (CompareAttributes(findbase, d.d_name, musthave, canhave)) {
+			//if (*findpattern)
+			//	printf("%s matched %s\n", findpattern, d.d_name);
+			//if (CompareAttributes(findbase, d.d_name, musthave, canhave)) {
 				sprintf (findpath, "%s/%s", findbase, d.d_name);
 				return findpath;
-			}
+			//}
 		}
 	}
 	return NULL;
@@ -395,16 +395,16 @@ char *Sys_FindNext (unsigned musthave, unsigned canhave)
 {
 	SceIoDirent d;
 
-	if (fdir <= 0)
+	if (fdir < 0)
 		return NULL;
 	while ((sceIoDread(fdir, &d)) > 0) {
 		if (!*findpattern || glob_match(findpattern, d.d_name)) {
-//			if (*findpattern)
-//				printf("%s matched %s\n", findpattern, d->d_name);
-			if (CompareAttributes(findbase, d.d_name, musthave, canhave)) {
+			//if (*findpattern)
+			//	printf("%s matched %s\n", findpattern, d.d_name);
+			//if (CompareAttributes(findbase, d.d_name, musthave, canhave)) {
 				sprintf (findpath, "%s/%s", findbase, d.d_name);
 				return findpath;
-			}
+			//}
 		}
 	}
 	return NULL;
@@ -412,10 +412,10 @@ char *Sys_FindNext (unsigned musthave, unsigned canhave)
 
 void Sys_FindClose (void)
 {
-	if (fdir > 0)
+	if (fdir >= 0)
 		sceIoDclose(fdir);
 		
-	fdir = 0;
+	fdir = -1;
 }
 
 void	Sys_Init (void)
