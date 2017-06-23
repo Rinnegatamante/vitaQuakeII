@@ -1,4 +1,4 @@
-// net_wins.c
+// net_psp2.c
 
 #include "../qcommon/qcommon.h"
 

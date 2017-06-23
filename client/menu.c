@@ -26,7 +26,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "../client/qmenu.h"
 
 static int	m_main_cursor;
-static int timelimit_value, fraglimit_value;
 
 #define NUM_CURSOR_FRAMES 15
 
@@ -2865,7 +2864,6 @@ void StartServer_MenuInit( void )
 	s_timelimit_field.generic.statusbar = "0 = no limit";
 	s_timelimit_field.length = 3;
 	s_timelimit_field.visible_length = 3;
-	timelimit_value = 0;
 	strcpy( s_timelimit_field.buffer, Cvar_VariableString("timelimit") );
 
 	s_fraglimit_field.generic.type = MTYPE_FIELD;
@@ -2877,7 +2875,6 @@ void StartServer_MenuInit( void )
 	s_fraglimit_field.generic.statusbar = "0 = no limit";
 	s_fraglimit_field.length = 3;
 	s_fraglimit_field.visible_length = 3;
-	fraglimit_value = 0;
 	strcpy( s_fraglimit_field.buffer, Cvar_VariableString("fraglimit") );
 
 	/*
