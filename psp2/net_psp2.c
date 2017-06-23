@@ -3,14 +3,6 @@
 #include "../qcommon/qcommon.h"
 
 #include <unistd.h>
-#include <sys/socket.h>
-#include <sys/time.h>
-#include <netinet/in.h>
-#include <netdb.h>
-#include <sys/param.h>
-//#include <sys/ioctl.h>
-//#include <sys/uio.h>
-#include <errno.h>
 #include <vitasdk.h>
 
 #ifdef NeXT
@@ -18,6 +10,9 @@
 #endif
 
 netadr_t	net_local_adr;
+
+int net_hostport = 26000;
+int errno;
 
 #define	LOOPBACK	0x7f000001
 
@@ -42,31 +37,72 @@ int			ipx_sockets[2];
 int NET_Socket (char *net_interface, int port);
 char *NET_ErrorString (void);
 
+#define MAX_NAME 512
+struct hostent{
+  char  *h_name;         /* official (cannonical) name of host               */
+  char **h_aliases;      /* pointer to array of pointers of alias names      */
+  int    h_addrtype;     /* host address type: AF_INET                       */
+  int    h_length;       /* length of address: 4                             */
+  char **h_addr_list;    /* pointer to array of pointers with IPv4 addresses */
+};
+#define h_addr h_addr_list[0]
+
+// Copy-pasted from xyz code
+static struct hostent *gethostbyname(const char *name)
+{
+    static struct hostent ent;
+    static char sname[MAX_NAME] = "";
+    static struct SceNetInAddr saddr = { 0 };
+    static char *addrlist[2] = { (char *) &saddr, NULL };
+
+    int rid;
+    int err;
+    rid = sceNetResolverCreate("resolver", NULL, 0);
+    if(rid < 0) {
+        return NULL;
+    }
+
+    err = sceNetResolverStartNtoa(rid, name, &saddr, 0, 0, 0);
+    sceNetResolverDestroy(rid);
+    if(err < 0) {
+        return NULL;
+    }
+
+    ent.h_name = sname;
+    ent.h_aliases = 0;
+    ent.h_addrtype = SCE_NET_AF_INET;
+    ent.h_length = sizeof(struct SceNetInAddr);
+    ent.h_addr_list = addrlist;
+    ent.h_addr = addrlist[0];
+
+    return &ent;
+}
+
 //=============================================================================
 
-void NetadrToSockadr (netadr_t *a, struct sockaddr_in *s)
+void NetadrToSockadr (netadr_t *a, struct SceNetSockaddrIn *s)
 {
 	memset (s, 0, sizeof(*s));
 
 	if (a->type == NA_BROADCAST)
 	{
-		s->sin_family = AF_INET;
+		s->sin_family = SCE_NET_AF_INET;
 
 		s->sin_port = a->port;
-		*(int *)&s->sin_addr = -1;
+		s->sin_addr.s_addr = -1;
 	}
 	else if (a->type == NA_IP)
 	{
-		s->sin_family = AF_INET;
+		s->sin_family = SCE_NET_AF_INET;
 
-		*(int *)&s->sin_addr = *(int *)&a->ip;
+		s->sin_addr.s_addr = *(int *)&a->ip;
 		s->sin_port = a->port;
 	}
 }
 
-void SockadrToNetadr (struct sockaddr_in *s, netadr_t *a)
+void SockadrToNetadr (struct SceNetSockaddrIn *s, netadr_t *a)
 {
-	*(int *)&a->ip = *(int *)&s->sin_addr;
+	*(int *)&a->ip = s->sin_addr.s_addr;
 	a->port = s->sin_port;
 	a->type = NA_IP;
 }
@@ -113,7 +149,7 @@ char	*NET_AdrToString (netadr_t a)
 {
 	static	char	s[64];
 	
-	Com_sprintf (s, sizeof(s), "%i.%i.%i.%i:%i", a.ip[0], a.ip[1], a.ip[2], a.ip[3], ntohs(a.port));
+	Com_sprintf (s, sizeof(s), "%i.%i.%i.%i:%i", a.ip[0], a.ip[1], a.ip[2], a.ip[3], sceNetNtohs(a.port));
 
 	return s;
 }
@@ -138,16 +174,16 @@ idnewt:28000
 192.246.40.70:28000
 =============
 */
-qboolean	NET_StringToSockaddr (char *s, struct sockaddr *sadr)
+qboolean	NET_StringToSockaddr (char *s, struct SceNetSockaddr *sadr)
 {
 	struct hostent	*h;
 	char	*colon;
 	char	copy[128];
 	
 	memset (sadr, 0, sizeof(*sadr));
-	((struct sockaddr_in *)sadr)->sin_family = AF_INET;
+	((struct SceNetSockaddrIn *)sadr)->sin_family = SCE_NET_AF_INET;
 	
-	((struct sockaddr_in *)sadr)->sin_port = 0;
+	((struct SceNetSockaddrIn *)sadr)->sin_port = 0;
 
 	strcpy (copy, s);
 	// strip off a trailing :port if present
@@ -155,18 +191,18 @@ qboolean	NET_StringToSockaddr (char *s, struct sockaddr *sadr)
 		if (*colon == ':')
 		{
 			*colon = 0;
-			((struct sockaddr_in *)sadr)->sin_port = htons((short)atoi(colon+1));	
+			((struct SceNetSockaddrIn *)sadr)->sin_port = sceNetHtons((short)atoi(colon+1));	
 		}
 	
 	if (copy[0] >= '0' && copy[0] <= '9')
 	{
-		sceNetInetPton(SCE_NET_AF_INET, copy, *(int *)&((struct sockaddr_in *)sadr)->sin_addr);
+		sceNetInetPton(SCE_NET_AF_INET, copy, (int *)&((struct SceNetSockaddrIn *)sadr)->sin_addr);
 	}
 	else
 	{
 		if (! (h = gethostbyname(copy)) )
 			return 0;
-		*(int *)&((struct sockaddr_in *)sadr)->sin_addr = *(int *)h->h_addr_list[0];
+		*(int *)&((struct SceNetSockaddrIn *)sadr)->sin_addr.s_addr = *(int *)h->h_addr_list[0];
 	}
 	
 	return true;
@@ -185,7 +221,7 @@ idnewt:28000
 */
 qboolean	NET_StringToAdr (char *s, netadr_t *a)
 {
-	struct sockaddr_in sadr;
+	struct SceNetSockaddrIn sadr;
 	
 	if (!strcmp (s, "localhost"))
 	{
@@ -194,7 +230,7 @@ qboolean	NET_StringToAdr (char *s, netadr_t *a)
 		return true;
 	}
 
-	if (!NET_StringToSockaddr (s, (struct sockaddr *)&sadr))
+	if (!NET_StringToSockaddr (s, (struct SceNetSockaddr	*)&sadr))
 		return false;
 	
 	SockadrToNetadr (&sadr, a);
@@ -259,7 +295,7 @@ void NET_SendLoopPacket (netsrc_t sock, int length, void *data, netadr_t to)
 qboolean	NET_GetPacket (netsrc_t sock, netadr_t *net_from, sizebuf_t *net_message)
 {
 	int 	ret;
-	struct sockaddr_in	from;
+	struct  SceNetSockaddrIn	from;
 	int		fromlen;
 	int		net_socket;
 	int		protocol;
@@ -279,14 +315,19 @@ qboolean	NET_GetPacket (netsrc_t sock, netadr_t *net_from, sizebuf_t *net_messag
 			continue;
 
 		fromlen = sizeof(from);
-		ret = recvfrom (net_socket, net_message->data, net_message->maxsize
-			, 0, (struct sockaddr *)&from, &fromlen);
-		if (ret == -1)
+		ret = sceNetRecvfrom(net_socket, net_message->data, net_message->maxsize
+			, 0, (struct SceNetSockaddr *)&from, &fromlen);
+		
+		SockadrToNetadr (&from, net_from);
+			
+		if (ret < 0)
 		{
-			err = errno;
+			err = ret;
 
-			if (err == EWOULDBLOCK || err == ECONNREFUSED)
+			if (err == SCE_NET_EWOULDBLOCK || err == SCE_NET_ECONNREFUSED  || err == SCE_NET_ERROR_EAGAIN)
 				continue;
+			
+			errno = err;
 			Com_Printf ("NET_GetPacket: %s", NET_ErrorString());
 			continue;
 		}
@@ -310,7 +351,7 @@ qboolean	NET_GetPacket (netsrc_t sock, netadr_t *net_from, sizebuf_t *net_messag
 void NET_SendPacket (netsrc_t sock, int length, void *data, netadr_t to)
 {
 	int		ret;
-	struct sockaddr_in	addr;
+	struct SceNetSockaddrIn	addr;
 	int		net_socket;
 
 	if ( to.type == NA_LOOPBACK )
@@ -348,9 +389,10 @@ void NET_SendPacket (netsrc_t sock, int length, void *data, netadr_t to)
 
 	NetadrToSockadr (&to, &addr);
 
-	ret = sendto (net_socket, data, length, 0, (struct sockaddr *)&addr, sizeof(addr) );
-	if (ret == -1)
+	ret = sceNetSendto(net_socket, data, length, 0, (struct SceNetSockaddr *)&addr, sizeof(addr) );
+	if (ret < 0)
 	{
+		errno = ret;
 		Com_Printf ("NET_SendPacket ERROR: %i\n", NET_ErrorString());
 	}
 }
@@ -406,12 +448,12 @@ void	NET_Config (qboolean multiplayer)
 		{
 			if (ip_sockets[i])
 			{
-				close (ip_sockets[i]);
+				sceNetSocketClose (ip_sockets[i]);
 				ip_sockets[i] = 0;
 			}
 			if (ipx_sockets[i])
 			{
-				close (ipx_sockets[i]);
+				sceNetSocketClose (ipx_sockets[i]);
 				ipx_sockets[i] = 0;
 			}
 		}
@@ -470,26 +512,30 @@ NET_Socket
 int NET_Socket (char *net_interface, int port)
 {
 	int newsocket;
-	struct sockaddr_in address;
-	qboolean _true = true;
+	struct SceNetSockaddrIn address;
+	uint32_t _true = true;
 	int	i = 1;
-
-	if ((newsocket = socket (PF_INET, SOCK_DGRAM, IPPROTO_UDP)) == -1)
+	int ret;
+	
+	if ((newsocket = sceNetSocket("socket", SCE_NET_AF_INET, SCE_NET_SOCK_DGRAM, SCE_NET_IPPROTO_UDP)) < 0)
 	{
-		Com_Printf ("ERROR: UDP_OpenSocket: socket:", NET_ErrorString());
+		errno = newsocket;
+		Com_Printf ("ERROR: UDP_OpenSocket: socket:%s\n", NET_ErrorString());
 		return 0;
 	}
 
 	// make it non-blocking
-	if (setsockopt(newsocket, SCE_NET_SOL_SOCKET, SCE_NET_SO_NBIO, &_true, sizeof(qboolean)) == -1)
+	if (ret=sceNetSetsockopt(newsocket, SCE_NET_SOL_SOCKET, SCE_NET_SO_NBIO, &_true, sizeof(uint32_t)) < 0)
 	{
-		Com_Printf ("ERROR: UDP_OpenSocket: ioctl FIONBIO:%s\n", NET_ErrorString());
+		errno = ret;
+		Com_Printf ("ERROR: UDP_OpenSocket: setsockopt SO_NBIO:%s\n", NET_ErrorString());
 		return 0;
 	}
 
 	// make it broadcast capable
-	if (setsockopt(newsocket, SOL_SOCKET, SO_BROADCAST, (char *)&i, sizeof(i)) == -1)
+	if (ret=sceNetSetsockopt(newsocket, SCE_NET_SOL_SOCKET, SCE_NET_SO_BROADCAST, (char *)&i, sizeof(i)) < 0)
 	{
+		errno = ret;
 		Com_Printf ("ERROR: UDP_OpenSocket: setsockopt SO_BROADCAST:%s\n", NET_ErrorString());
 		return 0;
 	}
@@ -497,19 +543,20 @@ int NET_Socket (char *net_interface, int port)
 	if (!net_interface || !net_interface[0] || !strcasecmp(net_interface, "localhost"))
 		address.sin_addr.s_addr = SCE_NET_INADDR_ANY;
 	else
-		NET_StringToSockaddr (net_interface, (struct sockaddr *)&address);
+		NET_StringToSockaddr (net_interface, (struct SceNetSockaddr *)&address);
 
 	if (port == PORT_ANY)
-		address.sin_port = 0;
+		address.sin_port = sceNetHtons(net_hostport++);
 	else
-		address.sin_port = htons((short)port);
+		address.sin_port = sceNetHtons((short)port);
 
-	address.sin_family = AF_INET;
+	address.sin_family = SCE_NET_AF_INET;
 
-	if( bind (newsocket, (void *)&address, sizeof(address)) == -1)
+	if(ret=sceNetBind(newsocket, (void *)&address, sizeof(address)) < 0)
 	{
+		errno = ret;
 		Com_Printf ("ERROR: UDP_OpenSocket: bind: %s\n", NET_ErrorString());
-		close (newsocket);
+		sceNetSocketClose (newsocket);
 		return 0;
 	}
 
@@ -525,6 +572,8 @@ NET_Shutdown
 void	NET_Shutdown (void)
 {
 	NET_Config (false);	// close sockets
+	sceNetTerm();
+	free(net_memory);
 }
 
 
@@ -533,29 +582,15 @@ void	NET_Shutdown (void)
 NET_ErrorString
 ====================
 */
+char err[256];
 char *NET_ErrorString (void)
 {
-	int		code;
-
-	code = errno;
-	return strerror (code);
+	sprintf(err, "errorcode %d", errno);
+	return err;
 }
 
 // sleeps msec or until net socket is ready
 void NET_Sleep(int msec)
 {
-    struct timeval timeout;
-	fd_set	fdset;
-	extern cvar_t *dedicated;
-	extern qboolean stdin_active;
-
-	if (!ip_sockets[NS_SERVER] || (dedicated && !dedicated->value))
-		return; // we're not a server, just run full speed
-
-	FD_ZERO(&fdset);
-	FD_SET(ip_sockets[NS_SERVER], &fdset); // network socket
-	timeout.tv_sec = msec/1000;
-	timeout.tv_usec = (msec%1000)*1000;
-	select(ip_sockets[NS_SERVER]+1, &fdset, NULL, NULL, &timeout);
 }
 
