@@ -3613,6 +3613,27 @@ static int rate_tbl[] = { 2500, 3200, 5000, 10000, 25000, 0 };
 static const char *rate_names[] = { "28.8 Modem", "33.6 Modem", "Single ISDN",
 	"Dual ISDN/Cable", "T1/LAN", "User defined", 0 };
 
+void MPNicknameCallback( void *self )
+{
+	isKeyboard = 1;
+	targetKeyboard = s_player_name_field.buffer;
+	memset(input_text, 0, (SCE_IME_DIALOG_MAX_TEXT_LENGTH + 1) << 1);
+	memset(initial_text, 0, (SCE_IME_DIALOG_MAX_TEXT_LENGTH) << 1);
+	sprintf(title_keyboard, "Insert player name");
+	ascii2utf(title, title_keyboard);
+	ascii2utf(initial_text, s_player_name_field.buffer);
+	SceImeDialogParam param;
+	sceImeDialogParamInit(&param);
+	param.supportedLanguages = 0x0001FFFF;
+	param.languagesForced = SCE_TRUE;
+	param.type = SCE_IME_TYPE_BASIC_LATIN;
+	param.title = title;
+	param.maxTextLength = 20;
+	param.initialText = initial_text;
+	param.inputTextBuffer = input_text;
+	sceImeDialogInit(&param);
+}	
+	
 void DownloadOptionsFunc( void *self )
 {
 	M_Menu_DownloadOptions_f();
@@ -3901,7 +3922,7 @@ qboolean PlayerConfig_MenuInit( void )
 
 	s_player_name_field.generic.type = MTYPE_FIELD;
 	s_player_name_field.generic.name = "name";
-	s_player_name_field.generic.callback = 0;
+	s_player_name_field.generic.callback = MPNicknameCallback;
 	s_player_name_field.generic.x		= 0;
 	s_player_name_field.generic.y		= 0;
 	s_player_name_field.length	= 20;
