@@ -27,6 +27,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #include "../qcommon/qcommon.h"
 #include "../client/keys.h"
+#include "../client/qmenu.h"
 #include "errno.h"
 
 #include <vitasdk.h>
@@ -127,6 +128,12 @@ void Sys_ConsoleOutput (char *string)
 	vita2d_printf("%s",string);
 }
 
+void utf2ascii(char* dst, uint16_t* src){
+	if(!src || !dst)return;
+	while(*src)*(dst++)=(*(src++))&0xFF;
+	*dst=0x00;
+}
+
 void Sys_DefaultConfig(void)
 {
 
@@ -152,31 +159,55 @@ void Sys_DefaultConfig(void)
 	Cbuf_AddText ("gamma \"0.700000\"\n");
 }
 
+extern menufield_s s_maxclients_field;
+extern int isKeyboard;
+uint16_t input_text[SCE_IME_DIALOG_MAX_TEXT_LENGTH + 1];
+char* targetKeyboard;
 void Sys_SetKeys(uint32_t keys, uint32_t state){
-	if( keys & SCE_CTRL_SELECT)
-		Key_Event(K_ESCAPE, state, Sys_Milliseconds());
-	if( keys & SCE_CTRL_START)
-		Key_Event(K_ENTER, state, Sys_Milliseconds());
-	if( keys & SCE_CTRL_UP)
-		Key_Event(K_UPARROW, state, Sys_Milliseconds());
-	if( keys & SCE_CTRL_DOWN)
-		Key_Event(K_DOWNARROW, state, Sys_Milliseconds());
-	if( keys & SCE_CTRL_LEFT)
-		Key_Event(K_LEFTARROW, state, Sys_Milliseconds());
-	if( keys & SCE_CTRL_RIGHT)
-		Key_Event(K_RIGHTARROW, state, Sys_Milliseconds());
-	if( keys & SCE_CTRL_TRIANGLE)
-		Key_Event(K_AUX4, state, Sys_Milliseconds());
-	if( keys & SCE_CTRL_SQUARE)
-		Key_Event(K_AUX3, state, Sys_Milliseconds());
-	if( keys & SCE_CTRL_CIRCLE)
-		Key_Event(K_AUX2, state, Sys_Milliseconds());
-	if( keys & SCE_CTRL_CROSS)
-		Key_Event(K_AUX1, state, Sys_Milliseconds());
-	if( keys & SCE_CTRL_LTRIGGER)
-		Key_Event(K_AUX5, state, Sys_Milliseconds());
-	if( keys & SCE_CTRL_RTRIGGER)
-		Key_Event(K_AUX7, state, Sys_Milliseconds());
+	if (!isKeyboard){
+		if( keys & SCE_CTRL_SELECT)
+			Key_Event(K_ESCAPE, state, Sys_Milliseconds());
+		if( keys & SCE_CTRL_START)
+			Key_Event(K_ENTER, state, Sys_Milliseconds());
+		if( keys & SCE_CTRL_UP)
+			Key_Event(K_UPARROW, state, Sys_Milliseconds());
+		if( keys & SCE_CTRL_DOWN)
+			Key_Event(K_DOWNARROW, state, Sys_Milliseconds());
+		if( keys & SCE_CTRL_LEFT)
+			Key_Event(K_LEFTARROW, state, Sys_Milliseconds());
+		if( keys & SCE_CTRL_RIGHT)
+			Key_Event(K_RIGHTARROW, state, Sys_Milliseconds());
+		if( keys & SCE_CTRL_TRIANGLE)
+			Key_Event(K_AUX4, state, Sys_Milliseconds());
+		if( keys & SCE_CTRL_SQUARE)
+			Key_Event(K_AUX3, state, Sys_Milliseconds());
+		if( keys & SCE_CTRL_CIRCLE)
+			Key_Event(K_AUX2, state, Sys_Milliseconds());
+		if( keys & SCE_CTRL_CROSS)
+			Key_Event(K_AUX1, state, Sys_Milliseconds());
+		if( keys & SCE_CTRL_LTRIGGER)
+			Key_Event(K_AUX5, state, Sys_Milliseconds());
+		if( keys & SCE_CTRL_RTRIGGER)
+			Key_Event(K_AUX7, state, Sys_Milliseconds());
+	}else{
+		SceCommonDialogStatus status = sceImeDialogGetStatus();
+		if (status == 2) {
+			SceImeDialogResult result;
+			memset(&result, 0, sizeof(SceImeDialogResult));
+			sceImeDialogGetResult(&result);
+
+			if (result.button == SCE_IME_DIALOG_BUTTON_ENTER)
+			{
+				utf2ascii(targetKeyboard, input_text);
+				if (targetKeyboard == s_maxclients_field.buffer){ // Max players == 8
+					if (atoi(targetKeyboard) > 8) sprintf(targetKeyboard, "8");
+				}
+			}
+
+			sceImeDialogTerm();
+			isKeyboard = 0;
+		}
+	}
 }
 
 void Sys_SendKeyEvents (void)
@@ -416,6 +447,9 @@ int quake_main (unsigned int argc, void* argv){
 
 int main (int argc, char **argv)
 {
+
+	sceAppUtilInit(&(SceAppUtilInitParam){}, &(SceAppUtilBootParam){});
+	sceCommonDialogSetConfigParam(&(SceCommonDialogConfigParam){});
 
 	// Setting maximum clocks
 	scePowerSetArmClockFrequency(444);

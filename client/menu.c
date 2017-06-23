@@ -21,10 +21,12 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #ifdef _WIN32
 #include <io.h>
 #endif
+#include <vitasdk.h>
 #include "client.h"
 #include "../client/qmenu.h"
 
 static int	m_main_cursor;
+static int timelimit_value, fraglimit_value;
 
 #define NUM_CURSOR_FRAMES 15
 
@@ -2512,7 +2514,7 @@ static menuaction_s	s_startserver_start_action;
 static menuaction_s	s_startserver_dmoptions_action;
 static menufield_s	s_timelimit_field;
 static menufield_s	s_fraglimit_field;
-static menufield_s	s_maxclients_field;
+menufield_s	s_maxclients_field;
 static menufield_s	s_hostname_field;
 static menulist_s	s_startmap_list;
 static menulist_s	s_rules_box;
@@ -2630,6 +2632,102 @@ void StartServerActionFunc( void *self )
 	}
 
 	M_ForceMenuOff ();
+}
+
+void ascii2utf(uint16_t* dst, char* src){
+	if(!src || !dst)return;
+	while(*src)*(dst++)=(*src++);
+	*dst=0x00;
+}
+
+char title_keyboard[256];
+extern uint16_t input_text[SCE_IME_DIALOG_MAX_TEXT_LENGTH + 1];
+static uint16_t title[SCE_IME_DIALOG_MAX_TITLE_LENGTH];
+static uint16_t initial_text[SCE_IME_DIALOG_MAX_TEXT_LENGTH];
+extern uint8_t isKeyboard;
+extern char* targetKeyboard;
+void TimeLimitCallback( void *self )
+{
+	isKeyboard = 1;
+	targetKeyboard = s_timelimit_field.buffer;
+	memset(input_text, 0, (SCE_IME_DIALOG_MAX_TEXT_LENGTH + 1) << 1);
+	memset(initial_text, 0, (SCE_IME_DIALOG_MAX_TEXT_LENGTH) << 1);
+	sprintf(title_keyboard, "Insert time limit");
+	ascii2utf(title, title_keyboard);
+	ascii2utf(initial_text, s_timelimit_field.buffer);
+	SceImeDialogParam param;
+	sceImeDialogParamInit(&param);
+	param.supportedLanguages = 0x0001FFFF;
+	param.languagesForced = SCE_TRUE;
+	param.type = SCE_IME_TYPE_NUMBER;
+	param.title = title;
+	param.maxTextLength = 3;
+	param.initialText = initial_text;
+	param.inputTextBuffer = input_text;
+	sceImeDialogInit(&param);
+}
+
+void FragLimitCallback( void *self )
+{
+	isKeyboard = 1;
+	targetKeyboard = s_fraglimit_field.buffer;
+	memset(input_text, 0, (SCE_IME_DIALOG_MAX_TEXT_LENGTH + 1) << 1);
+	memset(initial_text, 0, (SCE_IME_DIALOG_MAX_TEXT_LENGTH) << 1);
+	sprintf(title_keyboard, "Insert frag limit");
+	ascii2utf(title, title_keyboard);
+	ascii2utf(initial_text, s_fraglimit_field.buffer);
+	SceImeDialogParam param;
+	sceImeDialogParamInit(&param);
+	param.supportedLanguages = 0x0001FFFF;
+	param.languagesForced = SCE_TRUE;
+	param.type = SCE_IME_TYPE_NUMBER;
+	param.title = title;
+	param.maxTextLength = 3;
+	param.initialText = initial_text;
+	param.inputTextBuffer = input_text;
+	sceImeDialogInit(&param);
+}
+
+void MaxPlayersCallback( void *self )
+{
+	isKeyboard = 1;
+	targetKeyboard = s_maxclients_field.buffer;
+	memset(input_text, 0, (SCE_IME_DIALOG_MAX_TEXT_LENGTH + 1) << 1);
+	memset(initial_text, 0, (SCE_IME_DIALOG_MAX_TEXT_LENGTH) << 1);
+	sprintf(title_keyboard, "Insert players cap");
+	ascii2utf(title, title_keyboard);
+	ascii2utf(initial_text, s_maxclients_field.buffer);
+	SceImeDialogParam param;
+	sceImeDialogParamInit(&param);
+	param.supportedLanguages = 0x0001FFFF;
+	param.languagesForced = SCE_TRUE;
+	param.type = SCE_IME_TYPE_NUMBER;
+	param.title = title;
+	param.maxTextLength = 1;
+	param.initialText = initial_text;
+	param.inputTextBuffer = input_text;
+	sceImeDialogInit(&param);
+}
+
+void NicknameCallback( void *self )
+{
+	isKeyboard = 1;
+	targetKeyboard = s_hostname_field.buffer;
+	memset(input_text, 0, (SCE_IME_DIALOG_MAX_TEXT_LENGTH + 1) << 1);
+	memset(initial_text, 0, (SCE_IME_DIALOG_MAX_TEXT_LENGTH) << 1);
+	sprintf(title_keyboard, "Insert hostname");
+	ascii2utf(title, title_keyboard);
+	ascii2utf(initial_text, s_hostname_field.buffer);
+	SceImeDialogParam param;
+	sceImeDialogParamInit(&param);
+	param.supportedLanguages = 0x0001FFFF;
+	param.languagesForced = SCE_TRUE;
+	param.type = SCE_IME_TYPE_BASIC_LATIN;
+	param.title = title;
+	param.maxTextLength = 12;
+	param.initialText = initial_text;
+	param.inputTextBuffer = input_text;
+	sceImeDialogInit(&param);
 }
 
 void StartServer_MenuInit( void )
@@ -2763,9 +2861,11 @@ void StartServer_MenuInit( void )
 	s_timelimit_field.generic.flags = QMF_NUMBERSONLY;
 	s_timelimit_field.generic.x	= 0;
 	s_timelimit_field.generic.y	= 36;
+	s_timelimit_field.generic.callback = TimeLimitCallback;
 	s_timelimit_field.generic.statusbar = "0 = no limit";
 	s_timelimit_field.length = 3;
 	s_timelimit_field.visible_length = 3;
+	timelimit_value = 0;
 	strcpy( s_timelimit_field.buffer, Cvar_VariableString("timelimit") );
 
 	s_fraglimit_field.generic.type = MTYPE_FIELD;
@@ -2773,9 +2873,11 @@ void StartServer_MenuInit( void )
 	s_fraglimit_field.generic.flags = QMF_NUMBERSONLY;
 	s_fraglimit_field.generic.x	= 0;
 	s_fraglimit_field.generic.y	= 54;
+	s_fraglimit_field.generic.callback = FragLimitCallback;
 	s_fraglimit_field.generic.statusbar = "0 = no limit";
 	s_fraglimit_field.length = 3;
 	s_fraglimit_field.visible_length = 3;
+	fraglimit_value = 0;
 	strcpy( s_fraglimit_field.buffer, Cvar_VariableString("fraglimit") );
 
 	/*
@@ -2789,6 +2891,7 @@ void StartServer_MenuInit( void )
 	s_maxclients_field.generic.flags = QMF_NUMBERSONLY;
 	s_maxclients_field.generic.x	= 0;
 	s_maxclients_field.generic.y	= 72;
+	s_maxclients_field.generic.callback = MaxPlayersCallback;
 	s_maxclients_field.generic.statusbar = NULL;
 	s_maxclients_field.length = 3;
 	s_maxclients_field.visible_length = 3;
@@ -2802,6 +2905,7 @@ void StartServer_MenuInit( void )
 	s_hostname_field.generic.flags = 0;
 	s_hostname_field.generic.x	= 0;
 	s_hostname_field.generic.y	= 90;
+	s_hostname_field.generic.callback = NicknameCallback;
 	s_hostname_field.generic.statusbar = NULL;
 	s_hostname_field.length = 12;
 	s_hostname_field.visible_length = 12;

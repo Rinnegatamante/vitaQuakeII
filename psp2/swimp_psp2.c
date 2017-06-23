@@ -27,6 +27,7 @@ vita2d_texture* tex_buffer;
 uint16_t d_8to16table[256];
 uint32_t start_palette[256];
 float scale_val;
+uint8_t isKeyboard;
 
 void SWimp_BeginFrame( float camera_separation )
 {
@@ -37,6 +38,7 @@ void SWimp_EndFrame (void)
 	vita2d_start_drawing();
 	vita2d_draw_texture_scale(tex_buffer, 0, 0, scale_val, scale_val);
 	vita2d_end_drawing();
+	if (isKeyboard) vita2d_common_dialog_update();
 	//vita2d_wait_rendering_done();
 	vita2d_swap_buffers(); 
 }
