@@ -39,6 +39,9 @@ static cvar_t *sw_stipplealpha;
 extern cvar_t   *sw_mipcap;
 extern void M_ForceMenuOff( void );
 
+int vidwidth = 480;
+int vidheight = 272;
+
 #define SOFTWARE_MENU 0
 #define OPENGL_MENU   1
 
@@ -123,18 +126,10 @@ typedef struct vidmode_s
 
 vidmode_t vid_modes[] =
 {
-    /*{ "Mode 0: 320x240",   320, 240,   0 },
-    { "Mode 1: 400x300",   400, 300,   1 },
-    { "Mode 2: 512x384",   512, 384,   2 },
-    { "Mode 3: 640x480",   640, 480,   3 },
-    { "Mode 4: 800x600",   800, 600,   4 },
-    { "Mode 5: 960x720",   960, 720,   5 },
-    { "Mode 6: 1024x768",  1024, 768,  6 },
-    { "Mode 7: 1152x864",  1152, 864,  7 },
-    { "Mode 8: 1280x960",  1280, 960, 8 },
-    { "Mode 9: 1600x1200", 1600, 1200, 9 }
-*/
-    { "Mode 0: 480x272",   480, 272,   0 }
+    { "Mode 0: 480x272",   480, 272,   0 },
+	{ "Mode 1: 640x362",   640, 362,   1 },
+	{ "Mode 2: 480x272",   720, 408,   2 },
+	{ "Mode 3: 960x544",   960, 544,   3 }
 };
 #define VID_NUM_MODES ( sizeof( vid_modes ) / sizeof( vid_modes[0] ) )
 
@@ -152,6 +147,37 @@ qboolean VID_GetModeInfo( int *width, int *height, int mode )
 
 static void DriverCallback( void *unused )
 {
+}
+
+static void RescalerCallback( void *unused )
+{
+	switch (s_mode_list[SOFTWARE_MENU].curvalue){
+		case 0:
+			vidwidth = 480;
+			vidheight = 272;
+			break;
+		case 1:
+			vidwidth = 640;
+			vidheight = 362;
+			break;
+		case 2:
+			vidwidth = 720;
+			vidheight = 408;
+			break;
+		case 3:
+			vidwidth = 960;
+			vidheight = 544;
+			break;
+		default:
+			vidwidth = 480;
+			vidheight = 272;
+			break;
+	}
+	VID_Shutdown();
+	VID_Init();
+	s_software_menu.x = vidwidth * 0.50;
+	Menu_Center( &s_software_menu );
+	s_software_menu.x -= 8;
 }
 
 static void ScreenSizeCallback( void *s )
@@ -182,7 +208,6 @@ static void BrightnessCallback( void *s )
 
 static void ResetDefaults( void *unused )
 {
-    VID_MenuInit();
 }
 
 static void ApplyChanges( void *unused )
@@ -197,7 +222,7 @@ static void ApplyChanges( void *unused )
     Cvar_SetValue( "vid_gamma", gamma );
     Cvar_SetValue( "sw_stipplealpha", s_stipple_box.curvalue );
     Cvar_SetValue( "vid_fullscreen", s_fs_box.curvalue );
-    //Cvar_SetValue( "sw_mode", s_mode_list.curvalue );
+    Cvar_SetValue( "sw_mode", s_mode_list[SOFTWARE_MENU].curvalue );
 
     Cvar_Set( "vid_ref", "soft" );
 
@@ -215,8 +240,8 @@ void    VID_Init (void)
 {
     refimport_t ri;
 
-    viddef.width = 480;
-    viddef.height = 272; //was originally 240
+    viddef.width = vidwidth;
+    viddef.height = vidheight;
 
     ri.Cmd_AddCommand = Cmd_AddCommand;
     ri.Cmd_RemoveCommand = Cmd_RemoveCommand;
@@ -262,6 +287,22 @@ void    VID_CheckChanges (void)
 
 void    VID_MenuInit (void)
 {
+
+	static const char *resolutions[] = 
+	{
+		"480x272",
+		"640x362",
+		"720x408",
+		"960x544",
+		0
+	};
+	
+	static const char *refs[] =
+	{
+		"software",
+		0
+	};
+	
     static const char *yesno_names[] =
     {
         "no",
@@ -272,7 +313,9 @@ void    VID_MenuInit (void)
 
     if ( !sw_stipplealpha )
         sw_stipplealpha = Cvar_Get( "sw_stipplealpha", "0", CVAR_ARCHIVE );
-
+	
+	if ( !sw_mode )
+		sw_mode = Cvar_Get( "sw_mode", "0", 0 );
     s_mode_list[SOFTWARE_MENU].curvalue = sw_mode->value;
 
     if ( !scr_viewsize )
@@ -282,22 +325,26 @@ void    VID_MenuInit (void)
 
     s_mipcap_slider.curvalue = sw_mipcap->value;
 
-    if ( strcmp( vid_ref->string, "soft" ) == 0 )
-    {
-        s_current_menu_index = SOFTWARE_MENU;
-        s_ref_list[0].curvalue = s_ref_list[1].curvalue = REF_SOFT;
-    }
+	s_mode_list[SOFTWARE_MENU].curvalue = sw_mode->value;
+	s_current_menu_index = SOFTWARE_MENU;
+    s_ref_list[0].curvalue = s_ref_list[1].curvalue = REF_SOFT;
 
     s_software_menu.x = viddef.width * 0.50;
     s_software_menu.nitems = 0;
 
-    s_screensize_slider.generic.type = MTYPE_SLIDER;
-    s_screensize_slider.generic.x        = 0;
-    s_screensize_slider.generic.y        = 20;
-    s_screensize_slider.generic.name = "screen size";
-    s_screensize_slider.minvalue = 3;
-    s_screensize_slider.maxvalue = 12;
-    s_screensize_slider.generic.callback = ScreenSizeCallback;
+	s_ref_list[SOFTWARE_MENU].generic.type = MTYPE_SPINCONTROL;
+	s_ref_list[SOFTWARE_MENU].generic.name = "driver";
+	s_ref_list[SOFTWARE_MENU].generic.x = 0;
+	s_ref_list[SOFTWARE_MENU].generic.y = 0;
+	s_ref_list[SOFTWARE_MENU].generic.callback = DriverCallback;
+	s_ref_list[SOFTWARE_MENU].itemnames = refs;
+
+    s_mode_list[SOFTWARE_MENU].generic.type = MTYPE_SPINCONTROL;
+    s_mode_list[SOFTWARE_MENU].generic.x        = 0;
+    s_mode_list[SOFTWARE_MENU].generic.y        = 20;
+    s_mode_list[SOFTWARE_MENU].generic.name = "video mode";
+	s_mode_list[SOFTWARE_MENU].generic.callback = RescalerCallback;
+    s_mode_list[SOFTWARE_MENU].itemnames = resolutions;
 
     s_brightness_slider.generic.type = MTYPE_SLIDER;
     s_brightness_slider.generic.x    = 0;
@@ -307,13 +354,6 @@ void    VID_MenuInit (void)
     s_brightness_slider.minvalue = 5;
     s_brightness_slider.maxvalue = 13;
     s_brightness_slider.curvalue = ( 1.3 - vid_gamma->value + 0.5 ) * 10;
-
-    s_fs_box.generic.type = MTYPE_SPINCONTROL;
-    s_fs_box.generic.x   = 0;
-    s_fs_box.generic.y   = 40;
-    s_fs_box.generic.name    = "fullscreen";
-    s_fs_box.itemnames = yesno_names;
-    s_fs_box.curvalue = vid_fullscreen->value;
 
     s_defaults_action.generic.type = MTYPE_ACTION;
     s_defaults_action.generic.name = "reset to defaults";
@@ -342,13 +382,12 @@ void    VID_MenuInit (void)
     s_mipcap_slider.maxvalue = 4;
     s_mipcap_slider.generic.callback = MipcapCallback;
 
-    Menu_AddItem( &s_software_menu, ( void * ) &s_screensize_slider );
+    Menu_AddItem( &s_software_menu, ( void * ) &s_ref_list[SOFTWARE_MENU] );
+	Menu_AddItem( &s_software_menu, ( void * ) &s_mode_list[SOFTWARE_MENU] );
     Menu_AddItem( &s_software_menu, ( void * ) &s_brightness_slider );
-    Menu_AddItem( &s_software_menu, ( void * ) &s_fs_box );
     Menu_AddItem( &s_software_menu, ( void * ) &s_stipple_box );
     Menu_AddItem( &s_software_menu, ( void * ) &s_mipcap_slider );
 
-    Menu_AddItem( &s_software_menu, ( void * ) &s_defaults_action );
     Menu_AddItem( &s_software_menu, ( void * ) &s_cancel_action );
 
     Menu_Center( &s_software_menu );
@@ -389,7 +428,7 @@ const char *VID_MenuKey( int k)
 
     switch ( k )
     {
-    case K_ESCAPE:
+    case K_AUX4:
         ApplyChanges( 0 );
         return NULL;
     case K_KP_UPARROW:
@@ -411,7 +450,7 @@ const char *VID_MenuKey( int k)
         Menu_SlideItem( m, 1 );
         break;
     case K_KP_ENTER:
-    case K_ENTER:
+    case K_AUX1:
         if ( !Menu_SelectItem( m ) )
             ApplyChanges( NULL );
         break;

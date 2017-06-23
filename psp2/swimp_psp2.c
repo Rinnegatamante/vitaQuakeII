@@ -26,6 +26,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 vita2d_texture* tex_buffer;
 uint16_t d_8to16table[256];
 uint32_t start_palette[256];
+float scale_val;
 
 void SWimp_BeginFrame( float camera_separation )
 {
@@ -34,7 +35,7 @@ void SWimp_BeginFrame( float camera_separation )
 void SWimp_EndFrame (void)
 {
 	vita2d_start_drawing();
-	vita2d_draw_texture_scale(tex_buffer, 0, 0, 2.0, 2.0);
+	vita2d_draw_texture_scale(tex_buffer, 0, 0, scale_val, scale_val);
 	vita2d_end_drawing();
 	//vita2d_wait_rendering_done();
 	vita2d_swap_buffers(); 
@@ -75,15 +76,36 @@ void		SWimp_SetPalette( const unsigned char *palette)
 void		SWimp_Shutdown( void )
 {
 	vita2d_free_texture(tex_buffer);
+	tex_buffer = NULL;
 }
+
+extern int vidwidth;
+extern int vidheight;
 
 rserr_t		SWimp_SetMode( int *pwidth, int *pheight, int mode, qboolean fullscreen )
 {
-	vid.height = 272;
-	vid.width = 480;
-	vid.rowbytes = 480;
+	switch (vidheight){
+		case 272:
+			scale_val = 2.0;
+			break;
+		case 362:
+			scale_val = 1.5;
+			break;
+		case 408:
+			scale_val = 1.3333;
+			break;
+		case 544:
+			scale_val = 1.0;
+			break;
+		default:
+			scale_val = 2.0;
+			break;
+	}
+	vid.height = vidheight;
+	vid.width = vidwidth;
+	vid.rowbytes = vidwidth;
 	vita2d_texture_set_alloc_memblock_type(SCE_KERNEL_MEMBLOCK_TYPE_USER_RW);
-	tex_buffer = vita2d_create_empty_texture_format_advanced(480, 272, SCE_GXM_TEXTURE_BASE_FORMAT_P8);
+	tex_buffer = vita2d_create_empty_texture_format_advanced(vidwidth, vidheight, SCE_GXM_TEXTURE_BASE_FORMAT_P8);
 	vid.buffer = vita2d_texture_get_datap(tex_buffer);
 	
 	SWimp_SetPalette((const unsigned char*)start_palette);
