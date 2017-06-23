@@ -63,8 +63,8 @@ keyname_t keynames[] =
 	{"PADRIGHT", K_RIGHTARROW},
 	#else
 	{"TAB", K_TAB},
-	{"START", K_ENTER},
-	{"SELECT", K_ESCAPE},
+	{"SELECT", K_ENTER},
+	{"START", K_ESCAPE},
 	{"SPACE", K_SPACE},
 	{"BACKSPACE", K_BACKSPACE},
 	{"PADUP", K_UPARROW},

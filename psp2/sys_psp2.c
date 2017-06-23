@@ -152,7 +152,7 @@ void Sys_DefaultConfig(void)
 	Cbuf_AddText ("bind LTRIGGER \"+speed\"\n");
 	Cbuf_AddText ("bind RTRIGGER \"+attack\"\n");
 
-	Cbuf_AddText ("bind SELECT \"+showscores\"\n");
+	Cbuf_AddText ("bind SELECT \"score\"\n");
 
 	Cbuf_AddText ("lookstrafe \"1.000000\"\n");
 	Cbuf_AddText ("lookspring \"0.000000\"\n");
@@ -165,9 +165,9 @@ uint16_t input_text[SCE_IME_DIALOG_MAX_TEXT_LENGTH + 1];
 char* targetKeyboard;
 void Sys_SetKeys(uint32_t keys, uint32_t state){
 	if (!isKeyboard){
-		if( keys & SCE_CTRL_SELECT)
-			Key_Event(K_ESCAPE, state, Sys_Milliseconds());
 		if( keys & SCE_CTRL_START)
+			Key_Event(K_ESCAPE, state, Sys_Milliseconds());
+		if( keys & SCE_CTRL_SELECT)
 			Key_Event(K_ENTER, state, Sys_Milliseconds());
 		if( keys & SCE_CTRL_UP)
 			Key_Event(K_UPARROW, state, Sys_Milliseconds());
