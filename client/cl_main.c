@@ -19,6 +19,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 // cl_main.c  -- client main loop
 
+#include <vitasdk.h>
 #include "client.h"
 
 cvar_t	*freelook;
@@ -1474,6 +1475,17 @@ void CL_InitLocal (void)
 	info_password = Cvar_Get ("password", "", CVAR_USERINFO);
 	info_spectator = Cvar_Get ("spectator", "0", CVAR_USERINFO);
 	name = Cvar_Get ("name", "unnamed", CVAR_USERINFO | CVAR_ARCHIVE);
+	
+	// Setting player name to PSN one
+	SceAppUtilInitParam init_param;
+	SceAppUtilBootParam boot_param;
+	memset(&init_param, 0, sizeof(SceAppUtilInitParam));
+	memset(&boot_param, 0, sizeof(SceAppUtilBootParam));
+	sceAppUtilInit(&init_param, &boot_param);
+	char nick[SCE_SYSTEM_PARAM_USERNAME_MAXSIZE];
+	sceAppUtilSystemParamGetString(SCE_SYSTEM_PARAM_ID_USERNAME, nick, SCE_SYSTEM_PARAM_USERNAME_MAXSIZE);
+	Cvar_Set ("name", nick);
+	
 	skin = Cvar_Get ("skin", "male/grunt", CVAR_USERINFO | CVAR_ARCHIVE);
 	rate = Cvar_Get ("rate", "25000", CVAR_USERINFO | CVAR_ARCHIVE);	// FIXME
 	msg = Cvar_Get ("msg", "1", CVAR_USERINFO | CVAR_ARCHIVE);
