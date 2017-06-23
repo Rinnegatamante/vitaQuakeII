@@ -493,7 +493,9 @@ void SCR_RunCinematic (void)
 {
 	
 	// First cinematic is the id logo on startup, we disable console on that occurrance
+	#ifdef RELEASE
 	vita2d_console = 0;
+	#endif
 	
 	int		frame;
 
