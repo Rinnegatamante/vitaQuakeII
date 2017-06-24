@@ -66,9 +66,9 @@ void Cmd_Wait_f (void)
 */
 
 sizebuf_t	cmd_text;
-byte		cmd_text_buf[8192];
+byte		cmd_text_buf[32768];
 
-byte		defer_text_buf[8192];
+byte		defer_text_buf[32768];
 
 /*
 ============
