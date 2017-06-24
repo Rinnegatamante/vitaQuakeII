@@ -139,7 +139,8 @@ void Sys_DefaultConfig(void)
 
 	//Cbuf_AddText("viewsize 80\n");
 	//Cbuf_AddText("sw_mipcap 1\n");
-
+	Cbuf_AddText("unbindall\n");
+	
 	Cbuf_AddText ("bind PADUP \"invuse\"\n");
 	Cbuf_AddText ("bind PADDOWN \"inven\"\n");
 	Cbuf_AddText ("bind PADLEFT \"invprev\"\n");
@@ -152,7 +153,7 @@ void Sys_DefaultConfig(void)
 	Cbuf_AddText ("bind LTRIGGER \"+speed\"\n");
 	Cbuf_AddText ("bind RTRIGGER \"+attack\"\n");
 
-	Cbuf_AddText ("bind SELECT \"score\"\n");
+	Cbuf_AddText ("bind SELECT \"help\"\n");
 
 	Cbuf_AddText ("lookstrafe \"1.000000\"\n");
 	Cbuf_AddText ("lookspring \"0.000000\"\n");
