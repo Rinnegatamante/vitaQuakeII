@@ -1043,13 +1043,20 @@ static menuslider_s		s_options_cstick_slider;
 #ifdef PSP2
 extern cvar_t 	*leftanalog_sensitivity;
 extern cvar_t	*rightanalog_sensitivity;
+cvar_t	*pstv_rumble;
 static menuslider_s		s_options_leftanalog_slider;
 static menuslider_s		s_options_rightanalog_slider;
+static menulist_s		s_options_rumble_box;
 #endif
 
 static void CrosshairFunc( void *unused )
 {
 	Cvar_SetValue( "crosshair", s_options_crosshair_box.curvalue );
+}
+
+static void RumbleFunc( void *unused )
+{
+	Cvar_SetValue( "pstv_rumble", s_options_rumble_box.curvalue );
 }
 
 static void JoystickFunc( void *unused )
@@ -1143,6 +1150,9 @@ static void ControlsSetMenuItemValues( void )
 
 	Cvar_SetValue( "crosshair", ClampCvar( 0, 3, crosshair->value ) );
 	s_options_crosshair_box.curvalue		= crosshair->value;
+	
+	Cvar_SetValue( "pstv_rumble", ClampCvar( 0, 1, pstv_rumble->value ) );
+	s_options_rumble_box.curvalue		= pstv_rumble->value;
 
 	Cvar_SetValue( "in_joystick", ClampCvar( 0, 1, in_joystick->value ) );
 	s_options_joystick_box.curvalue		= in_joystick->value;
@@ -1447,12 +1457,12 @@ void Options_MenuInit( void )
 	s_options_noalttab_box.generic.callback = NoAltTabFunc;
 	s_options_noalttab_box.itemnames = yesno_names;
 */
-	s_options_joystick_box.generic.type = MTYPE_SPINCONTROL;
-	s_options_joystick_box.generic.x	= 0;
-	s_options_joystick_box.generic.y	= 120;
-	s_options_joystick_box.generic.name	= "use joystick";
-	s_options_joystick_box.generic.callback = JoystickFunc;
-	s_options_joystick_box.itemnames = yesno_names;
+	s_options_rumble_box.generic.type = MTYPE_SPINCONTROL;
+	s_options_rumble_box.generic.x	= 0;
+	s_options_rumble_box.generic.y	= 120;
+	s_options_rumble_box.generic.name	= "rumble when hit";
+	s_options_rumble_box.generic.callback = RumbleFunc;
+	s_options_rumble_box.itemnames = yesno_names;
 
 	s_options_customize_options_action.generic.type	= MTYPE_ACTION;
 	s_options_customize_options_action.generic.x		= 0;
@@ -1491,7 +1501,7 @@ void Options_MenuInit( void )
 	Menu_AddItem( &s_options_menu, ( void * ) &s_options_lookstrafe_box );
 	Menu_AddItem( &s_options_menu, ( void * ) &s_options_freelook_box );
 	Menu_AddItem( &s_options_menu, ( void * ) &s_options_crosshair_box );
-	Menu_AddItem( &s_options_menu, ( void * ) &s_options_joystick_box );
+	Menu_AddItem( &s_options_menu, ( void * ) &s_options_rumble_box );
 	Menu_AddItem( &s_options_menu, ( void * ) &s_options_customize_options_action );
 	Menu_AddItem( &s_options_menu, ( void * ) &s_options_defaults_action );
 	Menu_AddItem( &s_options_menu, ( void * ) &s_options_console_action );

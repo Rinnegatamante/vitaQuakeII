@@ -44,6 +44,8 @@ static byte	*membase;
 static int		hunkmaxsize;
 static int		cursize;
 
+extern uint64_t rumble_tick;
+
 void *GetGameAPI (void *import);
 
 vita2d_pgf* fnt;
@@ -291,7 +293,7 @@ int Sys_Milliseconds (void)
 {
 	static uint64_t	base;
 
-	uint64_t time = sceKernelGetProcessTimeWide();
+	uint64_t time = sceKernelGetProcessTimeWide() / 1000;
 	
 	if (!base)
 	{
@@ -300,7 +302,7 @@ int Sys_Milliseconds (void)
 
 	curtime = (int)(time - base);
 	
-	return (curtime / 1000);
+	return curtime;
 }
 
 void Sys_Mkdir (char *path)
@@ -423,7 +425,6 @@ void	Sys_Init (void)
 {
 }
 
-
 //=============================================================================
 int quake_main (unsigned int argc, void* argv){
 	int	time, oldtime, newtime;
@@ -434,6 +435,12 @@ int quake_main (unsigned int argc, void* argv){
 
 	while (1)
 	{
+		
+		// Rumble effect managing (PSTV only)
+		if (rumble_tick != 0) {
+			if (sceKernelGetProcessTimeWide() - rumble_tick > 500000) IN_StopRumble(); // 0.5 sec
+		}
+		
 		do {
 			newtime = Sys_Milliseconds ();
 			time = newtime - oldtime;

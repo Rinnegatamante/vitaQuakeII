@@ -384,6 +384,12 @@ void G_SetStats (edict_t *ent)
 	// health
 	//
 	ent->client->ps.stats[STAT_HEALTH_ICON] = level.pic_health;
+	
+	// Health is downing, triggering a rumble on PSTV
+	if (ent->client->ps.stats[STAT_HEALTH] > ent->health){
+		IN_StartRumble();
+	}
+	
 	ent->client->ps.stats[STAT_HEALTH] = ent->health;
 
 	//

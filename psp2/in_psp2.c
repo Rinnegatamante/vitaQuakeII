@@ -21,12 +21,16 @@ SceCtrlData pad;
 cvar_t *in_joystick;
 cvar_t *leftanalog_sensitivity;
 cvar_t *rightanalog_sensitivity;
+extern cvar_t *pstv_rumble;
+
+uint64_t rumble_tick;
 
 void IN_Init (void)
 {
 	in_joystick	= Cvar_Get ("in_joystick", "1",	CVAR_ARCHIVE);
 	leftanalog_sensitivity = Cvar_Get ("leftanalog_sensitivity", "2.0", CVAR_ARCHIVE);
 	rightanalog_sensitivity = Cvar_Get ("rightanalog_sensitivity", "2.0", CVAR_ARCHIVE);
+	pstv_rumble	= Cvar_Get ("pstv_rumble", "1",	CVAR_ARCHIVE);
 }
 
 void IN_Shutdown (void)
@@ -39,6 +43,25 @@ void IN_Commands (void)
 
 void IN_Frame (void)
 {
+}
+
+void IN_StartRumble (void)
+{
+	if (!pstv_rumble->value) return;
+	SceCtrlActuator handle;
+	handle.small = 100;
+	handle.large = 100;
+	sceCtrlSetActuator(1, &handle);
+	rumble_tick = sceKernelGetProcessTimeWide();
+}
+
+void IN_StopRumble (void)
+{
+	SceCtrlActuator handle;
+	handle.small = 0;
+	handle.large = 0;
+	sceCtrlSetActuator(1, &handle);
+	rumble_tick = 0;
 }
 
 void IN_Move (usercmd_t *cmd)
