@@ -1431,12 +1431,12 @@ void Qcommon_Init (int argc, char **argv)
 	
 	Cbuf_AddText ("exec config.cfg\n");
 	
-	Cbuf_AddText ("set adr0 \"tastyspleen.net:27927\"\n");
-	Cbuf_AddText ("set adr1 \"tastyspleen.net:27920\"\n");
-	Cbuf_AddText ("set adr2 \"q2.playground.ru:27910\"\n");
-	Cbuf_AddText ("set adr3 \"tastyspleen.net:27914\"\n");
-	Cbuf_AddText ("set adr4 \"74.91.125.189:27911\"\n");
-	Cbuf_AddText ("set adr5 \"208.83.20.179:27999\"\n");
+	Cbuf_AddText ("set adr0 \"tastyspleen.net:27927\"\n");  // USA       (Deathmatch)
+	Cbuf_AddText ("set adr1 \"37.153.1.44:27910\"\n");      // Russia    (Deathmatch)
+	Cbuf_AddText ("set adr2 \"92.222.72.180:27910\"\n");    // France    (Deathmatch)
+	Cbuf_AddText ("set adr3 \"46.41.131.56:27910\"\n");     // Poland    (Deathmatch)
+	Cbuf_AddText ("set adr4 \"208.83.20.179:27910\"\n");    // USA       (Deathmatch)
+	Cbuf_AddText ("set adr5 \"60.242.253.213:27935\"\n");   // Australia (Co-Op)
 	
 	Cbuf_AddText ("set allow_download \"1\"\n");
 	Cbuf_AddText ("set allow_download_players \"1\"\n");
