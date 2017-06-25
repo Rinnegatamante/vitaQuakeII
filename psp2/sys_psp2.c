@@ -159,7 +159,8 @@ void Sys_DefaultConfig(void)
 
 	Cbuf_AddText ("lookstrafe \"1.000000\"\n");
 	Cbuf_AddText ("lookspring \"0.000000\"\n");
-	Cbuf_AddText ("gamma \"0.700000\"\n");
+	Cbuf_AddText ("vid_gamma \"0.700000\"\n");
+	
 }
 
 extern menufield_s s_maxclients_field;
@@ -202,8 +203,8 @@ void Sys_SetKeys(uint32_t keys, uint32_t state){
 			if (result.button == SCE_IME_DIALOG_BUTTON_ENTER)
 			{
 				utf2ascii(targetKeyboard, input_text);
-				if (targetKeyboard == s_maxclients_field.buffer){ // Max players == 8
-					if (atoi(targetKeyboard) > 8) sprintf(targetKeyboard, "8");
+				if (targetKeyboard == s_maxclients_field.buffer){ // Max players == 100
+					if (atoi(targetKeyboard) > 100) sprintf(targetKeyboard, "100");
 				}
 			}
 
