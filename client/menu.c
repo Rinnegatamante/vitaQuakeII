@@ -2712,7 +2712,7 @@ void MaxPlayersCallback( void *self )
 	param.languagesForced = SCE_TRUE;
 	param.type = SCE_IME_TYPE_NUMBER;
 	param.title = title;
-	param.maxTextLength = 1;
+	param.maxTextLength = 3;
 	param.initialText = initial_text;
 	param.inputTextBuffer = input_text;
 	sceImeDialogInit(&param);
@@ -3523,6 +3523,30 @@ ADDRESS BOOK MENU
 
 static menuframework_s	s_addressbook_menu;
 static menufield_s		s_addressbook_fields[NUM_ADDRESSBOOK_ENTRIES];
+uint8_t isAddressBook = 0;
+
+void AddressCallback( void *self )
+{
+	isKeyboard = 1;
+	isAddressBook = 1;
+	menufield_s* s = (menufield_s*)self;
+	targetKeyboard = s->buffer;
+	memset(input_text, 0, (SCE_IME_DIALOG_MAX_TEXT_LENGTH + 1) << 1);
+	memset(initial_text, 0, (SCE_IME_DIALOG_MAX_TEXT_LENGTH) << 1);
+	sprintf(title_keyboard, "Insert server address");
+	ascii2utf(title, title_keyboard);
+	ascii2utf(initial_text, s->buffer);
+	SceImeDialogParam param;
+	sceImeDialogParamInit(&param);
+	param.supportedLanguages = 0x0001FFFF;
+	param.languagesForced = SCE_TRUE;
+	param.type = SCE_IME_TYPE_BASIC_LATIN;
+	param.title = title;
+	param.maxTextLength = 128;
+	param.initialText = initial_text;
+	param.inputTextBuffer = input_text;
+	sceImeDialogInit(&param);
+}
 
 void AddressBook_MenuInit( void )
 {
@@ -3543,7 +3567,7 @@ void AddressBook_MenuInit( void )
 
 		s_addressbook_fields[i].generic.type = MTYPE_FIELD;
 		s_addressbook_fields[i].generic.name = 0;
-		s_addressbook_fields[i].generic.callback = 0;
+		s_addressbook_fields[i].generic.callback = AddressCallback;
 		s_addressbook_fields[i].generic.x		= 0;
 		s_addressbook_fields[i].generic.y		= i * 18 + 0;
 		s_addressbook_fields[i].generic.localdata[0] = i;

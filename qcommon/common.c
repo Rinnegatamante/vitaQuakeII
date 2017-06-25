@@ -1427,11 +1427,22 @@ void Qcommon_Init (int argc, char **argv)
 
 	Cbuf_AddText ("exec default.cfg\n");
 
-	//#ifdef _3DS
 	Sys_DefaultConfig();
-	//#endif
 	
 	Cbuf_AddText ("exec config.cfg\n");
+	
+	Cbuf_AddText ("set adr0 \"tastyspleen.net:27927\"\n");
+	Cbuf_AddText ("set adr1 \"tastyspleen.net:27920\"\n");
+	Cbuf_AddText ("set adr2 \"q2.playground.ru:27910\"\n");
+	Cbuf_AddText ("set adr3 \"tastyspleen.net:27914\"\n");
+	Cbuf_AddText ("set adr4 \"74.91.125.189:27911\"\n");
+	Cbuf_AddText ("set adr5 \"208.83.20.179:27999\"\n");
+	
+	Cbuf_AddText ("set allow_download \"1\"\n");
+	Cbuf_AddText ("set allow_download_players \"1\"\n");
+	Cbuf_AddText ("set allow_download_models \"1\"\n");
+	Cbuf_AddText ("set allow_download_sounds \"1\"\n");
+	Cbuf_AddText ("set allow_download_maps \"1\"\n");
 
 	Cbuf_AddEarlyCommands (true);
 	Cbuf_Execute ();
