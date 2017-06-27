@@ -86,30 +86,20 @@ void IN_Move (usercmd_t *cmd)
 		}
 		old_touch = touch;
 	}*/
+	
+	// Left analog support for player movement
+	int x_mov = abs(left_x) < 30 ? 0 : (left_x * cl_sidespeed->value) * 0.01;
+	int y_mov = abs(left_y) < 30 ? 0 : (left_y * cl_forwardspeed->value) * 0.01;
+	cmd->forwardmove -= y_mov;
+	cmd->sidemove += x_mov;
+	
+	// Right analog support for camera movement
+	int x_cam = abs(right_x) < 50 ? 0 : right_x * rightanalog_sensitivity->value * 0.008;
+	int y_cam = abs(right_y) < 50 ? 0 : right_y * rightanalog_sensitivity->value * 0.008;
+	cl.viewangles[YAW] -= x_cam;
+	if (m_pitch->value > 0) cl.viewangles[PITCH] += y_cam;
+	else cl.viewangles[PITCH] -= y_cam;
 
-	if(abs(left_y) > 30)
-	{
-		float y_value = left_y - 15;
-		cmd->forwardmove -= (y_value * leftanalog_sensitivity->value) * m_forward->value;
-	}
-
-	if(abs(left_x) > 30)
-	{
-		float x_value = left_x - 15;
-		if((in_strafe.state & 1) || (lookstrafe->value))
-			cmd->sidemove += (x_value * leftanalog_sensitivity->value) * m_forward->value;
-		else
-			cl.viewangles[YAW] -= m_side->value * x_value * 0.025f;
-	}
-
-	if(m_pitch->value < 0)
-		right_y = -right_y;
-
-	right_x = abs(right_x) < 10 ? 0 : right_x * 0.01 * rightanalog_sensitivity->value;
-	right_y = abs(right_y) < 10 ? 0 : (-right_y) * 0.01 * rightanalog_sensitivity->value;
-
-	cl.viewangles[YAW] -= right_x;
-	cl.viewangles[PITCH] -= right_y;
 }
 
 void IN_Activate (qboolean active)
