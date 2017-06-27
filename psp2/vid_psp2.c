@@ -21,6 +21,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #include "../client/client.h"
 #include "../client/qmenu.h"
+extern viddef_t vid;
 
 #define REF_SOFT    0
 #define REF_OPENGL  1
@@ -111,7 +112,6 @@ void VID_NewWindow (int width, int height)
 {
         viddef.width = width;
         viddef.height = height;
-        printf("VID_NewWindow %d %\n",width,height);
 }
 
 /*
@@ -173,11 +173,6 @@ static void RescalerCallback( void *unused )
 			vidheight = 272;
 			break;
 	}
-	VID_Shutdown();
-	VID_Init();
-	s_software_menu.x = vidwidth * 0.50;
-	Menu_Center( &s_software_menu );
-	s_software_menu.x -= 8;
 }
 
 static void ScreenSizeCallback( void *s )
@@ -223,7 +218,7 @@ static void ApplyChanges( void *unused )
     Cvar_SetValue( "sw_stipplealpha", s_stipple_box.curvalue );
     Cvar_SetValue( "vid_fullscreen", s_fs_box.curvalue );
     Cvar_SetValue( "sw_mode", s_mode_list[SOFTWARE_MENU].curvalue );
-
+	
     Cvar_Set( "vid_ref", "soft" );
 
     M_ForceMenuOff();
@@ -429,7 +424,7 @@ const char *VID_MenuKey( int k)
     switch ( k )
     {
     case K_AUX4:
-        ApplyChanges( 0 );
+        ApplyChanges( NULL );
         return NULL;
     case K_KP_UPARROW:
     case K_UPARROW:

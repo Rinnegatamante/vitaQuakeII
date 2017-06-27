@@ -114,6 +114,10 @@ rserr_t		SWimp_SetMode( int *pwidth, int *pheight, int mode, qboolean fullscreen
 	
 	SWimp_SetPalette((const unsigned char*)start_palette);
 	
+	*pwidth = vidwidth;
+	*pheight = vidheight;
+	VID_NewWindow(vidwidth,vidheight);
+	
 	return rserr_ok;
 }
 
