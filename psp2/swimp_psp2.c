@@ -39,7 +39,6 @@ void SWimp_EndFrame (void)
 	vita2d_draw_texture_scale(tex_buffer, 0, 0, scale_val, scale_val);
 	vita2d_end_drawing();
 	if (isKeyboard) vita2d_common_dialog_update();
-	//vita2d_wait_rendering_done();
 	vita2d_swap_buffers(); 
 }
 
@@ -77,6 +76,7 @@ void		SWimp_SetPalette( const unsigned char *palette)
 
 void		SWimp_Shutdown( void )
 {
+	vita2d_wait_rendering_done();
 	vita2d_free_texture(tex_buffer);
 	tex_buffer = NULL;
 }
@@ -86,6 +86,8 @@ extern int vidheight;
 
 rserr_t		SWimp_SetMode( int *pwidth, int *pheight, int mode, qboolean fullscreen )
 {
+	if (tex_buffer != NULL) SWimp_Shutdown();
+	
 	switch (vidheight){
 		case 272:
 			scale_val = 2.0;
