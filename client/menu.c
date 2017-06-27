@@ -1385,18 +1385,18 @@ void Options_MenuInit( void )
 	s_options_rightanalog_slider.generic.type	= MTYPE_SLIDER;
 	s_options_rightanalog_slider.generic.x		= 0;
 	s_options_rightanalog_slider.generic.y		= 40;
-	s_options_rightanalog_slider.generic.name	= "right analog speed";
-	s_options_rightanalog_slider.generic.callback = LeftAnalogSpeedFunc;
-	s_options_rightanalog_slider.minvalue		= 1;
-	s_options_rightanalog_slider.maxvalue		= 10;
+	s_options_rightanalog_slider.generic.name	= "camera sensitivity";
+	s_options_rightanalog_slider.generic.callback = RightAnalogSpeedFunc;
+	s_options_rightanalog_slider.minvalue		= 2;
+	s_options_rightanalog_slider.maxvalue		= 22;
 
-	s_options_sensitivity_slider.generic.type	= MTYPE_SLIDER;
+	/*s_options_sensitivity_slider.generic.type	= MTYPE_SLIDER;
 	s_options_sensitivity_slider.generic.x		= 0;
 	s_options_sensitivity_slider.generic.y		= 50;
 	s_options_sensitivity_slider.generic.name	= "look speed";
 	s_options_sensitivity_slider.generic.callback = RightAnalogSpeedFunc;
 	s_options_sensitivity_slider.minvalue		= 2;
-	s_options_sensitivity_slider.maxvalue		= 22;
+	s_options_sensitivity_slider.maxvalue		= 22;*/
 		#else
 	s_options_sensitivity_slider.generic.type	= MTYPE_SLIDER;
 	s_options_sensitivity_slider.generic.x		= 0;
@@ -1418,11 +1418,11 @@ void Options_MenuInit( void )
 	s_options_invertmouse_box.generic.type = MTYPE_SPINCONTROL;
 	s_options_invertmouse_box.generic.x	= 0;
 	s_options_invertmouse_box.generic.y	= 70;
-	s_options_invertmouse_box.generic.name	= "invert mouse";
+	s_options_invertmouse_box.generic.name	= "invert camera";
 	s_options_invertmouse_box.generic.callback = InvertMouseFunc;
 	s_options_invertmouse_box.itemnames = yesno_names;
 
-	s_options_lookspring_box.generic.type = MTYPE_SPINCONTROL;
+	/*s_options_lookspring_box.generic.type = MTYPE_SPINCONTROL;
 	s_options_lookspring_box.generic.x	= 0;
 	s_options_lookspring_box.generic.y	= 80;
 	s_options_lookspring_box.generic.name	= "lookspring";
@@ -1441,7 +1441,7 @@ void Options_MenuInit( void )
 	s_options_freelook_box.generic.y	= 100;
 	s_options_freelook_box.generic.name	= "free look";
 	s_options_freelook_box.generic.callback = FreeLookFunc;
-	s_options_freelook_box.itemnames = yesno_names;
+	s_options_freelook_box.itemnames = yesno_names;*/
 
 	s_options_crosshair_box.generic.type = MTYPE_SPINCONTROL;
 	s_options_crosshair_box.generic.x	= 0;
@@ -1491,15 +1491,15 @@ void Options_MenuInit( void )
 	Menu_AddItem( &s_options_menu, ( void * ) &s_options_compatibility_list );
 	#else*/
 	Menu_AddItem( &s_options_menu, ( void * ) &s_options_cdvolume_slider );
-	Menu_AddItem( &s_options_menu, ( void * ) &s_options_leftanalog_slider );
+	//Menu_AddItem( &s_options_menu, ( void * ) &s_options_leftanalog_slider );
 	Menu_AddItem( &s_options_menu, ( void * ) &s_options_rightanalog_slider );
 	//#endif
-	Menu_AddItem( &s_options_menu, ( void * ) &s_options_sensitivity_slider );
+	//Menu_AddItem( &s_options_menu, ( void * ) &s_options_sensitivity_slider );
 	Menu_AddItem( &s_options_menu, ( void * ) &s_options_alwaysrun_box );
 	Menu_AddItem( &s_options_menu, ( void * ) &s_options_invertmouse_box );
-	Menu_AddItem( &s_options_menu, ( void * ) &s_options_lookspring_box );
+	/*Menu_AddItem( &s_options_menu, ( void * ) &s_options_lookspring_box );
 	Menu_AddItem( &s_options_menu, ( void * ) &s_options_lookstrafe_box );
-	Menu_AddItem( &s_options_menu, ( void * ) &s_options_freelook_box );
+	Menu_AddItem( &s_options_menu, ( void * ) &s_options_freelook_box );*/
 	Menu_AddItem( &s_options_menu, ( void * ) &s_options_crosshair_box );
 	Menu_AddItem( &s_options_menu, ( void * ) &s_options_rumble_box );
 	Menu_AddItem( &s_options_menu, ( void * ) &s_options_customize_options_action );
@@ -3523,12 +3523,10 @@ ADDRESS BOOK MENU
 
 static menuframework_s	s_addressbook_menu;
 static menufield_s		s_addressbook_fields[NUM_ADDRESSBOOK_ENTRIES];
-uint8_t isAddressBook = 0;
 
 void AddressCallback( void *self )
 {
 	isKeyboard = 1;
-	isAddressBook = 1;
 	menufield_s* s = (menufield_s*)self;
 	targetKeyboard = s->buffer;
 	memset(input_text, 0, (SCE_IME_DIALOG_MAX_TEXT_LENGTH + 1) << 1);
