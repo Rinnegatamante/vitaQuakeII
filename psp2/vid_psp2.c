@@ -37,11 +37,10 @@ cvar_t *scr_viewsize;
 static cvar_t *sw_mode;
 static cvar_t *sw_stipplealpha;
 
-extern cvar_t   *sw_mipcap;
 extern void M_ForceMenuOff( void );
 
-int vidwidth = 480;
-int vidheight = 272;
+int vidwidth = 960;
+int vidheight = 544;
 
 #define SOFTWARE_MENU 0
 #define OPENGL_MENU   1
@@ -318,7 +317,7 @@ void    VID_MenuInit (void)
 
     s_screensize_slider.curvalue = scr_viewsize->value/10;
 
-    s_mipcap_slider.curvalue = sw_mipcap->value;
+    //s_mipcap_slider.curvalue = sw_mipcap->value;
 
 	s_mode_list[SOFTWARE_MENU].curvalue = sw_mode->value;
 	s_current_menu_index = SOFTWARE_MENU;
