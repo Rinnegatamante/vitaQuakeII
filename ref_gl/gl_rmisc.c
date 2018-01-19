@@ -206,6 +206,10 @@ void GL_SetDefaultState( void )
 	GL_TexEnv( GL_REPLACE );
 
 	GL_UpdateSwapInterval();
+	
+	glEnableClientState(GL_TEXTURE_COORD_ARRAY);
+	glEnableClientState(GL_VERTEX_ARRAY);
+	
 }
 
 void GL_UpdateSwapInterval( void )
