@@ -144,7 +144,7 @@ OBJS     := $(addsuffix .o,$(BINFILES)) $(CFILES:.c=.o) $(CPPFILES:.cpp=.o)
 PREFIX  = arm-vita-eabi
 CC      = $(PREFIX)-gcc
 CXX      = $(PREFIX)-g++
-CFLAGS  = -fno-lto -w -g -Wl,-q -O2 -DREF_HARD_LINKED -DGAME_HARD_LINKED -DPSP2 \
+CFLAGS  = -fno-lto -g -Wl,-q -O2 -DREF_HARD_LINKED -DGAME_HARD_LINKED -DPSP2 \
 		-DHAVE_OGGVORBIS -DHAVE_MPG123 -DHAVE_LIBSPEEXDSP -DUSE_AUDIO_RESAMPLER \
 		-DRELEASE
 

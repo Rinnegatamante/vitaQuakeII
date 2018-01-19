@@ -31,7 +31,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "errno.h"
 
 #include <vitasdk.h>
-#include <vita2d.h>
+#include <vitaGL.h>
 
 int _newlib_heap_size_user = 192 * 1024 * 1024;
 int	curtime;
