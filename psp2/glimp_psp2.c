@@ -65,6 +65,8 @@ int GLimp_SetMode( int *pwidth, int *pheight, int mode, qboolean fullscreen )
 	*pheight = height;
 	ri.Vid_NewWindow (width, height);
 	
+	GLimp_InitGL();
+	
 	return rserr_ok;
 }
 
