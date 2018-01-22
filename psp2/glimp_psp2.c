@@ -39,6 +39,7 @@ qboolean GLimp_InitGL (void);
 
 extern cvar_t *vid_fullscreen;
 extern cvar_t *vid_ref;
+qboolean gl_set = false;
 
 /*
 ** GLimp_SetMode
@@ -65,7 +66,7 @@ int GLimp_SetMode( int *pwidth, int *pheight, int mode, qboolean fullscreen )
 	*pheight = height;
 	ri.Vid_NewWindow (width, height);
 	
-	GLimp_InitGL();
+	if (!gl_set) GLimp_InitGL();
 	
 	return rserr_ok;
 }
@@ -111,6 +112,7 @@ qboolean GLimp_InitGL (void)
 	gVertexBuffer = (float*)malloc(sizeof(float)*VERTEXARRAYSIZE);
 	gColorBuffer = (float*)malloc(sizeof(float)*VERTEXARRAYSIZE);
 	gTexCoordBuffer = (float*)malloc(sizeof(float)*VERTEXARRAYSIZE);
+	gl_set = true;
 	return true;
 }
 

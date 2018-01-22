@@ -444,7 +444,7 @@ void R_RenderBrushPoly (msurface_t *fa)
 		glColor4f( gl_state.inverse_intensity, 
 			        gl_state.inverse_intensity,
 					gl_state.inverse_intensity,
-					1.0F );
+					1.0f );
 		EmitWaterPolys (fa);
 		GL_TexEnv( GL_REPLACE );
 

@@ -50,7 +50,8 @@ void R_RenderDlight (dlight_t *light)
 	glDisableClientState(GL_TEXTURE_COORD_ARRAY);
 	float* pPos = gVertexBuffer;
 	float* pColor = gColorBuffer;
-
+	
+	glColor4f(light->color[0]*0.2, light->color[1]*0.2, light->color[2]*0.2, 1.0f);
 	*pColor++ = light->color[0]*0.2;
 	*pColor++ = light->color[1]*0.2;
 	*pColor++ = light->color[2]*0.2;
@@ -59,7 +60,7 @@ void R_RenderDlight (dlight_t *light)
 	for (i=0 ; i<3 ; i++)
 		*pPos++ = light->origin[i] - vpn[i]*rad;
 	
-	
+	glColor4f(0,0,0,1);
 	for (i=16 ; i>=0 ; i--)
 	{
 		a = i/16.0 * M_PI*2;
