@@ -57,21 +57,16 @@ void R_RenderDlight (dlight_t *light)
 	*pColor++ = 1.0f;
 	
 	for (i=0 ; i<3 ; i++)
-		v[i] = light->origin[i] - vpn[i]*rad;
+		*pPos++ = light->origin[i] - vpn[i]*rad;
 	
-	*pPos++ = v[0];
-	*pPos++ = v[1];
-	*pPos++ = v[2];
 	
 	for (i=16 ; i>=0 ; i--)
 	{
 		a = i/16.0 * M_PI*2;
 		for (j=0 ; j<3 ; j++)
-			v[j] = light->origin[j] + vright[j]*cos(a)*rad
+			*pPos++ = light->origin[j] + vright[j]*cos(a)*rad
 				+ vup[j]*sin(a)*rad;
-		*pPos++ = v[0];
-		*pPos++ = v[1];
-		*pPos++ = v[2];
+
 		*pColor++ = 0.0f;
 		*pColor++ = 0.0f;
 		*pColor++ = 0.0f;

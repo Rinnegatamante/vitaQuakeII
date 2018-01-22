@@ -152,194 +152,86 @@ void GL_DrawAliasFrameLerp (dmdl_t *paliashdr, float backlerp)
 	lerp = s_lerped[0];
 
 	GL_LerpVerts( paliashdr->num_xyz, v, ov, verts, lerp, move, frontv, backv );
-
-	if ( gl_vertex_arrays->value )
+		
+	int prim;
+	float* pColor;
+	float* pTexCoord;
+	float* pPos;
+	while (1)
 	{
-		float colorArray[MAX_VERTS*4];
-
-//		if ( currententity->flags & ( RF_SHELL_RED | RF_SHELL_GREEN | RF_SHELL_BLUE ) )
-		// PMM - added double damage shell
-		if ( currententity->flags & ( RF_SHELL_RED | RF_SHELL_GREEN | RF_SHELL_BLUE | RF_SHELL_DOUBLE | RF_SHELL_HALF_DAM) )
+		// get the vertex count and primitive type
+		count = *order++;
+		if (!count)
+			break;		// done
+		if (count < 0)
 		{
-			glColor4f( shadelight[0], shadelight[1], shadelight[2], alpha );
+			count = -count;
+			prim = GL_TRIANGLE_FAN;
 		}
 		else
 		{
-
-			//
-			// pre light everything
-			//
-			for ( i = 0; i < paliashdr->num_xyz; i++ )
-			{
-				float l = shadedots[verts[i].lightnormalindex];
-
-				colorArray[i*3+0] = l * shadelight[0];
-				colorArray[i*3+1] = l * shadelight[1];
-				colorArray[i*3+2] = l * shadelight[2];
-			}
+			prim = GL_TRIANGLE_STRIP;
 		}
-		
-		int prim;
-		float* pColor;
-		float* pTexCoord;
-		float* pPos;
-		while (1)
+
+		int c = count;
+		pColor = gColorBuffer;
+		pPos = gVertexBuffer;
+		pTexCoord = gTexCoordBuffer;
+			
+		if ( currententity->flags & ( RF_SHELL_RED | RF_SHELL_GREEN | RF_SHELL_BLUE ) )
 		{
-			// get the vertex count and primitive type
-			count = *order++;
-			if (!count)
-				break;		// done
-			if (count < 0)
+			do
 			{
-				count = -count;
-				prim = GL_TRIANGLE_FAN;
-			}
-			else
+				index_xyz = order[2];
+				order += 3;
+				
+				*pPos++ = s_lerped[index_xyz][0];
+				*pPos++ = s_lerped[index_xyz][1];
+				*pPos++ = s_lerped[index_xyz][2];
+				*pColor++ = shadelight[0];
+				*pColor++ = shadelight[1];
+				*pColor++ = shadelight[2];
+				*pColor++ = alpha;
+					
+			} while (--count);
+			glDisableClientState(GL_TEXTURE_COORD_ARRAY);
+			glEnableClientState(GL_COLOR_ARRAY);
+			vglVertexPointer(3, GL_FLOAT, 0, c, gVertexBuffer);
+			vglColorPointer(4, GL_FLOAT, 0, c, gColorBuffer);
+			vglDrawObjects(prim, c, GL_TRUE);
+			glDisableClientState(GL_COLOR_ARRAY);
+			glEnableClientState(GL_TEXTURE_COORD_ARRAY);
+		}
+		else
+		{
+			do
 			{
-				prim = GL_TRIANGLE_STRIP;
-			}
-			
-			int c = count;
-			pColor = gColorBuffer;
-			pPos = gVertexBuffer;
-			pTexCoord = gTexCoordBuffer;
-			
-			// PMM - added double damage shell
-			if ( currententity->flags & ( RF_SHELL_RED | RF_SHELL_GREEN | RF_SHELL_BLUE | RF_SHELL_DOUBLE | RF_SHELL_HALF_DAM) )
-			{
-				do
-				{
-					index_xyz = order[2];
-					order += 3;
-
-					*pPos++ = s_lerped[index_xyz][0];
-					*pPos++ = s_lerped[index_xyz][1];
-					*pPos++ = s_lerped[index_xyz][2];
-
-				} while (--count);
-				glDisableClientState(GL_TEXTURE_COORD_ARRAY);
-				vglVertexPointer(3, GL_FLOAT, 0, c, gVertexBuffer);
-				vglDrawObjects(prim, c, GL_TRUE);
-				glEnableClientState(GL_TEXTURE_COORD_ARRAY);
-			}
-			else
-			{
-				do
-				{
-					// texture coordinates come from the draw list
-					*pTexCoord++ = ((float *)order)[0];
-					*pTexCoord++ = ((float *)order)[1];
-					index_xyz = order[2];
-
-					order += 3;
+				// texture coordinates come from the draw list
+				*pTexCoord++ = ((float *)order)[0];
+				*pTexCoord++ = ((float *)order)[1];
+				index_xyz = order[2];
+				order += 3;
 
 					// normals and vertexes come from the frame list
-//					l = shadedots[verts[index_xyz].lightnormalindex];
-					
-//					qglColor4f (l* shadelight[0], l*shadelight[1], l*shadelight[2], alpha);
-					*pPos++ = s_lerped[index_xyz][0];
-					*pPos++ = s_lerped[index_xyz][1];
-					*pPos++ = s_lerped[index_xyz][2];
-					*pColor++ = colorArray[index_xyz];
-					*pColor++ = colorArray[index_xyz+0];
-					*pColor++ = colorArray[index_xyz+1];
-					*pColor++ = 1.0f;
-
-				} while (--count);
-				glEnableClientState(GL_COLOR_ARRAY);
-				vglVertexPointer(3, GL_FLOAT, 0, c, gVertexBuffer);
-				vglTexCoordPointer(2, GL_FLOAT, 0, c, gTexCoordBuffer);
-				vglColorPointer(4, GL_FLOAT, 0, c, gColorBuffer);
-				vglDrawObjects(prim, c, GL_TRUE);
-				glDisableClientState(GL_COLOR_ARRAY);
-			}
+				l = shadedots[verts[index_xyz].lightnormalindex];
+				
+				*pPos++ = s_lerped[index_xyz][0];
+				*pPos++ = s_lerped[index_xyz][1];
+				*pPos++ = s_lerped[index_xyz][2];
+				*pColor++ = l*shadelight[0];
+				*pColor++ = l*shadelight[1];
+				*pColor++ = l*shadelight[2];
+				*pColor++ = alpha;
+				
+			} while (--count);
+			glEnableClientState(GL_COLOR_ARRAY);
+			vglVertexPointer(3, GL_FLOAT, 0, c, gVertexBuffer);
+			vglTexCoordPointer(2, GL_FLOAT, 0, c, gTexCoordBuffer);
+			vglColorPointer(4, GL_FLOAT, 0, c, gColorBuffer);
+			vglDrawObjects(prim, c, GL_TRUE);
+			glDisableClientState(GL_COLOR_ARRAY);
 		}
 
-	}
-	else
-	{
-		
-		int prim;
-		float* pColor;
-		float* pTexCoord;
-		float* pPos;
-		while (1)
-		{
-			// get the vertex count and primitive type
-			count = *order++;
-			if (!count)
-				break;		// done
-			if (count < 0)
-			{
-				count = -count;
-				prim = GL_TRIANGLE_FAN;
-			}
-			else
-			{
-				prim = GL_TRIANGLE_STRIP;
-			}
-
-			int c = count;
-			pColor = gColorBuffer;
-			pPos = gVertexBuffer;
-			pTexCoord = gTexCoordBuffer;
-			
-			if ( currententity->flags & ( RF_SHELL_RED | RF_SHELL_GREEN | RF_SHELL_BLUE ) )
-			{
-				do
-				{
-					index_xyz = order[2];
-					order += 3;
-					
-					*pPos++ = s_lerped[index_xyz][0];
-					*pPos++ = s_lerped[index_xyz][1];
-					*pPos++ = s_lerped[index_xyz][2];
-					*pColor++ = shadelight[0];
-					*pColor++ = shadelight[1];
-					*pColor++ = shadelight[2];
-					*pColor++ = alpha;
-					
-
-				} while (--count);
-				glDisableClientState(GL_TEXTURE_COORD_ARRAY);
-				glEnableClientState(GL_COLOR_ARRAY);
-				vglVertexPointer(3, GL_FLOAT, 0, c, gVertexBuffer);
-				vglColorPointer(4, GL_FLOAT, 0, c, gColorBuffer);
-				vglDrawObjects(prim, c, GL_TRUE);
-				glDisableClientState(GL_COLOR_ARRAY);
-				glEnableClientState(GL_TEXTURE_COORD_ARRAY);
-			}
-			else
-			{
-				do
-				{
-					// texture coordinates come from the draw list
-					*pTexCoord++ = ((float *)order)[0];
-					*pTexCoord++ = ((float *)order)[1];
-					index_xyz = order[2];
-					order += 3;
-
-					// normals and vertexes come from the frame list
-					l = shadedots[verts[index_xyz].lightnormalindex];
-					
-					*pPos++ = s_lerped[index_xyz][0];
-					*pPos++ = s_lerped[index_xyz][1];
-					*pPos++ = s_lerped[index_xyz][2];
-					*pColor++ = l*shadelight[0];
-					*pColor++ = l*shadelight[1];
-					*pColor++ = l*shadelight[2];
-					*pColor++ = alpha;
-					
-				} while (--count);
-				glEnableClientState(GL_COLOR_ARRAY);
-				vglVertexPointer(3, GL_FLOAT, 0, c, gVertexBuffer);
-				vglTexCoordPointer(2, GL_FLOAT, 0, c, gTexCoordBuffer);
-				vglColorPointer(4, GL_FLOAT, 0, c, gColorBuffer);
-				vglDrawObjects(prim, c, GL_TRUE);
-				glDisableClientState(GL_COLOR_ARRAY);
-			}
-
-		}
 	}
 
 //	if ( currententity->flags & ( RF_SHELL_RED | RF_SHELL_GREEN | RF_SHELL_BLUE ) )
