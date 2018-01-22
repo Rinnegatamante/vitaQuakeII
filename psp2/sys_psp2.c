@@ -51,6 +51,7 @@ void *GetGameAPI (void *import);
 
 int y = 20;
 void vita2d_printf(const char *format, ...){
+	#ifndef RELEASE
 	__gnuc_va_list arg;
 	int done;
 	va_start(arg, format);
@@ -64,6 +65,7 @@ void vita2d_printf(const char *format, ...){
 		fwrite(msg, 1, strlen(msg), log);
 		fclose(log);
 	}
+	#endif
 }
 
 void Sys_Error (char *error, ...)
