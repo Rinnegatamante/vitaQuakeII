@@ -52,6 +52,15 @@ void DrawQuad(float x, float y, float w, float h, float u, float v, float uw, fl
   vglDrawObjects(GL_TRIANGLE_FAN, 4, GL_TRUE);
 }
 
+void DrawPic(float x, float y, float w, float h, float u, float v, float u2, float v2)
+{
+  float texcoord[2*4] = {u, v, u2, v, u2, v2, u, v2};
+  float vertex[3*4] = {x,y,0.5f,x+w,y,0.5f, x+w, y+h,0.5f, x, y+h,0.5f};
+  vglVertexPointer(3, GL_FLOAT, 0, 4, vertex);
+  vglTexCoordPointer(2, GL_FLOAT, 0, 4, texcoord);
+  vglDrawObjects(GL_TRIANGLE_FAN, 4, GL_TRUE);
+}
+
 void DrawQuad_NoTex(float x, float y, float w, float h, float r, float g, float b, float a)
 {
   float vertex[3*4] = {x,y,0.5f,x+w,y,0.5f, x+w, y+h,0.5f, x, y+h,0.5f};
@@ -160,7 +169,7 @@ void Draw_StretchPic (int x, int y, int w, int h, char *pic)
 		glDisable(GL_ALPHA_TEST);
 
 	GL_Bind (gl->texnum);
-	DrawQuad(x, y, w, h, gl->sl, gl->tl, gl->sh, gl->th);
+	DrawPic(x, y, w, h, gl->sl, gl->tl, gl->sh, gl->th);
 
 	if ( ( ( gl_config.renderer == GL_RENDERER_MCD ) || ( gl_config.renderer & GL_RENDERER_RENDITION ) ) && !gl->has_alpha)
 		glEnable(GL_ALPHA_TEST);
@@ -189,7 +198,7 @@ void Draw_Pic (int x, int y, char *pic)
 		glDisable(GL_ALPHA_TEST);
 
 	GL_Bind (gl->texnum);
-	DrawQuad(x, y, gl->width, gl->height, gl->sl, gl->tl, gl->sh, gl->th);
+	DrawPic(x, y, gl->width, gl->height, gl->sl, gl->tl, gl->sh, gl->th);
 
 	if ( ( ( gl_config.renderer == GL_RENDERER_MCD ) || ( gl_config.renderer & GL_RENDERER_RENDITION ) )  && !gl->has_alpha)
 		glEnable(GL_ALPHA_TEST);
@@ -219,7 +228,7 @@ void Draw_TileClear (int x, int y, int w, int h, char *pic)
 
 	
 	GL_Bind (image->texnum);
-	DrawQuad(x, y, w, h, x/64.0, y/64.0, (x+w)/64.0, (y+h)/64.0);
+	DrawQuad(x, y, w, h, x/64.0, y/64.0, w/64.0, h/64.0);
 
 	if ( ( ( gl_config.renderer == GL_RENDERER_MCD ) || ( gl_config.renderer & GL_RENDERER_RENDITION ) )  && !image->has_alpha)
 		glEnable(GL_ALPHA_TEST);
@@ -334,7 +343,7 @@ void Draw_StretchRaw (int x, int y, int w, int h, int cols, int rows, byte *data
 	if ( ( gl_config.renderer == GL_RENDERER_MCD ) || ( gl_config.renderer & GL_RENDERER_RENDITION ) ) 
 		glDisable(GL_ALPHA_TEST);
 
-	DrawQuad(x, y, w, h, 0, 0, 1, t);
+	DrawPic(x, y, w, h, 0, 0, 1, t);
 
 	if ( ( gl_config.renderer == GL_RENDERER_MCD ) || ( gl_config.renderer & GL_RENDERER_RENDITION ) ) 
 		glEnable(GL_ALPHA_TEST);
