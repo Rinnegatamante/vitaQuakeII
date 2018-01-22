@@ -395,14 +395,11 @@ pack_t *FS_LoadPackFile (char *packfile)
 	int				numpackfiles;
 	pack_t			*pack;
 	FILE			*packhandle;
-	dpackfile_t*		info;
+	dpackfile_t	info[MAX_FILES_IN_PACK];
 	unsigned		checksum;
-	
-	info = (dpackfile_t*)malloc(sizeof(dpackfile_t)*MAX_FILES_IN_PACK);
 	
 	packhandle = fopen(packfile, "rb");
 	if (!packhandle){
-		free(info);
 		return NULL;
 	}
 	
@@ -440,7 +437,6 @@ pack_t *FS_LoadPackFile (char *packfile)
 	pack->files = newfiles;
 	
 	Com_Printf ("Added packfile %s (%i files)\n", packfile, numpackfiles);
-	free(info);
 	return pack;
 }
 
@@ -458,9 +454,8 @@ void FS_AddGameDirectory (char *dir)
 	int				i;
 	searchpath_t	*search;
 	pack_t			*pak;
-	char*			pakfile;
+	char			pakfile[MAX_OSPATH];
 	
-	pakfile = (char*)malloc(MAX_OSPATH);
 	strcpy (fs_gamedir, dir);
 
 	//
@@ -476,7 +471,7 @@ void FS_AddGameDirectory (char *dir)
 	//
 	for (i=0; i<10; i++)
 	{
-		Com_sprintf (pakfile, MAX_OSPATH, "%s/pak%i.pak", dir, i);
+		Com_sprintf (pakfile, sizeof(pakfile), "%s/pak%i.pak", dir, i);
 		pak = FS_LoadPackFile (pakfile);
 		if (!pak)
 			continue;
@@ -485,8 +480,6 @@ void FS_AddGameDirectory (char *dir)
 		search->next = fs_searchpaths;
 		fs_searchpaths = search;		
 	}
-
-	free(pakfile);
 }
 
 /*
@@ -659,9 +652,6 @@ char **FS_ListFiles( char *findname, int *numfiles, unsigned musthave, unsigned 
 		if ( s[strlen(s)-1] != '.' )
 		{
 			list[nfiles] = strdup( s );
-#ifdef _WIN32
-			strlwr( list[nfiles] );
-#endif
 			nfiles++;
 		}
 		s = Sys_FindNext( musthave, canthave );
