@@ -48,9 +48,9 @@ int			c_brush_polys, c_alias_polys;
 
 float		v_blend[4];			// final blending color
 
-float gVertexBuffer[VERTEXARRAYSIZE];
-float gColorBuffer[VERTEXARRAYSIZE];
-float gTexCoordBuffer[VERTEXARRAYSIZE];
+float* gVertexBuffer;
+float* gColorBuffer;
+float* gTexCoordBuffer;
 
 void GL_Strings_f( void );
 
@@ -1022,7 +1022,7 @@ qboolean R_SetMode (void)
 	vid_fullscreen->modified = false;
 	gl_mode->modified = false;
 
-	if ( ( err = GLimp_SetMode( &vid.width, &vid.height, gl_mode->value, fullscreen ) ) == 0 )
+	if ( ( err = GLimp_SetMode( &vid.width, &vid.height, gl_mode->value, fullscreen ) ) == rserr_ok )
 	{
 		gl_state.prev_mode = gl_mode->value;
 	}
@@ -1033,7 +1033,7 @@ qboolean R_SetMode (void)
 			ri.Cvar_SetValue( "vid_fullscreen", 0);
 			vid_fullscreen->modified = false;
 			ri.Con_Printf( PRINT_ALL, "ref_gl::R_SetMode() - fullscreen unavailable in this mode\n" );
-			if ( ( err = GLimp_SetMode( &vid.width, &vid.height, gl_mode->value, false ) ) == 0 )
+			if ( ( err = GLimp_SetMode( &vid.width, &vid.height, gl_mode->value, false ) ) == rserr_ok )
 				return true;
 		}
 		else if ( err == rserr_invalid_mode )
@@ -1044,7 +1044,7 @@ qboolean R_SetMode (void)
 		}
 
 		// try setting it back to something safe
-		if ( ( err = GLimp_SetMode( &vid.width, &vid.height, gl_state.prev_mode, false ) ) != 0 )
+		if ( ( err = GLimp_SetMode( &vid.width, &vid.height, gl_state.prev_mode, false ) ) != rserr_ok )
 		{
 			ri.Con_Printf( PRINT_ALL, "ref_gl::R_SetMode() - could not revert to safe mode\n" );
 			return false;
@@ -1058,7 +1058,7 @@ qboolean R_SetMode (void)
 R_Init
 ===============
 */
-int R_Init( void *hinstance, void *hWnd )
+qboolean R_Init( void *hinstance, void *hWnd )
 {	
 	int		err;
 	int		j;
@@ -1073,8 +1073,12 @@ int R_Init( void *hinstance, void *hWnd )
 
 	Draw_GetPalette ();
 
+	ri.Con_Printf (PRINT_ALL, "Registering functions\n");
+	
 	R_Register();
 
+	ri.Con_Printf (PRINT_ALL, "Initializing GLimp\n");
+	
 	// initialize OS-specific parts of OpenGL
 	GLimp_Init( hinstance, hWnd );
 
@@ -1088,6 +1092,8 @@ int R_Init( void *hinstance, void *hWnd )
 		return -1;
 	}
 
+	ri.Con_Printf (PRINT_ALL, "Vid_MenuInit\n");
+	
 	ri.Vid_MenuInit();
 
 	gl_config.renderer = GL_RENDERER_OTHER;
@@ -1096,6 +1102,8 @@ int R_Init( void *hinstance, void *hWnd )
 
 	gl_config.allow_cds = true;
 
+	ri.Con_Printf (PRINT_ALL, "GL_SetDefaultState\n");
+	
 	GL_SetDefaultState();
 
 	GL_InitImages ();

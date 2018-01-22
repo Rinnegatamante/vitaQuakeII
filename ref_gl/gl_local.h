@@ -261,7 +261,7 @@ extern	int		registration_sequence;
 
 void V_AddBlend (float r, float g, float b, float a, float *v_blend);
 
-int 	R_Init( void *hinstance, void *hWnd );
+qboolean 	R_Init( void *hinstance, void *hWnd );
 void	R_Shutdown( void );
 
 void R_RenderView (refdef_t *fd);
@@ -411,9 +411,6 @@ typedef struct
 	float camera_separation;
 	qboolean stereo_enabled;
 
-	unsigned char originalRedGammaTable[256];
-	unsigned char originalGreenGammaTable[256];
-	unsigned char originalBlueGammaTable[256];
 } glstate_t;
 
 extern glconfig_t  gl_config;

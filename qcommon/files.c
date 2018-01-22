@@ -202,7 +202,7 @@ a seperate file.
 ===========
 */
 int file_from_pak = 0;
-#ifndef NO_ADDONS
+
 int FS_FOpenFile (char *filename, FILE **file)
 {
 	searchpath_t	*search;
@@ -274,64 +274,6 @@ int FS_FOpenFile (char *filename, FILE **file)
 	*file = NULL;
 	return -1;
 }
-
-#else
-
-// this is just for demos to prevent add on hacking
-
-int FS_FOpenFile (char *filename, FILE **file)
-{
-	searchpath_t	*search;
-	char			netpath[MAX_OSPATH];
-	pack_t			*pak;
-	int				i;
-
-	file_from_pak = 0;
-
-	// get config from directory, everything else from pak
-	if (!strcmp(filename, "config.cfg") || !strncmp(filename, "players/", 8))
-	{
-		Com_sprintf (netpath, sizeof(netpath), "%s/%s",FS_Gamedir(), filename);
-		
-		*file = fopen (netpath, "rb");
-		if (!*file)
-			return -1;
-		
-		Com_DPrintf ("FindFile: %s\n",netpath);
-
-		return FS_filelength (*file);
-	}
-
-	for (search = fs_searchpaths ; search ; search = search->next)
-		if (search->pack)
-			break;
-	if (!search)
-	{
-		*file = NULL;
-		return -1;
-	}
-
-	pak = search->pack;
-	for (i=0 ; i<pak->numfiles ; i++)
-		if (!Q_strcasecmp (pak->files[i].name, filename))
-		{	// found it!
-			file_from_pak = 1;
-			Com_DPrintf ("PackFile: %s : %s\n",pak->filename, filename);
-		// open a new file on the pakfile
-			*file = fopen (pak->filename, "rb");
-			if (!*file)
-				Com_Error (ERR_FATAL, "Couldn't reopen %s", pak->filename);	
-			fseek (*file, pak->files[i].filepos, SEEK_SET);
-			return pak->files[i].filelen;
-		}
-	
-	Com_DPrintf ("FindFile: can't find %s\n", filename);
-	
-	*file = NULL;
-	return -1;
-}
-
-#endif
 
 
 /*
@@ -453,13 +395,17 @@ pack_t *FS_LoadPackFile (char *packfile)
 	int				numpackfiles;
 	pack_t			*pack;
 	FILE			*packhandle;
-	dpackfile_t		info[MAX_FILES_IN_PACK];
+	dpackfile_t*		info;
 	unsigned		checksum;
-
+	
+	info = (dpackfile_t*)malloc(sizeof(dpackfile_t)*MAX_FILES_IN_PACK);
+	
 	packhandle = fopen(packfile, "rb");
-	if (!packhandle)
+	if (!packhandle){
+		free(info);
 		return NULL;
-
+	}
+	
 	fread (&header, 1, sizeof(header), packhandle);
 	if (LittleLong(header.ident) != IDPAKHEADER)
 		Com_Error (ERR_FATAL, "%s is not a packfile", packfile);
@@ -479,10 +425,6 @@ pack_t *FS_LoadPackFile (char *packfile)
 // crc the directory to check for modifications
 	checksum = Com_BlockChecksum ((void *)info, header.dirlen);
 
-#ifdef NO_ADDONS
-	if (checksum != PAK0_CHECKSUM)
-		return NULL;
-#endif
 // parse the directory
 	for (i=0 ; i<numpackfiles ; i++)
 	{
@@ -498,6 +440,7 @@ pack_t *FS_LoadPackFile (char *packfile)
 	pack->files = newfiles;
 	
 	Com_Printf ("Added packfile %s (%i files)\n", packfile, numpackfiles);
+	free(info);
 	return pack;
 }
 
@@ -515,8 +458,9 @@ void FS_AddGameDirectory (char *dir)
 	int				i;
 	searchpath_t	*search;
 	pack_t			*pak;
-	char			pakfile[MAX_OSPATH];
-
+	char*			pakfile;
+	
+	pakfile = (char*)malloc(MAX_OSPATH);
 	strcpy (fs_gamedir, dir);
 
 	//
@@ -532,7 +476,7 @@ void FS_AddGameDirectory (char *dir)
 	//
 	for (i=0; i<10; i++)
 	{
-		Com_sprintf (pakfile, sizeof(pakfile), "%s/pak%i.pak", dir, i);
+		Com_sprintf (pakfile, MAX_OSPATH, "%s/pak%i.pak", dir, i);
 		pak = FS_LoadPackFile (pakfile);
 		if (!pak)
 			continue;
@@ -542,7 +486,7 @@ void FS_AddGameDirectory (char *dir)
 		fs_searchpaths = search;		
 	}
 
-
+	free(pakfile);
 }
 
 /*

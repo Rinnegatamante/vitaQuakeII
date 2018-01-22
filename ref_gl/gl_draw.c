@@ -55,10 +55,9 @@ void DrawQuad(float x, float y, float w, float h, float u, float v, float uw, fl
 void DrawQuad_NoTex(float x, float y, float w, float h, float r, float g, float b, float a)
 {
   float vertex[3*4] = {x,y,0.5f,x+w,y,0.5f, x+w, y+h,0.5f, x, y+h,0.5f};
-  float color[4] = {r,g,b,a};
+  glColor4f(r, g, b, a);
   glDisableClientState(GL_TEXTURE_COORD_ARRAY);
   vglVertexPointer(3, GL_FLOAT, 0, 4, vertex);
-  vglColorPointer(4, GL_FLOAT, 0, 4, color);
   vglDrawObjects(GL_TRIANGLE_FAN, 4, GL_TRUE);
   glEnableClientState(GL_TEXTURE_COORD_ARRAY);
 }
@@ -329,8 +328,8 @@ void Draw_StretchRaw (int x, int y, int w, int h, int cols, int rows, byte *data
 
 	glTexImage2D(GL_TEXTURE_2D, 0, gl_tex_solid_format, 256, 256, 0, GL_RGBA, GL_UNSIGNED_BYTE, image32);
 	
-	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
 	if ( ( gl_config.renderer == GL_RENDERER_MCD ) || ( gl_config.renderer & GL_RENDERER_RENDITION ) ) 
 		glDisable(GL_ALPHA_TEST);

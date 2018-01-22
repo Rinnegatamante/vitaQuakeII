@@ -38,7 +38,6 @@ int	curtime;
 unsigned	sys_frame_time;
 
 int		hunkcount;
-int vita2d_console = 1;
 
 static byte	*membase;
 static int		hunkmaxsize;
@@ -50,39 +49,21 @@ extern uint64_t rumble_tick;
 
 void *GetGameAPI (void *import);
 
-vita2d_pgf* fnt;
 int y = 20;
 void vita2d_printf(const char *format, ...){
-	/*
-	if (!vita2d_console) return;
-	
-	char str[512] = { 0 };
-	va_list va;
-
-	va_start(va, format);
-	vsnprintf(str, 512, format, va);
-	va_end(va);
-	
+	__gnuc_va_list arg;
+	int done;
+	va_start(arg, format);
+	char msg[512];
+	done = vsprintf(msg, format, arg);
+	va_end(arg);
 	int i;
-	for (i=0;i<3;i++){
-		vita2d_start_drawing();
-		vita2d_pgf_draw_text(fnt, 2, y, RGBA8(0xFF, 0xFF, 0xFF, 0xFF), 1.0, str);
-		vita2d_end_drawing();
-		vita2d_wait_rendering_done();
-		vita2d_swap_buffers();
+	sprintf(msg, "%s\n", msg);
+	FILE* log = fopen("ux0:/data/quake2/quake.log", "a+");
+	if (log != NULL) {
+		fwrite(msg, 1, strlen(msg), log);
+		fclose(log);
 	}
-	y += 15;
-	if (y > 540){
-		y = 20;
-		for (i=0;i<3;i++){
-			vita2d_start_drawing();
-			vita2d_clear_screen();
-			vita2d_end_drawing();
-			vita2d_wait_rendering_done();
-			vita2d_swap_buffers();
-		}
-	}*/
-
 }
 
 void Sys_Error (char *error, ...)
@@ -426,6 +407,8 @@ void	Sys_Init (void)
 {
 }
 
+extern void IN_StopRumble();
+
 //=============================================================================
 int quake_main (unsigned int argc, void* argv){
 	int	time, oldtime, newtime;
@@ -477,6 +460,7 @@ int main (int argc, char **argv)
 		sceKernelStartThread(main_thread, 0, NULL);
 		sceKernelWaitThreadEnd(main_thread, NULL, NULL);
 	}
+	return 0;
 	
 }
 

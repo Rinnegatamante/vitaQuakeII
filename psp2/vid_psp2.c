@@ -127,7 +127,7 @@ vidmode_t vid_modes[] =
 {
     { "Mode 0: 480x272",   480, 272,   0 },
 	{ "Mode 1: 640x362",   640, 362,   1 },
-	{ "Mode 2: 480x272",   720, 408,   2 },
+	{ "Mode 2: 720x408",   720, 408,   2 },
 	{ "Mode 3: 960x544",   960, 544,   3 }
 };
 #define VID_NUM_MODES ( sizeof( vid_modes ) / sizeof( vid_modes[0] ) )
@@ -252,7 +252,8 @@ void    VID_Init (void)
     ri.Cvar_Set = Cvar_Set;
     ri.Cvar_SetValue = Cvar_SetValue;
     ri.Vid_GetModeInfo = VID_GetModeInfo;
-
+	ri.Vid_MenuInit = VID_MenuInit;
+	
     //JASON this is called from the video DLL
     re = GetRefAPI(ri);
 

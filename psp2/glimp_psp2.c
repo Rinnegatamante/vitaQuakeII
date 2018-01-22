@@ -47,15 +47,25 @@ int GLimp_SetMode( int *pwidth, int *pheight, int mode, qboolean fullscreen )
 {
 	int width, height;
 	
+	ri.Con_Printf( PRINT_ALL, "Initializing OpenGL display\n");
+	ri.Con_Printf (PRINT_ALL, "...setting mode %d:", mode );
+	
 	if ( !ri.Vid_GetModeInfo( &width, &height, mode ) )
 	{
 		ri.Con_Printf( PRINT_ALL, " invalid mode\n" );
 		return rserr_invalid_mode;
 	}
+	
+	ri.Con_Printf( PRINT_ALL, " %d %d\n", width, height );
+	
+	// destroy the existing window
+	GLimp_Shutdown ();
+
 	*pwidth = width;
 	*pheight = height;
 	ri.Vid_NewWindow (width, height);
-	return 0;
+	
+	return rserr_ok;
 }
 
 /*
@@ -83,7 +93,7 @@ void GLimp_Shutdown( void )
 int GLimp_Init( void *hinstance, void *wndproc )
 {
 	gl_config.allow_cds = true;
-	return 0;
+	return true;
 }
 
 #define MAX_INDICES 4096
@@ -96,6 +106,9 @@ qboolean GLimp_InitGL (void)
 	for (i=0;i<MAX_INDICES;i++){
 		indices[i] = i;
 	}
+	gVertexBuffer = (float*)malloc(sizeof(float)*VERTEXARRAYSIZE);
+	gColorBuffer = (float*)malloc(sizeof(float)*VERTEXARRAYSIZE);
+	gTexCoordBuffer = (float*)malloc(sizeof(float)*VERTEXARRAYSIZE);
 	return true;
 }
 
