@@ -1225,7 +1225,6 @@ void Com_sprintf (char *dest, int size, char *fmt, ...)
 	int		len;
 	va_list		argptr;
 	char	bigbuffer[0x10000];
-
 	va_start (argptr,fmt);
 	len = vsprintf (bigbuffer,fmt,argptr);
 	va_end (argptr);

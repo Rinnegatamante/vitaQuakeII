@@ -3,11 +3,10 @@ TITLE		:= QUAKE0002
 SOURCES		:= source
 INCLUDES	:= include
 
-LIBS = -lvorbisfile -lvorbis -logg -lspeexdsp -lmpg123 \
-	-lvita2d -lvitashaders -lSceLibKernel_stub \
-	-lSceAppMgr_stub -lSceSysmodule_stub -lSceCtrl_stub -lSceTouch_stub \
-	-lm -lSceNet_stub -lSceNetCtl_stub -lSceAppUtil_stub -lScePgf_stub \
-	-ljpeg -lfreetype -lc -lScePower_stub -lSceCommonDialog_stub -lpng16 -lz \
+LIBS = -lvitaGL -lvorbisfile -lvorbis -logg -lspeexdsp -lmpg123 \
+	-lSceLibKernel_stub -lSceAppMgr_stub -lSceSysmodule_stub \
+	-lSceCtrl_stub -lSceTouch_stub -lm -lSceNet_stub -lSceNetCtl_stub \
+	-lSceAppUtil_stub -lc -lScePower_stub -lSceCommonDialog_stub \
 	-lSceAudio_stub -lSceGxm_stub -lSceDisplay_stub -lSceNet_stub -lSceNetCtl_stub
 
 SYSTEM = 	psp2/vid_psp2.o \
@@ -15,7 +14,7 @@ SYSTEM = 	psp2/vid_psp2.o \
 			psp2/sys_psp2.o \
 			psp2/in_psp2.o \
 			psp2/net_psp2.o \
-			psp2/swimp_psp2.o \
+			psp2/glimp_psp2.o \
 			psp2/glob.o
 
 CLIENT =	client/cl_input.o \
@@ -75,6 +74,16 @@ REFSOFT = 	ref_soft/r_alias.o \
 			ref_soft/r_edge.o \
 			ref_soft/r_image.o
 
+REFGL = 	ref_gl/gl_draw.o \
+			ref_gl/gl_image.o \
+			ref_gl/gl_light.o \
+			ref_gl/gl_mesh.o \
+			ref_gl/gl_model.o \
+			ref_gl/gl_rmain.o \
+			ref_gl/gl_rmisc.o \
+			ref_gl/gl_rsurf.o \
+			ref_gl/gl_warp.o
+
 GAME = 		game/m_tank.o \
 			game/p_client.o \
 			game/p_hud.o \
@@ -127,7 +136,7 @@ GAME = 		game/m_tank.o \
 
 CPPSOURCES	:= audiodec
 
-CFILES		:=	$(CLIENT) $(QCOMMON) $(SERVER) $(GAME) $(REFSOFT) $(SYSTEM)
+CFILES		:=	$(CLIENT) $(QCOMMON) $(SERVER) $(GAME) $(SYSTEM) $(REFGL)
 CPPFILES   := $(foreach dir,$(CPPSOURCES), $(wildcard $(dir)/*.cpp))
 BINFILES := $(foreach dir,$(DATA), $(wildcard $(dir)/*.bin))
 OBJS     := $(addsuffix .o,$(BINFILES)) $(CFILES:.c=.o) $(CPPFILES:.cpp=.o) 
@@ -135,8 +144,9 @@ OBJS     := $(addsuffix .o,$(BINFILES)) $(CFILES:.c=.o) $(CPPFILES:.cpp=.o)
 PREFIX  = arm-vita-eabi
 CC      = $(PREFIX)-gcc
 CXX      = $(PREFIX)-g++
-CFLAGS  = -fno-lto -g -Wl,-q -O3 -DREF_HARD_LINKED -DGAME_HARD_LINKED -DPSP2 \
-		-DHAVE_OGGVORBIS -DHAVE_MPG123 -DHAVE_LIBSPEEXDSP -DUSE_AUDIO_RESAMPLER
+CFLAGS  = -fsigned-char -fno-lto -g -Wl,-q -O2 -DREF_HARD_LINKED \
+		-DHAVE_OGGVORBIS -DHAVE_MPG123 -DHAVE_LIBSPEEXDSP -DUSE_AUDIO_RESAMPLER \
+		-DRELEASE -DGAME_HARD_LINKED -DPSP2
 
 CXXFLAGS  = $(CFLAGS) -fno-exceptions -std=gnu++11 -fpermissive
 ASFLAGS = $(CFLAGS)

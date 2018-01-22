@@ -31,56 +31,41 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "errno.h"
 
 #include <vitasdk.h>
-#include <vita2d.h>
+#include <vitaGL.h>
 
 int _newlib_heap_size_user = 192 * 1024 * 1024;
 int	curtime;
 unsigned	sys_frame_time;
 
 int		hunkcount;
-int vita2d_console = 1;
 
 static byte	*membase;
 static int		hunkmaxsize;
 static int		cursize;
 
+int isKeyboard;
+
 extern uint64_t rumble_tick;
 
 void *GetGameAPI (void *import);
 
-vita2d_pgf* fnt;
 int y = 20;
 void vita2d_printf(const char *format, ...){
-	
-	if (!vita2d_console) return;
-	
-	char str[512] = { 0 };
-	va_list va;
-
-	va_start(va, format);
-	vsnprintf(str, 512, format, va);
-	va_end(va);
-	
+	#ifndef RELEASE
+	__gnuc_va_list arg;
+	int done;
+	va_start(arg, format);
+	char msg[512];
+	done = vsprintf(msg, format, arg);
+	va_end(arg);
 	int i;
-	for (i=0;i<3;i++){
-		vita2d_start_drawing();
-		vita2d_pgf_draw_text(fnt, 2, y, RGBA8(0xFF, 0xFF, 0xFF, 0xFF), 1.0, str);
-		vita2d_end_drawing();
-		vita2d_wait_rendering_done();
-		vita2d_swap_buffers();
+	sprintf(msg, "%s\n", msg);
+	FILE* log = fopen("ux0:/data/quake2/quake.log", "a+");
+	if (log != NULL) {
+		fwrite(msg, 1, strlen(msg), log);
+		fclose(log);
 	}
-	y += 15;
-	if (y > 540){
-		y = 20;
-		for (i=0;i<3;i++){
-			vita2d_start_drawing();
-			vita2d_clear_screen();
-			vita2d_end_drawing();
-			vita2d_wait_rendering_done();
-			vita2d_swap_buffers();
-		}
-	}
-
+	#endif
 }
 
 void Sys_Error (char *error, ...)
@@ -105,7 +90,6 @@ void Sys_Error (char *error, ...)
 
 void Sys_Quit (void)
 {
-	vita2d_fini();
 	sceKernelExitDeleteThread(0);
 }
 
@@ -164,7 +148,6 @@ void Sys_DefaultConfig(void)
 }
 
 extern menufield_s s_maxclients_field;
-extern int isKeyboard;
 uint16_t input_text[SCE_IME_DIALOG_MAX_TEXT_LENGTH + 1];
 char* targetKeyboard;
 void Sys_SetKeys(uint32_t keys, uint32_t state){
@@ -426,10 +409,12 @@ void	Sys_Init (void)
 {
 }
 
+extern void IN_StopRumble();
+
 //=============================================================================
 int quake_main (unsigned int argc, void* argv){
 	int	time, oldtime, newtime;
-	
+	vglInit(0x1400000);
 	Qcommon_Init (argc, argv);
 
 	oldtime = Sys_Milliseconds ();
@@ -449,7 +434,7 @@ int quake_main (unsigned int argc, void* argv){
 		Qcommon_Frame (time);
 		oldtime = newtime;
 	}
-
+	vglEnd();
 	return 0;
 }
 
@@ -469,10 +454,6 @@ int main (int argc, char **argv)
 	sceSysmoduleLoadModule(SCE_SYSMODULE_NET);
 	sceCtrlSetSamplingMode(SCE_CTRL_MODE_ANALOG);
 	
-	vita2d_init();
-	vita2d_set_vblank_wait(0);
-	fnt = vita2d_load_default_pgf();
-
 	Sys_MkdirRecursive("ux0:/data/quake2/baseq2");
 	
 	// We need a bigger stack to run Quake 2, so we create a new thread with a proper stack size
@@ -481,6 +462,7 @@ int main (int argc, char **argv)
 		sceKernelStartThread(main_thread, 0, NULL);
 		sceKernelWaitThreadEnd(main_thread, NULL, NULL);
 	}
+	return 0;
 	
 }
 

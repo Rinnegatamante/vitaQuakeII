@@ -37,11 +37,10 @@ cvar_t *scr_viewsize;
 static cvar_t *sw_mode;
 static cvar_t *sw_stipplealpha;
 
-extern cvar_t   *sw_mipcap;
 extern void M_ForceMenuOff( void );
 
-int vidwidth = 480;
-int vidheight = 272;
+int vidwidth = 960;
+int vidheight = 544;
 
 #define SOFTWARE_MENU 0
 #define OPENGL_MENU   1
@@ -128,7 +127,7 @@ vidmode_t vid_modes[] =
 {
     { "Mode 0: 480x272",   480, 272,   0 },
 	{ "Mode 1: 640x362",   640, 362,   1 },
-	{ "Mode 2: 480x272",   720, 408,   2 },
+	{ "Mode 2: 720x408",   720, 408,   2 },
 	{ "Mode 3: 960x544",   960, 544,   3 }
 };
 #define VID_NUM_MODES ( sizeof( vid_modes ) / sizeof( vid_modes[0] ) )
@@ -253,7 +252,8 @@ void    VID_Init (void)
     ri.Cvar_Set = Cvar_Set;
     ri.Cvar_SetValue = Cvar_SetValue;
     ri.Vid_GetModeInfo = VID_GetModeInfo;
-
+	ri.Vid_MenuInit = VID_MenuInit;
+	
     //JASON this is called from the video DLL
     re = GetRefAPI(ri);
 
@@ -318,7 +318,7 @@ void    VID_MenuInit (void)
 
     s_screensize_slider.curvalue = scr_viewsize->value/10;
 
-    s_mipcap_slider.curvalue = sw_mipcap->value;
+    //s_mipcap_slider.curvalue = sw_mipcap->value;
 
 	s_mode_list[SOFTWARE_MENU].curvalue = sw_mode->value;
 	s_current_menu_index = SOFTWARE_MENU;
