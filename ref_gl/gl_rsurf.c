@@ -119,7 +119,7 @@ void DrawGLPoly (glpoly_t *p)
 	}
 	vglTexCoordPointer(2, GL_FLOAT, 0, p->numverts, gTexCoordBuffer);
 	vglVertexPointer(3, GL_FLOAT, 0, p->numverts, gVertexBuffer);
-	vglDrawObjects(GL_TRIANGLE_STRIP, p->numverts, GL_TRUE);
+	vglDrawObjects(GL_TRIANGLE_FAN, p->numverts, GL_TRUE);
 }
 
 //============
@@ -154,7 +154,7 @@ void DrawGLFlowingPoly (msurface_t *fa)
 	}
 	vglTexCoordPointer(2, GL_FLOAT, 0, p->numverts, gTexCoordBuffer);
 	vglVertexPointer(3, GL_FLOAT, 0, p->numverts, gVertexBuffer);
-	vglDrawObjects(GL_TRIANGLE_STRIP, p->numverts, GL_TRUE);
+	vglDrawObjects(GL_TRIANGLE_FAN, p->numverts, GL_TRUE);
 }
 //PGM
 //============
