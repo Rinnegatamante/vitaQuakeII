@@ -431,9 +431,17 @@ void GL_DrawParticles( int num_particles, const particle_t particles[], const un
 
 		*(int *)color = colortable[p->color];
 		
-		*pColor++ = color[0]*255.0f;
-		*pColor++ = color[1]*255.0f;
-		*pColor++ = color[2]*255.0f;
+		*pColor++ = color[0]/255.0f;
+		*pColor++ = color[1]/255.0f;
+		*pColor++ = color[2]/255.0f;
+		*pColor++ = p->alpha;
+		*pColor++ = color[0]/255.0f;
+		*pColor++ = color[1]/255.0f;
+		*pColor++ = color[2]/255.0f;
+		*pColor++ = p->alpha;
+		*pColor++ = color[0]/255.0f;
+		*pColor++ = color[1]/255.0f;
+		*pColor++ = color[2]/255.0f;
 		*pColor++ = p->alpha;
 		
 		*pTex++ = 0.0625;
@@ -459,7 +467,7 @@ void GL_DrawParticles( int num_particles, const particle_t particles[], const un
 	vglVertexPointer(3, GL_FLOAT, 0, num_vertices, gVertexBuffer);
 	vglTexCoordPointer(2, GL_FLOAT, 0, num_vertices, gTexCoordBuffer);
 	vglColorPointer(4, GL_FLOAT, 0, num_vertices, gColorBuffer);
-	vglDrawObjects(GL_TRIANGLE_FAN, num_vertices, GL_TRUE);
+	vglDrawObjects(GL_TRIANGLES, num_vertices, GL_TRUE);
 	glDisableClientState(GL_COLOR_ARRAY);
 	
 	glDisable( GL_BLEND );
