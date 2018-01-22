@@ -541,7 +541,7 @@ void MakeSkyVec (float s, float t, int axis)
 	*SkyTex++ = s;
 	*SkyTex++ = t;
 	
-	*SkyTex++ = v[0];
+	*SkyPos++ = v[0];
 	*SkyPos++ = v[1];
 	*SkyPos++ = v[2];
 }
