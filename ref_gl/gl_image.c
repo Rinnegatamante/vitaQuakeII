@@ -975,7 +975,7 @@ qboolean GL_Upload32 (unsigned *data, int width, int height,  qboolean mipmap)
 
 	if (mipmap)
 	{
-		glGenerateMipmap(GL_TEXTURE_2D);
+		//glGenerateMipmap(GL_TEXTURE_2D);
 	}
 done: ;
 
