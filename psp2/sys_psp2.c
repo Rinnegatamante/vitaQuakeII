@@ -414,7 +414,7 @@ extern void IN_StopRumble();
 //=============================================================================
 int quake_main (unsigned int argc, void* argv){
 	int	time, oldtime, newtime;
-	vglInit(0x1400000);
+	vglInit(0x800000);
 	Qcommon_Init (argc, argv);
 
 	oldtime = Sys_Milliseconds ();
