@@ -23,11 +23,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "../client/qmenu.h"
 extern viddef_t vid;
 
-#define REF_SOFT    0
-#define REF_OPENGL  1
-#define REF_3DFX    2
-#define REF_POWERVR 3
-#define REF_VERITE  4
+#define REF_OPENGL  0
 
 cvar_t *vid_ref;
 cvar_t *vid_fullscreen;
@@ -36,33 +32,27 @@ cvar_t *scr_viewsize;
 
 static cvar_t *sw_mode;
 static cvar_t *sw_stipplealpha;
+static cvar_t *gl_picmip;
+static cvar_t *gl_mode;
+static cvar_t *gl_driver;
 
 extern void M_ForceMenuOff( void );
 
 int vidwidth = 960;
 int vidheight = 544;
 
-#define SOFTWARE_MENU 0
-#define OPENGL_MENU   1
-
-static menuframework_s  s_software_menu;
 static menuframework_s  s_opengl_menu;
 static menuframework_s *s_current_menu;
-static int              s_current_menu_index;
 
-static menulist_s       s_mode_list[2];
-static menulist_s       s_ref_list[2];
+static menulist_s       s_mode_list;
+static menulist_s       s_ref_list;
 static menuslider_s     s_tq_slider;
 static menuslider_s     s_screensize_slider;
 static menuslider_s     s_brightness_slider;
-static menuslider_s     s_mipcap_slider;
 static menulist_s       s_fs_box;
-static menulist_s       s_stipple_box;
-static menulist_s       s_paletted_texture_box;
 static menulist_s       s_finish_box;
 static menuaction_s     s_cancel_action;
 static menuaction_s     s_defaults_action;
-
 
 viddef_t    viddef;             // global video state
 
@@ -144,34 +134,8 @@ qboolean VID_GetModeInfo( int *width, int *height, int mode )
     return true;
 }
 
-static void DriverCallback( void *unused )
+static void NullCallback( void *unused )
 {
-}
-
-static void RescalerCallback( void *unused )
-{
-	switch (s_mode_list[SOFTWARE_MENU].curvalue){
-		case 0:
-			vidwidth = 480;
-			vidheight = 272;
-			break;
-		case 1:
-			vidwidth = 640;
-			vidheight = 362;
-			break;
-		case 2:
-			vidwidth = 720;
-			vidheight = 408;
-			break;
-		case 3:
-			vidwidth = 960;
-			vidheight = 544;
-			break;
-		default:
-			vidwidth = 480;
-			vidheight = 272;
-			break;
-	}
 }
 
 static void ScreenSizeCallback( void *s )
@@ -179,13 +143,6 @@ static void ScreenSizeCallback( void *s )
     menuslider_s *slider = ( menuslider_s * ) s;
 
     Cvar_SetValue( "viewsize", slider->curvalue * 10 );
-}
-
-static void MipcapCallback( void *s)
-{
-    menuslider_s *slider = ( menuslider_s * ) s;
-
-    Cvar_SetValue( "sw_mipcap", slider->curvalue );
 }
 
 static void BrightnessCallback( void *s )
@@ -202,6 +159,7 @@ static void BrightnessCallback( void *s )
 
 static void ResetDefaults( void *unused )
 {
+	VID_MenuInit();
 }
 
 static void ApplyChanges( void *unused )
@@ -214,11 +172,11 @@ static void ApplyChanges( void *unused )
     gamma = ( 0.8 - ( s_brightness_slider.curvalue/10.0 - 0.5 ) ) + 0.5;
 
     Cvar_SetValue( "vid_gamma", gamma );
-    Cvar_SetValue( "sw_stipplealpha", s_stipple_box.curvalue );
-    Cvar_SetValue( "vid_fullscreen", s_fs_box.curvalue );
-    Cvar_SetValue( "sw_mode", s_mode_list[SOFTWARE_MENU].curvalue );
+    Cvar_SetValue( "gl_mode", s_mode_list.curvalue );
+	Cvar_SetValue( "gl_picmip", 3 - s_tq_slider.curvalue );
 	
-    Cvar_Set( "vid_ref", "soft" );
+    Cvar_Set( "vid_ref", "gl" );
+	Cvar_Set( "gl_driver", "opengl32" );
 
     M_ForceMenuOff();
 }
@@ -285,16 +243,16 @@ void    VID_MenuInit (void)
 
 	static const char *resolutions[] = 
 	{
-		"480x272",
-		"640x362",
-		"720x408",
+		"960x544",
+		"960x544",
+		"960x544",
 		"960x544",
 		0
 	};
 	
 	static const char *refs[] =
 	{
-		"software",
+		"vitaGL",
 		0
 	};
 	
@@ -306,40 +264,40 @@ void    VID_MenuInit (void)
     };
     int i;
 
-    if ( !sw_stipplealpha )
-        sw_stipplealpha = Cvar_Get( "sw_stipplealpha", "0", CVAR_ARCHIVE );
-	
-	if ( !sw_mode )
-		sw_mode = Cvar_Get( "sw_mode", "0", 0 );
-    s_mode_list[SOFTWARE_MENU].curvalue = sw_mode->value;
-
+	if ( !gl_driver )
+		gl_driver = Cvar_Get( "gl_driver", "opengl32", 0 );
+	if ( !gl_picmip )
+		gl_picmip = Cvar_Get( "gl_picmip", "0", 0 );
+	if ( !gl_mode )
+		gl_mode = Cvar_Get( "gl_mode", "3", 0 );
     if ( !scr_viewsize )
         scr_viewsize = Cvar_Get ("viewsize", "100", CVAR_ARCHIVE);
 
+	s_ref_list.curvalue = REF_OPENGL;
+	
     s_screensize_slider.curvalue = scr_viewsize->value/10;
 
     //s_mipcap_slider.curvalue = sw_mipcap->value;
 
-	s_mode_list[SOFTWARE_MENU].curvalue = sw_mode->value;
-	s_current_menu_index = SOFTWARE_MENU;
-    s_ref_list[0].curvalue = s_ref_list[1].curvalue = REF_SOFT;
+	s_mode_list.curvalue = gl_mode->value;
+    s_ref_list.curvalue = REF_OPENGL;
 
-    s_software_menu.x = viddef.width * 0.50;
-    s_software_menu.nitems = 0;
+    s_opengl_menu.x = viddef.width * 0.50;
+	s_opengl_menu.nitems = 0;
 
-	s_ref_list[SOFTWARE_MENU].generic.type = MTYPE_SPINCONTROL;
-	s_ref_list[SOFTWARE_MENU].generic.name = "driver";
-	s_ref_list[SOFTWARE_MENU].generic.x = 0;
-	s_ref_list[SOFTWARE_MENU].generic.y = 0;
-	s_ref_list[SOFTWARE_MENU].generic.callback = DriverCallback;
-	s_ref_list[SOFTWARE_MENU].itemnames = refs;
+	s_ref_list.generic.type = MTYPE_SPINCONTROL;
+	s_ref_list.generic.name = "driver";
+	s_ref_list.generic.x = 0;
+	s_ref_list.generic.y = 0;
+	s_ref_list.generic.callback = NullCallback;
+	s_ref_list.itemnames = refs;
 
-    s_mode_list[SOFTWARE_MENU].generic.type = MTYPE_SPINCONTROL;
-    s_mode_list[SOFTWARE_MENU].generic.x        = 0;
-    s_mode_list[SOFTWARE_MENU].generic.y        = 20;
-    s_mode_list[SOFTWARE_MENU].generic.name = "video mode";
-	s_mode_list[SOFTWARE_MENU].generic.callback = RescalerCallback;
-    s_mode_list[SOFTWARE_MENU].itemnames = resolutions;
+    s_mode_list.generic.type = MTYPE_SPINCONTROL;
+    s_mode_list.generic.x        = 0;
+    s_mode_list.generic.y        = 20;
+    s_mode_list.generic.name = "video mode";
+	s_mode_list.generic.callback = NullCallback;
+    s_mode_list.itemnames = resolutions;
 
     s_brightness_slider.generic.type = MTYPE_SLIDER;
     s_brightness_slider.generic.x    = 0;
@@ -362,42 +320,47 @@ void    VID_MenuInit (void)
     s_cancel_action.generic.y    = 100;
     s_cancel_action.generic.callback = CancelChanges;
 
-    s_stipple_box.generic.type = MTYPE_SPINCONTROL;
-    s_stipple_box.generic.x = 0;
-    s_stipple_box.generic.y = 60;
-    s_stipple_box.generic.name  = "stipple alpha";
-    s_stipple_box.curvalue = sw_stipplealpha->value;
-    s_stipple_box.itemnames = yesno_names;
+    s_tq_slider.generic.type	= MTYPE_SLIDER;
+	s_tq_slider.generic.x		= 0;
+	s_tq_slider.generic.y		= 60;
+	s_tq_slider.generic.name	= "texture quality";
+	s_tq_slider.minvalue = 0;
+	s_tq_slider.maxvalue = 3;
+	s_tq_slider.curvalue = 3-gl_picmip->value;
+	
+	s_defaults_action.generic.type = MTYPE_ACTION;
+	s_defaults_action.generic.name = "reset to default";
+	s_defaults_action.generic.x    = 0;
+	s_defaults_action.generic.y    = 90;
+	s_defaults_action.generic.callback = ResetDefaults;
 
-    s_mipcap_slider.generic.type = MTYPE_SLIDER;
+    /*s_mipcap_slider.generic.type = MTYPE_SLIDER;
     s_mipcap_slider.generic.x        = 0;
     s_mipcap_slider.generic.y        = 70;
     s_mipcap_slider.generic.name = "mipcap";
     s_mipcap_slider.minvalue = 0;
     s_mipcap_slider.maxvalue = 4;
-    s_mipcap_slider.generic.callback = MipcapCallback;
+    s_mipcap_slider.generic.callback = MipcapCallback;*/
 
-    Menu_AddItem( &s_software_menu, ( void * ) &s_ref_list[SOFTWARE_MENU] );
-	Menu_AddItem( &s_software_menu, ( void * ) &s_mode_list[SOFTWARE_MENU] );
-    Menu_AddItem( &s_software_menu, ( void * ) &s_brightness_slider );
-    Menu_AddItem( &s_software_menu, ( void * ) &s_stipple_box );
-    Menu_AddItem( &s_software_menu, ( void * ) &s_mipcap_slider );
+    Menu_AddItem( &s_opengl_menu, ( void * ) &s_ref_list );
+	Menu_AddItem( &s_opengl_menu, ( void * ) &s_mode_list );
+    Menu_AddItem( &s_opengl_menu, ( void * ) &s_brightness_slider );
+    Menu_AddItem( &s_opengl_menu, ( void * ) &s_tq_slider );
+    //Menu_AddItem( &s_software_menu, ( void * ) &s_mipcap_slider );
 
-    Menu_AddItem( &s_software_menu, ( void * ) &s_cancel_action );
+    Menu_AddItem( &s_opengl_menu, ( void * ) &s_cancel_action );
+	Menu_AddItem( &s_opengl_menu, ( void * ) &s_defaults_action );
 
-    Menu_Center( &s_software_menu );
+    Menu_Center( &s_opengl_menu );
 
-    s_software_menu.x -= 8;
+    s_opengl_menu.x -= 8;
 }
 
 void    VID_MenuDraw (void)
 {
     int w, h;
 
-    if ( s_current_menu_index == 0 )
-        s_current_menu = &s_software_menu;
-    else
-        s_current_menu = &s_opengl_menu;
+    s_current_menu = &s_opengl_menu;
 
     /*
     ** draw the banner
