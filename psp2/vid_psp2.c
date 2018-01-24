@@ -294,10 +294,18 @@ void    VID_MenuInit (void)
 
     s_mode_list.generic.type = MTYPE_SPINCONTROL;
     s_mode_list.generic.x        = 0;
-    s_mode_list.generic.y        = 20;
+    s_mode_list.generic.y        = 10;
     s_mode_list.generic.name = "video mode";
 	s_mode_list.generic.callback = NullCallback;
     s_mode_list.itemnames = resolutions;
+	
+	s_screensize_slider.generic.type	= MTYPE_SLIDER;
+	s_screensize_slider.generic.x		= 0;
+	s_screensize_slider.generic.y		= 20;
+	s_screensize_slider.generic.name	= "screen size";
+	s_screensize_slider.minvalue = 3;
+	s_screensize_slider.maxvalue = 12;
+	s_screensize_slider.generic.callback = ScreenSizeCallback;
 
     s_brightness_slider.generic.type = MTYPE_SLIDER;
     s_brightness_slider.generic.x    = 0;
@@ -344,6 +352,7 @@ void    VID_MenuInit (void)
 
     Menu_AddItem( &s_opengl_menu, ( void * ) &s_ref_list );
 	Menu_AddItem( &s_opengl_menu, ( void * ) &s_mode_list );
+	Menu_AddItem( &s_opengl_menu, ( void * ) &s_screensize_slider );
     Menu_AddItem( &s_opengl_menu, ( void * ) &s_brightness_slider );
     Menu_AddItem( &s_opengl_menu, ( void * ) &s_tq_slider );
     //Menu_AddItem( &s_software_menu, ( void * ) &s_mipcap_slider );
