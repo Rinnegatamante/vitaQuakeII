@@ -33,6 +33,24 @@ void IN_Init (void)
 	pstv_rumble	= Cvar_Get ("pstv_rumble", "1",	CVAR_ARCHIVE);
 }
 
+void IN_RescaleAnalog(int *x, int *y, int dead) {
+
+	float analogX = (float) *x;
+	float analogY = (float) *y;
+	float deadZone = (float) dead;
+	float maximum = 128.0f;
+	float magnitude = sqrt(analogX * analogX + analogY * analogY);
+	if (magnitude >= deadZone)
+	{
+		float scalingFactor = maximum / magnitude * (magnitude - deadZone) / (maximum - deadZone);
+		*x = (int) (analogX * scalingFactor);
+		*y = (int) (analogY * scalingFactor);
+	} else {
+		*x = 0;
+		*y = 0;
+	}
+}
+
 void IN_Shutdown (void)
 {
 }
@@ -88,14 +106,15 @@ void IN_Move (usercmd_t *cmd)
 	}*/
 	
 	// Left analog support for player movement
-	int x_mov = abs(left_x) < 30 ? 0 : (left_x * cl_sidespeed->value) * 0.01;
-	int y_mov = abs(left_y) < 30 ? 0 : (left_y * cl_forwardspeed->value) * 0.01;
+	float x_mov = (left_x * cl_sidespeed->value) * 0.01;
+	float y_mov = (left_y * cl_forwardspeed->value) * 0.01;
 	cmd->forwardmove -= y_mov;
 	cmd->sidemove += x_mov;
 	
 	// Right analog support for camera movement
-	int x_cam = abs(right_x) < 50 ? 0 : right_x * rightanalog_sensitivity->value * 0.008;
-	int y_cam = abs(right_y) < 50 ? 0 : right_y * rightanalog_sensitivity->value * 0.008;
+	IN_RescaleAnalog(&right_x, &right_y, 30);
+	float x_cam = (right_x * sensitivity->value) * 0.008;
+	float y_cam = (right_y * sensitivity->value) * 0.008;
 	cl.viewangles[YAW] -= x_cam;
 	if (m_pitch->value > 0) cl.viewangles[PITCH] += y_cam;
 	else cl.viewangles[PITCH] -= y_cam;
