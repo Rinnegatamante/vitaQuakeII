@@ -113,8 +113,8 @@ void IN_Move (usercmd_t *cmd)
 	
 	// Right analog support for camera movement
 	IN_RescaleAnalog(&right_x, &right_y, 30);
-	float x_cam = (right_x * sensitivity->value) * 0.008;
-	float y_cam = (right_y * sensitivity->value) * 0.008;
+	float x_cam = (right_x * rightanalog_sensitivity->value) * 0.008;
+	float y_cam = (right_y * rightanalog_sensitivity->value) * 0.008;
 	cl.viewangles[YAW] -= x_cam;
 	if (m_pitch->value > 0) cl.viewangles[PITCH] += y_cam;
 	else cl.viewangles[PITCH] -= y_cam;
