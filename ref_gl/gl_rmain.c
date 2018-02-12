@@ -206,19 +206,19 @@ void R_DrawSpriteModel (entity_t *e)
 	if ( e->flags & RF_TRANSLUCENT )
 		alpha = e->alpha;
 
-	if ( alpha != 1.0F )
+	if ( alpha != 1.0f )
 		glEnable( GL_BLEND );
 
-	glColor4f( 1, 1, 1, alpha );
+	GL_Color( 1, 1, 1, alpha );
 
     GL_Bind(currentmodel->skins[e->frame]->texnum);
 
 	GL_TexEnv( GL_MODULATE );
 
 	if ( alpha == 1.0 )
-		glEnable (GL_ALPHA_TEST);
+		GL_EnableState(GL_ALPHA_TEST);
 	else
-		glDisable( GL_ALPHA_TEST );
+		GL_DisableState(GL_ALPHA_TEST);
 
 	float* pPoint = gVertexBuffer;
 	float texcoord[] = {0, 1, 0, 0, 1, 0, 1, 1};
@@ -239,17 +239,17 @@ void R_DrawSpriteModel (entity_t *e)
 	VectorMA (point, frame->width - frame->origin_x, right, pPoint);
 	pPoint += 3;
 	
-	vglVertexPointer(3, GL_FLOAT, 0, 4, gVertexBuffer);
-	vglTexCoordPointer(2, GL_FLOAT, 0, 4, texcoord);
-	vglDrawObjects(GL_TRIANGLE_FAN, 4, GL_TRUE);
+	vglVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 4, gVertexBuffer);
+	vglVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 0, 4, texcoord);
+	GL_DrawPolygon(GL_TRIANGLE_FAN, 4);
 	
-	glDisable (GL_ALPHA_TEST);
+	GL_DisableState(GL_ALPHA_TEST);
 	GL_TexEnv( GL_REPLACE );
 
-	if ( alpha != 1.0F )
+	if ( alpha != 1.0f )
 		glDisable( GL_BLEND );
 
-	glColor4f( 1, 1, 1, 1 );
+	GL_Color( 1, 1, 1, 1 );
 }
 
 //==================================================================================
@@ -273,7 +273,7 @@ void R_DrawNullModel (void)
 	R_RotateForEntity (currententity);
 
 	glDisable (GL_TEXTURE_2D);
-	glColor3fv (shadelight);
+	float color[4] = {shadelight[0], shadelight[1], shadelight[2], 1};
 	
 	float* pPos = gVertexBuffer;
 	
@@ -286,17 +286,19 @@ void R_DrawNullModel (void)
 		*pPos++ = 0;
 	}
 	
-	glDisableClientState(GL_TEXTURE_COORD_ARRAY);
-	vglVertexPointer(3, GL_FLOAT, 0, 6, gVertexBuffer);
-	vglDrawObjects(GL_TRIANGLE_FAN, 6, GL_TRUE);
+	GL_DisableState(GL_TEXTURE_COORD_ARRAY);
+	glUniform4fv(monocolor, 1, color);
+	vglVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 6, gVertexBuffer);
+	GL_DrawPolygon(GL_TRIANGLE_FAN, 6);
 	
 	gVertexBuffer[2] = 16;
 	
-	vglVertexPointer(3, GL_FLOAT, 0, 6, gVertexBuffer);
-	vglDrawObjects(GL_TRIANGLE_FAN, 6, GL_TRUE);
-	glEnableClientState(GL_TEXTURE_COORD_ARRAY);
+	vglVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 6, gVertexBuffer);
+	glUniform4fv(monocolor, 1, color);
+	GL_DrawPolygon(GL_TRIANGLE_FAN, 6);
+	GL_EnableState(GL_TEXTURE_COORD_ARRAY);
 	
-	glColor3f (1,1,1);
+	GL_Color (1,1,1,1);
 	glPopMatrix ();
 	glEnable (GL_TEXTURE_2D);
 }
@@ -352,7 +354,7 @@ void R_DrawEntitiesOnList (void)
 
 	// draw transparent entities
 	// we could sort these if it ever becomes a problem...
-	glDepthMask (0);		// no z writes
+	glDepthMask (GL_FALSE);		// no z writes
 	for (i=0 ; i<r_newrefdef.num_entities ; i++)
 	{
 		currententity = &r_newrefdef.entities[i];
@@ -389,7 +391,7 @@ void R_DrawEntitiesOnList (void)
 			}
 		}
 	}
-	glDepthMask (1);		// back to writing
+	glDepthMask (GL_TRUE);		// back to writing
 
 }
 
@@ -463,16 +465,16 @@ void GL_DrawParticles( int num_particles, const particle_t particles[], const un
 
 	}
 
-	glEnableClientState(GL_COLOR_ARRAY);
-	vglVertexPointer(3, GL_FLOAT, 0, num_vertices, gVertexBuffer);
-	vglTexCoordPointer(2, GL_FLOAT, 0, num_vertices, gTexCoordBuffer);
-	vglColorPointer(4, GL_FLOAT, 0, num_vertices, gColorBuffer);
-	vglDrawObjects(GL_TRIANGLES, num_vertices, GL_TRUE);
-	glDisableClientState(GL_COLOR_ARRAY);
+	GL_EnableState(GL_COLOR_ARRAY);
+	vglVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, num_vertices, gVertexBuffer);
+	vglVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 0, num_vertices, gTexCoordBuffer);
+	vglVertexAttribPointer(2, 4, GL_FLOAT, GL_FALSE, 0, num_vertices, gColorBuffer);
+	GL_DrawPolygon(GL_TRIANGLES, num_vertices);
+	GL_DisableState(GL_COLOR_ARRAY);
 	
 	glDisable( GL_BLEND );
-	glColor4f( 1,1,1,1 );
-	glDepthMask( 1 );		// back to normal Z buffering
+	GL_Color( 1,1,1,1 );
+	glDepthMask( GL_TRUE );		// back to normal Z buffering
 	GL_TexEnv( GL_REPLACE );
 }
 
@@ -498,7 +500,7 @@ void R_PolyBlend (void)
 	if (!v_blend[3])
 		return;
 
-	glDisable (GL_ALPHA_TEST);
+	GL_DisableState(GL_ALPHA_TEST);
 	glEnable (GL_BLEND);
 	glDisable (GL_DEPTH_TEST);
 	glDisable (GL_TEXTURE_2D);
@@ -508,8 +510,6 @@ void R_PolyBlend (void)
 	// FIXME: get rid of these
     glRotatef (-90,  1, 0, 0);	    // put Z going up
     glRotatef (90,  0, 0, 1);	    // put Z going up
-
-	glColor4fv (v_blend);
 	
 	float vertices[] = {
 		10, 100, 100,
@@ -518,16 +518,17 @@ void R_PolyBlend (void)
 		10, 100,-100
 	};
 	
-	glDisableClientState(GL_TEXTURE_COORD_ARRAY);
-	vglVertexPointer(3, GL_FLOAT, 0, 4, vertices);
-	vglDrawObjects(GL_TRIANGLE_FAN, 4, GL_TRUE);
-	glEnableClientState(GL_TEXTURE_COORD_ARRAY);
+	GL_DisableState(GL_TEXTURE_COORD_ARRAY);
+	glUniform4fv(monocolor, 1, v_blend);
+	vglVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 4, vertices);
+	GL_DrawPolygon(GL_TRIANGLE_FAN, 4);
+	GL_EnableState(GL_TEXTURE_COORD_ARRAY);
 	
 	glDisable (GL_BLEND);
 	glEnable (GL_TEXTURE_2D);
-	glEnable (GL_ALPHA_TEST);
+	GL_EnableState(GL_ALPHA_TEST);
 
-	glColor4f(1,1,1,1);
+	GL_Color(1,1,1,1);
 }
 
 //=======================================================================
@@ -717,7 +718,7 @@ void R_SetupGL (void)
 		glDisable(GL_CULL_FACE);
 
 	glDisable(GL_BLEND);
-	glDisable(GL_ALPHA_TEST);
+	GL_DisableState(GL_ALPHA_TEST);
 	glEnable(GL_DEPTH_TEST);
 }
 
@@ -837,7 +838,7 @@ void	R_SetGL2D (void)
 	glDisable (GL_DEPTH_TEST);
 	glDisable (GL_CULL_FACE);
 	glDisable (GL_BLEND);
-	glEnable (GL_ALPHA_TEST);
+	GL_EnableState(GL_ALPHA_TEST);
 	glColor4f (1,1,1,1);
 }
 
@@ -1202,7 +1203,7 @@ void R_BeginFrame( float camera_separation )
 	glDisable (GL_DEPTH_TEST);
 	glDisable (GL_CULL_FACE);
 	glDisable (GL_BLEND);
-	glEnable (GL_ALPHA_TEST);
+	GL_EnableState(GL_ALPHA_TEST);
 	glColor4f (1,1,1,1);
 
 	/*
@@ -1345,7 +1346,7 @@ void R_DrawBeam( entity_t *e )
 	g *= 1/255.0F;
 	b *= 1/255.0F;
 
-	glColor4f( r, g, b, e->alpha );
+	float color[4] = { r, g, b, e->alpha };
 
 	int num_vertices = NUM_BEAM_SEGS * 4;
 	float* pPos = gVertexBuffer;
@@ -1361,10 +1362,11 @@ void R_DrawBeam( entity_t *e )
 		pPos+=3;
 	}
 
-	glDisableClientState(GL_TEXTURE_COORD_ARRAY);
-	vglVertexPointer(3, GL_FLOAT, 0, num_vertices, gVertexBuffer);
-	vglDrawObjects(GL_TRIANGLE_STRIP, num_vertices, GL_TRUE);
-	glEnableClientState(GL_TEXTURE_COORD_ARRAY);
+	GL_DisableState(GL_TEXTURE_COORD_ARRAY);
+	glUniform4fv(monocolor, 1, color);
+	vglVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, num_vertices, gVertexBuffer);
+	GL_DrawPolygon(GL_TRIANGLE_STRIP, num_vertices);
+	GL_EnableState(GL_TEXTURE_COORD_ARRAY);
 	
 	glEnable( GL_TEXTURE_2D );
 	glDisable( GL_BLEND );

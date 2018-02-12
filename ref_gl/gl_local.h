@@ -444,3 +444,43 @@ void		GLimp_AppActivate( qboolean active );
 void		GLimp_EnableLogging( qboolean enable );
 void		GLimp_LogNewFrame( void );
 
+// Fragment shaders
+#define MODULATE_WITH_COLOR  0
+#define MODULATE             1
+#define REPLACE              2
+#define MONO_COLOR           4
+#define MODULATE_COLOR_A     5
+#define MODULATE_A           6
+#define RGBA_A               7
+#define REPLACE_A            8
+
+// Vertex shaders
+#define TEXTURE2D            0
+#define TEXTURE2D_WITH_COLOR 1
+#define COLOR                2
+#define VERTEX_ONLY          3
+
+// Shader programs
+#define TEX2D_REPL      0
+#define TEX2D_MODUL     1
+#define TEX2D_MODUL_CLR 2
+#define RGBA_COLOR      3
+#define NO_COLOR        4
+#define TEX2D_REPL_A    5
+#define TEX2D_MODUL_A   6
+#define RGBA_CLR_A      7
+#define FULL_A          8
+
+extern GLuint fs[9];
+extern GLuint vs[4];
+extern GLuint programs[9];
+extern GLint monocolor;
+extern GLint modulcolor[2];
+
+void GL_EnableState(GLenum state);
+void GL_DisableState(GLenum state);
+void GL_DrawPolygon(GLenum prim, int num);
+void GL_Color(float r, float g, float b, float a);
+void GL_ResetShaders();
+
+extern qboolean reset_shaders;

@@ -177,16 +177,14 @@ void GL_SetDefaultState( void )
 {
 	glClearColor (1,0, 0.5 , 0.5);
 	glCullFace(GL_FRONT);
-	glEnable(GL_TEXTURE_2D);
 
-	glEnable(GL_ALPHA_TEST);
-	glAlphaFunc(GL_GREATER, 0.666);
+	GL_EnableState(GL_ALPHA_TEST);
 
 	glDisable (GL_DEPTH_TEST);
 	glDisable (GL_CULL_FACE);
 	glDisable (GL_BLEND);
 
-	glColor4f (1,1,1,1);
+	GL_Color(1,1,1,1);
 
 	glPolygonMode (GL_FRONT_AND_BACK, GL_FILL);
 	//->glShadeModel (GL_FLAT);
@@ -207,8 +205,7 @@ void GL_SetDefaultState( void )
 
 	GL_UpdateSwapInterval();
 	
-	glEnableClientState(GL_TEXTURE_COORD_ARRAY);
-	glEnableClientState(GL_VERTEX_ARRAY);
+	GL_EnableState(GL_TEXTURE_COORD_ARRAY);
 	
 }
 

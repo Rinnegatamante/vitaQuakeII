@@ -117,9 +117,9 @@ void DrawGLPoly (glpoly_t *p)
 		memcpy(pnt, &v[3], sizeof(float)*2);
 		pnt +=2;
 	}
-	vglTexCoordPointer(2, GL_FLOAT, 0, p->numverts, gTexCoordBuffer);
-	vglVertexPointer(3, GL_FLOAT, 0, p->numverts, gVertexBuffer);
-	vglDrawObjects(GL_TRIANGLE_FAN, p->numverts, GL_TRUE);
+	vglVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, p->numverts, gVertexBuffer);
+	vglVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 0, p->numverts, gTexCoordBuffer);
+	GL_DrawPolygon(GL_TRIANGLE_FAN, p->numverts);
 }
 
 //============
@@ -152,9 +152,9 @@ void DrawGLFlowingPoly (msurface_t *fa)
 		memcpy(pnt, &v[3], sizeof(float)*2);
 		pnt +=2;
 	}
-	vglTexCoordPointer(2, GL_FLOAT, 0, p->numverts, gTexCoordBuffer);
-	vglVertexPointer(3, GL_FLOAT, 0, p->numverts, gVertexBuffer);
-	vglDrawObjects(GL_TRIANGLE_FAN, p->numverts, GL_TRUE);
+	vglVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, p->numverts, gVertexBuffer);
+	vglVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 0, p->numverts, gTexCoordBuffer);
+	GL_DrawPolygon(GL_TRIANGLE_FAN, p->numverts);
 }
 //PGM
 //============
@@ -173,8 +173,9 @@ void R_DrawTriangleOutlines (void)
 
 	glDisable (GL_TEXTURE_2D);
 	glDisable (GL_DEPTH_TEST);
-	glColor4f (1,1,1,1);
-	glDisableClientState(GL_TEXTURE_COORD_ARRAY);
+	GL_Color(1,1,1,1);
+	const float color[] = {1, 1, 1, 1};
+	GL_DisableState(GL_TEXTURE_COORD_ARRAY);
 	
 	for (i=0 ; i<MAX_LIGHTMAPS ; i++)
 	{
@@ -192,8 +193,9 @@ void R_DrawTriangleOutlines (void)
 					memcpy(&pPos[3], p->verts[j-1], sizeof(vec3_t));
 					memcpy(&pPos[6], p->verts[j], sizeof(vec3_t));
 					memcpy(&pPos[9], p->verts[0], sizeof(vec3_t));
-					vglVertexPointer(3, GL_FLOAT, 0, 4, gVertexBuffer);
-					vglDrawObjects(GL_LINE_STRIP, 4, GL_TRUE);
+					glUniform4fv(monocolor, 1, color);
+					vglVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 4, gVertexBuffer);
+					GL_DrawPolygon(GL_LINE_STRIP, 4);
 				}
 			}
 		}
@@ -201,7 +203,7 @@ void R_DrawTriangleOutlines (void)
 
 	glEnable (GL_DEPTH_TEST);
 	glEnable (GL_TEXTURE_2D);
-	glEnableClientState(GL_TEXTURE_COORD_ARRAY);
+	GL_EnableState(GL_TEXTURE_COORD_ARRAY);
 }
 
 /*
@@ -227,9 +229,9 @@ void DrawGLPolyChain( glpoly_t *p, float soffset, float toffset )
 				*pTex++ = v[5];
 				*pTex++ = v[6];
 			}
-			vglVertexPointer(3, GL_FLOAT, 0, p->numverts, gVertexBuffer);
-			vglTexCoordPointer(2, GL_FLOAT, 0, p->numverts, gTexCoordBuffer);
-			vglDrawObjects(GL_TRIANGLE_FAN, p->numverts, GL_TRUE);
+			vglVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, p->numverts, gVertexBuffer);
+			vglVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 0, p->numverts, gTexCoordBuffer);
+			GL_DrawPolygon(GL_TRIANGLE_FAN, p->numverts);
 		}
 	}
 	else
@@ -250,9 +252,9 @@ void DrawGLPolyChain( glpoly_t *p, float soffset, float toffset )
 				*pTex++ = v[5] - soffset;
 				*pTex++ = v[6] - toffset;
 			}
-			vglVertexPointer(3, GL_FLOAT, 0, p->numverts, gVertexBuffer);
-			vglTexCoordPointer(2, GL_FLOAT, 0, p->numverts, gTexCoordBuffer);
-			vglDrawObjects(GL_TRIANGLE_FAN, p->numverts, GL_TRUE);
+			vglVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, p->numverts, gVertexBuffer);
+			vglVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 0, p->numverts, gTexCoordBuffer);
+			GL_DrawPolygon(GL_TRIANGLE_FAN, p->numverts);
 		}
 	}
 }
@@ -441,7 +443,7 @@ void R_RenderBrushPoly (msurface_t *fa)
 
 		// warp texture, no lightmaps
 		GL_TexEnv( GL_MODULATE );
-		glColor4f( gl_state.inverse_intensity, 
+		GL_Color( gl_state.inverse_intensity, 
 			        gl_state.inverse_intensity,
 					gl_state.inverse_intensity,
 					1.0f );
@@ -569,7 +571,7 @@ void R_DrawAlphaSurfaces (void)
 	}
 
 	GL_TexEnv( GL_REPLACE );
-	glColor4f (1,1,1,1);
+	GL_Color (1,1,1,1);
 	glDisable (GL_BLEND);
 
 	r_alpha_surfaces = NULL;
@@ -653,7 +655,7 @@ void R_DrawInlineBModel (void)
 	if ( currententity->flags & RF_TRANSLUCENT )
 	{
 		glEnable (GL_BLEND);
-		glColor4f (1,1,1,0.25);
+		GL_Color (1,1,1,0.25);
 		GL_TexEnv( GL_MODULATE );
 	}
 
@@ -690,7 +692,7 @@ void R_DrawInlineBModel (void)
 	else
 	{
 		glDisable (GL_BLEND);
-		glColor4f (1,1,1,1);
+		GL_Color (1,1,1,1);
 		GL_TexEnv( GL_REPLACE );
 	}
 }
@@ -731,7 +733,7 @@ void R_DrawBrushModel (entity_t *e)
 	if (R_CullBox (mins, maxs))
 		return;
 
-	glColor4f (1,1,1,1);
+	GL_Color (1,1,1,1);
 	memset (gl_lms.lightmap_surfaces, 0, sizeof(gl_lms.lightmap_surfaces));
 
 	VectorSubtract (r_newrefdef.vieworg, e->origin, modelorg);
@@ -914,7 +916,7 @@ void R_DrawWorld (void)
 
 	gl_state.currenttextures[0] = gl_state.currenttextures[1] = -1;
 
-	glColor3f (1,1,1);
+	GL_Color (1,1,1,1);
 	memset (gl_lms.lightmap_surfaces, 0, sizeof(gl_lms.lightmap_surfaces));
 	R_ClearSkyBox ();
 

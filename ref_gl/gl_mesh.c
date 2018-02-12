@@ -123,7 +123,7 @@ void GL_DrawAliasFrameLerp (dmdl_t *paliashdr, float backlerp)
 	// PMM - added double shell
 	if ( currententity->flags & ( RF_SHELL_RED | RF_SHELL_GREEN | RF_SHELL_BLUE | RF_SHELL_DOUBLE | RF_SHELL_HALF_DAM) ){
 		glDisable( GL_TEXTURE_2D );
-		glDisableClientState(GL_TEXTURE_COORD_ARRAY);
+		GL_DisableState(GL_TEXTURE_COORD_ARRAY);
 	}
 
 	frontlerp = 1.0 - backlerp;
@@ -194,13 +194,13 @@ void GL_DrawAliasFrameLerp (dmdl_t *paliashdr, float backlerp)
 				*pColor++ = alpha;
 					
 			} while (--count);
-			glDisableClientState(GL_TEXTURE_COORD_ARRAY);
-			glEnableClientState(GL_COLOR_ARRAY);
-			vglVertexPointer(3, GL_FLOAT, 0, c, gVertexBuffer);
-			vglColorPointer(4, GL_FLOAT, 0, c, gColorBuffer);
-			vglDrawObjects(prim, c, GL_TRUE);
-			glDisableClientState(GL_COLOR_ARRAY);
-			glEnableClientState(GL_TEXTURE_COORD_ARRAY);
+			GL_DisableState(GL_TEXTURE_COORD_ARRAY);
+			GL_EnableState(GL_COLOR_ARRAY);
+			vglVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, c, gVertexBuffer);
+			vglVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, 0, c, gColorBuffer);
+			GL_DrawPolygon(prim, c);
+			GL_DisableState(GL_COLOR_ARRAY);
+			GL_EnableState(GL_TEXTURE_COORD_ARRAY);
 		}
 		else
 		{
@@ -224,12 +224,12 @@ void GL_DrawAliasFrameLerp (dmdl_t *paliashdr, float backlerp)
 				*pColor++ = alpha;
 				
 			} while (--count);
-			glEnableClientState(GL_COLOR_ARRAY);
-			vglVertexPointer(3, GL_FLOAT, 0, c, gVertexBuffer);
-			vglTexCoordPointer(2, GL_FLOAT, 0, c, gTexCoordBuffer);
-			vglColorPointer(4, GL_FLOAT, 0, c, gColorBuffer);
-			vglDrawObjects(prim, c, GL_TRUE);
-			glDisableClientState(GL_COLOR_ARRAY);
+			GL_EnableState(GL_COLOR_ARRAY);
+			vglVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, c, gVertexBuffer);
+			vglVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 0, c, gTexCoordBuffer);
+			vglVertexAttribPointer(2, 4, GL_FLOAT, GL_FALSE, 0, c, gColorBuffer);
+			GL_DrawPolygon(prim, c);
+			GL_DisableState(GL_COLOR_ARRAY);
 		}
 
 	}
@@ -238,7 +238,7 @@ void GL_DrawAliasFrameLerp (dmdl_t *paliashdr, float backlerp)
 	// PMM - added double damage shell
 	if ( currententity->flags & ( RF_SHELL_RED | RF_SHELL_GREEN | RF_SHELL_BLUE | RF_SHELL_DOUBLE | RF_SHELL_HALF_DAM) ){
 		glEnable( GL_TEXTURE_2D );
-		glEnableClientState(GL_TEXTURE_COORD_ARRAY);
+		GL_EnableState(GL_TEXTURE_COORD_ARRAY);
 	}
 }
 
@@ -272,6 +272,7 @@ void GL_DrawAliasShadow (dmdl_t *paliashdr, int posenum)
 
 	int prim;
 	float* pPos;
+	float color[4] = {0,0,0,0.5};
 	while (1)
 	{
 		// get the vertex count and primitive type
@@ -313,10 +314,11 @@ void GL_DrawAliasShadow (dmdl_t *paliashdr, int posenum)
 
 		} while (--count);
 
-		glDisableClientState(GL_TEXTURE_COORD_ARRAY);
-		vglVertexPointer(3, GL_FLOAT, 0, c, gVertexBuffer);
-		vglDrawObjects(prim, c, GL_TRUE);
-		glEnableClientState(GL_TEXTURE_COORD_ARRAY);
+		GL_DisableState(GL_TEXTURE_COORD_ARRAY);
+		glUniform4fv(monocolor, 1, color);
+		vglVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, c, gVertexBuffer);
+		GL_DrawPolygon(prim, c);
+		GL_EnableState(GL_TEXTURE_COORD_ARRAY);
 	}	
 }
 
@@ -763,14 +765,13 @@ void R_DrawAliasModel (entity_t *e)
 		R_RotateForEntity (e);
 		glDisable (GL_TEXTURE_2D);
 		glEnable (GL_BLEND);
-		glColor4f (0,0,0,0.5);
 		GL_DrawAliasShadow (paliashdr, currententity->frame );
 		glEnable (GL_TEXTURE_2D);
 		glDisable (GL_BLEND);
 		glPopMatrix ();
 	}
 
-	glColor4f (1,1,1,1);
+	GL_Color (1,1,1,1);
 }
 
 

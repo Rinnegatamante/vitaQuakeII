@@ -64,7 +64,7 @@ void GL_TexEnv( GLenum mode )
 
 	if ( mode != lastmodes[gl_state.currenttmu] )
 	{
-		glTexEnvi( GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, mode );
+		GL_EnableState(mode);
 		lastmodes[gl_state.currenttmu] = mode;
 	}
 }

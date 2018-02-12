@@ -243,9 +243,9 @@ void EmitWaterPolys (msurface_t *fa)
 			memcpy(pPoint, &v[0], sizeof(vec3_t));
 			pPoint += 3;
 		}
-		vglVertexPointer(3, GL_FLOAT, 0, p->numverts, gVertexBuffer);
-		vglTexCoordPointer(2, GL_FLOAT, 0, p->numverts, gTexCoordBuffer);
-		vglDrawObjects(GL_TRIANGLE_FAN, p->numverts, GL_TRUE);
+		vglVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, p->numverts, gVertexBuffer);
+		vglVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 0, p->numverts, gTexCoordBuffer);
+		GL_DrawPolygon(GL_TRIANGLE_FAN, p->numverts);
 	}
 }
 
@@ -592,9 +592,9 @@ glRotatef (r_newrefdef.time * skyrotate, skyaxis[0], skyaxis[1], skyaxis[2]);
 		MakeSkyVec (skymins[0][i], skymaxs[1][i], i);
 		MakeSkyVec (skymaxs[0][i], skymaxs[1][i], i);
 		MakeSkyVec (skymaxs[0][i], skymins[1][i], i);
-		vglVertexPointer(3, GL_FLOAT, 0, 4, gVertexBuffer);
-		vglTexCoordPointer(2, GL_FLOAT, 0, 4, gTexCoordBuffer);
-		vglDrawObjects(GL_TRIANGLE_FAN, 4, GL_TRUE);
+		vglVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 4, gVertexBuffer);
+		vglVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 0, 4, gTexCoordBuffer);
+		GL_DrawPolygon(GL_TRIANGLE_FAN, 4);
 		
 	}
 glPopMatrix ();

@@ -46,12 +46,11 @@ void R_RenderDlight (dlight_t *light)
 
 	VectorSubtract (light->origin, r_origin, v);
 	
-	glEnableClientState(GL_COLOR_ARRAY);
-	glDisableClientState(GL_TEXTURE_COORD_ARRAY);
+	GL_EnableState(GL_COLOR_ARRAY);
+	GL_DisableState(GL_TEXTURE_COORD_ARRAY);
 	float* pPos = gVertexBuffer;
 	float* pColor = gColorBuffer;
 	
-	glColor4f(light->color[0]*0.2, light->color[1]*0.2, light->color[2]*0.2, 1.0f);
 	*pColor++ = light->color[0]*0.2;
 	*pColor++ = light->color[1]*0.2;
 	*pColor++ = light->color[2]*0.2;
@@ -60,7 +59,6 @@ void R_RenderDlight (dlight_t *light)
 	for (i=0 ; i<3 ; i++)
 		*pPos++ = light->origin[i] - vpn[i]*rad;
 	
-	glColor4f(0,0,0,1);
 	for (i=16 ; i>=0 ; i--)
 	{
 		a = i/16.0 * M_PI*2;
@@ -73,11 +71,11 @@ void R_RenderDlight (dlight_t *light)
 		*pColor++ = 0.0f;
 		*pColor++ = 1.0f;
 	}
-	vglVertexPointer(3, GL_FLOAT, 0, 18, gVertexBuffer);
-	vglColorPointer(4, GL_FLOAT, 0, 18, gColorBuffer);
-	vglDrawObjects(GL_TRIANGLE_FAN, 18, GL_TRUE);
-	glDisableClientState(GL_COLOR_ARRAY);
-	glEnableClientState(GL_TEXTURE_COORD_ARRAY);
+	vglVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 18, gVertexBuffer);
+	vglVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, 0, 18, gColorBuffer);
+	GL_DrawPolygon(GL_TRIANGLE_FAN, 18);
+	GL_DisableState(GL_COLOR_ARRAY);
+	GL_EnableState(GL_TEXTURE_COORD_ARRAY);
 }
 
 /*
@@ -95,7 +93,7 @@ void R_RenderDlights (void)
 
 	r_dlightframecount = r_framecount + 1;	// because the count hasn't
 											//  advanced yet for this frame
-	glDepthMask (0);
+	glDepthMask (GL_FALSE);
 	glDisable (GL_TEXTURE_2D);
 //->	glShadeModel (GL_SMOOTH);
 	glEnable (GL_BLEND);
@@ -105,11 +103,11 @@ void R_RenderDlights (void)
 	for (i=0 ; i<r_newrefdef.num_dlights ; i++, l++)
 		R_RenderDlight (l);
 
-	glColor4f (1,1,1,1);
+	GL_Color (1,1,1,1);
 	glDisable (GL_BLEND);
 	glEnable (GL_TEXTURE_2D);
 	glBlendFunc (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-	glDepthMask (1);
+	glDepthMask (GL_TRUE);
 }
 
 
