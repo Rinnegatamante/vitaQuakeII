@@ -129,9 +129,9 @@ R_MarkLights
 void R_MarkLights (dlight_t *light, int bit, mnode_t *node)
 {
 	cplane_t	*splitplane;
-	float		dist;
+	float		dist, dot;
 	msurface_t	*surf;
-	int			i;
+	int			i, sidebit;
 	
 	if (node->contents != -1)
 		return;
@@ -154,6 +154,15 @@ void R_MarkLights (dlight_t *light, int bit, mnode_t *node)
 	surf = r_worldmodel->surfaces + node->firstsurface;
 	for (i=0 ; i<node->numsurfaces ; i++, surf++)
 	{
+		dist = DotProduct (light->origin, surf->plane->normal) - surf->plane->dist;	//Discoloda
+		if (dist >= 0) //Discoloda
+			sidebit = 0; //Discoloda
+		else //Discoloda
+			sidebit = SURF_PLANEBACK;	 //Discoloda
+
+		if ( (surf->flags & SURF_PLANEBACK) != sidebit ) //Discoloda
+			continue;	 //Discoloda
+			
 		if (surf->dlightframe != r_dlightframecount)
 		{
 			surf->dlightbits = 0;
