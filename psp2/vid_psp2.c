@@ -35,6 +35,7 @@ static cvar_t *sw_stipplealpha;
 static cvar_t *gl_picmip;
 static cvar_t *gl_mode;
 static cvar_t *gl_driver;
+extern cvar_t *gl_shadows;
 
 extern void M_ForceMenuOff( void );
 
@@ -53,6 +54,7 @@ static menulist_s       s_fs_box;
 static menulist_s       s_finish_box;
 static menuaction_s     s_cancel_action;
 static menuaction_s     s_defaults_action;
+static menulist_s       s_shadows_slider;
 
 viddef_t    viddef;             // global video state
 
@@ -143,6 +145,11 @@ static void ScreenSizeCallback( void *s )
     menuslider_s *slider = ( menuslider_s * ) s;
 
     Cvar_SetValue( "viewsize", slider->curvalue * 10 );
+}
+
+static void ShadowsCallback( void *unused )
+{
+	Cvar_SetValue( "gl_shadows", s_shadows_slider.curvalue );
 }
 
 static void BrightnessCallback( void *s )
@@ -277,7 +284,7 @@ void    VID_MenuInit (void)
 	
     s_screensize_slider.curvalue = scr_viewsize->value/10;
 
-    //s_mipcap_slider.curvalue = sw_mipcap->value;
+    s_shadows_slider.curvalue = gl_shadows->value;
 
 	s_mode_list.curvalue = gl_mode->value;
     s_ref_list.curvalue = REF_OPENGL;
@@ -342,20 +349,19 @@ void    VID_MenuInit (void)
 	s_defaults_action.generic.y    = 90;
 	s_defaults_action.generic.callback = ResetDefaults;
 
-    /*s_mipcap_slider.generic.type = MTYPE_SLIDER;
-    s_mipcap_slider.generic.x        = 0;
-    s_mipcap_slider.generic.y        = 70;
-    s_mipcap_slider.generic.name = "mipcap";
-    s_mipcap_slider.minvalue = 0;
-    s_mipcap_slider.maxvalue = 4;
-    s_mipcap_slider.generic.callback = MipcapCallback;*/
+    s_shadows_slider.generic.type = MTYPE_SPINCONTROL;
+    s_shadows_slider.generic.x        = 0;
+    s_shadows_slider.generic.y        = 70;
+    s_shadows_slider.generic.name = "render shadows";
+    s_shadows_slider.generic.callback = ShadowsCallback;
+	s_shadows_slider.itemnames = yesno_names;
 
     Menu_AddItem( &s_opengl_menu, ( void * ) &s_ref_list );
 	Menu_AddItem( &s_opengl_menu, ( void * ) &s_mode_list );
 	Menu_AddItem( &s_opengl_menu, ( void * ) &s_screensize_slider );
     Menu_AddItem( &s_opengl_menu, ( void * ) &s_brightness_slider );
     Menu_AddItem( &s_opengl_menu, ( void * ) &s_tq_slider );
-    //Menu_AddItem( &s_software_menu, ( void * ) &s_mipcap_slider );
+    Menu_AddItem( &s_opengl_menu, ( void * ) &s_shadows_slider );
 
     Menu_AddItem( &s_opengl_menu, ( void * ) &s_cancel_action );
 	Menu_AddItem( &s_opengl_menu, ( void * ) &s_defaults_action );
