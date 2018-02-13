@@ -122,7 +122,6 @@ void GL_DrawAliasFrameLerp (dmdl_t *paliashdr, float backlerp)
 
 	// PMM - added double shell
 	if ( currententity->flags & ( RF_SHELL_RED | RF_SHELL_GREEN | RF_SHELL_BLUE | RF_SHELL_DOUBLE | RF_SHELL_HALF_DAM) ){
-		glDisable( GL_TEXTURE_2D );
 		GL_DisableState(GL_TEXTURE_COORD_ARRAY);
 	}
 
@@ -237,7 +236,6 @@ void GL_DrawAliasFrameLerp (dmdl_t *paliashdr, float backlerp)
 //	if ( currententity->flags & ( RF_SHELL_RED | RF_SHELL_GREEN | RF_SHELL_BLUE ) )
 	// PMM - added double damage shell
 	if ( currententity->flags & ( RF_SHELL_RED | RF_SHELL_GREEN | RF_SHELL_BLUE | RF_SHELL_DOUBLE | RF_SHELL_HALF_DAM) ){
-		glEnable( GL_TEXTURE_2D );
 		GL_EnableState(GL_TEXTURE_COORD_ARRAY);
 	}
 }
@@ -763,10 +761,10 @@ void R_DrawAliasModel (entity_t *e)
 	{
 		glPushMatrix ();
 		R_RotateForEntity (e);
-		glDisable (GL_TEXTURE_2D);
+		GL_DisableState (GL_TEXTURE_COORD_ARRAY);
 		glEnable (GL_BLEND);
 		GL_DrawAliasShadow (paliashdr, currententity->frame );
-		glEnable (GL_TEXTURE_2D);
+		GL_EnableState (GL_TEXTURE_COORD_ARRAY);
 		glDisable (GL_BLEND);
 		glPopMatrix ();
 	}

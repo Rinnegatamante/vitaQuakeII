@@ -71,6 +71,8 @@ void R_RenderDlight (dlight_t *light)
 		*pColor++ = 0.0f;
 		*pColor++ = 1.0f;
 	}
+	
+	GL_Color(0,0,0,1);
 	vglVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 18, gVertexBuffer);
 	vglVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, 0, 18, gColorBuffer);
 	GL_DrawPolygon(GL_TRIANGLE_FAN, 18);
@@ -94,7 +96,7 @@ void R_RenderDlights (void)
 	r_dlightframecount = r_framecount + 1;	// because the count hasn't
 											//  advanced yet for this frame
 	glDepthMask (GL_FALSE);
-	glDisable (GL_TEXTURE_2D);
+	GL_DisableState (GL_TEXTURE_COORD_ARRAY);
 //->	glShadeModel (GL_SMOOTH);
 	glEnable (GL_BLEND);
 	glBlendFunc (GL_ONE, GL_ONE);
@@ -105,7 +107,7 @@ void R_RenderDlights (void)
 
 	GL_Color (1,1,1,1);
 	glDisable (GL_BLEND);
-	glEnable (GL_TEXTURE_2D);
+	GL_EnableState (GL_TEXTURE_COORD_ARRAY);
 	glBlendFunc (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	glDepthMask (GL_TRUE);
 }

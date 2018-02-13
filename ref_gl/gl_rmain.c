@@ -503,7 +503,6 @@ void R_PolyBlend (void)
 	GL_DisableState(GL_ALPHA_TEST);
 	glEnable (GL_BLEND);
 	glDisable (GL_DEPTH_TEST);
-	glDisable (GL_TEXTURE_2D);
 
     glLoadIdentity ();
 
@@ -525,7 +524,6 @@ void R_PolyBlend (void)
 	GL_EnableState(GL_TEXTURE_COORD_ARRAY);
 	
 	glDisable (GL_BLEND);
-	glEnable (GL_TEXTURE_2D);
 	GL_EnableState(GL_ALPHA_TEST);
 
 	GL_Color(1,1,1,1);
@@ -1368,7 +1366,6 @@ void R_DrawBeam( entity_t *e )
 	GL_DrawPolygon(GL_TRIANGLE_STRIP, num_vertices);
 	GL_EnableState(GL_TEXTURE_COORD_ARRAY);
 	
-	glEnable( GL_TEXTURE_2D );
 	glDisable( GL_BLEND );
 	glDepthMask( GL_TRUE );
 }
