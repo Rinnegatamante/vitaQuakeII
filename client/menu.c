@@ -1013,6 +1013,7 @@ CONTROLS MENU
 */
 static cvar_t *win_noalttab;
 extern cvar_t *in_joystick;
+extern cvar_t *cl_drawfps;
 
 static menuframework_s	s_options_menu;
 static menuaction_s		s_options_defaults_action;
@@ -1023,7 +1024,7 @@ static menulist_s		s_options_noalttab_box;
 static menulist_s		s_options_alwaysrun_box;
 static menulist_s		s_options_invertmouse_box;
 static menulist_s		s_options_lookspring_box;
-static menulist_s		s_options_lookstrafe_box;
+static menulist_s		s_options_fps_box;
 static menulist_s		s_options_crosshair_box;
 static menuslider_s		s_options_sfxvolume_slider;
 static menuslider_s		s_options_cdvolume_slider;
@@ -1106,6 +1107,11 @@ static void RightAnalogSpeedFunc( void *unused )
 {
 	Cvar_SetValue( "rightanalog_sensitivity", s_options_rightanalog_slider.curvalue / 2.0F );
 }
+
+static void fpsFunc( void *unused )
+{
+	Cvar_SetValue( "cl_drawfps", s_options_fps_box.curvalue );
+}
 #endif
 
 static void NoAltTabFunc( void *unused )
@@ -1142,8 +1148,8 @@ static void ControlsSetMenuItemValues( void )
 	Cvar_SetValue( "lookspring", ClampCvar( 0, 1, lookspring->value ) );
 	s_options_lookspring_box.curvalue		= lookspring->value;
 
-	Cvar_SetValue( "lookstrafe", ClampCvar( 0, 1, lookstrafe->value ) );
-	s_options_lookstrafe_box.curvalue		= lookstrafe->value;
+	Cvar_SetValue( "cl_drawfps", ClampCvar( 0, 1, cl_drawfps->value ) );
+	s_options_fps_box.curvalue		= cl_drawfps->value;
 
 	Cvar_SetValue( "freelook", ClampCvar( 0, 1, freelook->value ) );
 	s_options_freelook_box.curvalue			= freelook->value;
@@ -1197,11 +1203,6 @@ static void InvertMouseFunc( void *unused )
 static void LookspringFunc( void *unused )
 {
 	Cvar_SetValue( "lookspring", s_options_lookspring_box.curvalue );
-}
-
-static void LookstrafeFunc( void *unused )
-{
-	Cvar_SetValue( "lookstrafe", s_options_lookstrafe_box.curvalue );
 }
 
 static void UpdateVolumeFunc( void *unused )
@@ -1427,16 +1428,16 @@ void Options_MenuInit( void )
 	s_options_lookspring_box.generic.y	= 80;
 	s_options_lookspring_box.generic.name	= "lookspring";
 	s_options_lookspring_box.generic.callback = LookspringFunc;
-	s_options_lookspring_box.itemnames = yesno_names;
+	s_options_lookspring_box.itemnames = yesno_names;*/
 
-	s_options_lookstrafe_box.generic.type = MTYPE_SPINCONTROL;
-	s_options_lookstrafe_box.generic.x	= 0;
-	s_options_lookstrafe_box.generic.y	= 90;
-	s_options_lookstrafe_box.generic.name	= "lookstrafe";
-	s_options_lookstrafe_box.generic.callback = LookstrafeFunc;
-	s_options_lookstrafe_box.itemnames = yesno_names;
+	s_options_fps_box.generic.type = MTYPE_SPINCONTROL;
+	s_options_fps_box.generic.x	= 0;
+	s_options_fps_box.generic.y	= 90;
+	s_options_fps_box.generic.name	= "show fps";
+	s_options_fps_box.generic.callback = fpsFunc;
+	s_options_fps_box.itemnames = yesno_names;
 
-	s_options_freelook_box.generic.type = MTYPE_SPINCONTROL;
+	/*s_options_freelook_box.generic.type = MTYPE_SPINCONTROL;
 	s_options_freelook_box.generic.x	= 0;
 	s_options_freelook_box.generic.y	= 100;
 	s_options_freelook_box.generic.name	= "free look";
@@ -1497,9 +1498,9 @@ void Options_MenuInit( void )
 	//Menu_AddItem( &s_options_menu, ( void * ) &s_options_sensitivity_slider );
 	Menu_AddItem( &s_options_menu, ( void * ) &s_options_alwaysrun_box );
 	Menu_AddItem( &s_options_menu, ( void * ) &s_options_invertmouse_box );
-	/*Menu_AddItem( &s_options_menu, ( void * ) &s_options_lookspring_box );
-	Menu_AddItem( &s_options_menu, ( void * ) &s_options_lookstrafe_box );
-	Menu_AddItem( &s_options_menu, ( void * ) &s_options_freelook_box );*/
+	//Menu_AddItem( &s_options_menu, ( void * ) &s_options_lookspring_box );
+	Menu_AddItem( &s_options_menu, ( void * ) &s_options_fps_box );
+	//Menu_AddItem( &s_options_menu, ( void * ) &s_options_freelook_box );
 	Menu_AddItem( &s_options_menu, ( void * ) &s_options_crosshair_box );
 	Menu_AddItem( &s_options_menu, ( void * ) &s_options_rumble_box );
 	Menu_AddItem( &s_options_menu, ( void * ) &s_options_customize_options_action );
