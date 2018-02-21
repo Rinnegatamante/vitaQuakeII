@@ -177,7 +177,7 @@ void CDAudio_Play(int track, qboolean looping)
 	FILE* fd = fopen(tmp,"rb");
 	if (fd == NULL){
 		sprintf(tmp,"%s.mp3",fname);
-		FILE* fd = fopen(tmp,"rb");
+		fd = fopen(tmp,"rb");
 	}
 	if (fd == NULL) return;
 	DecodedMusic* memblock = (DecodedMusic*)malloc(sizeof(DecodedMusic));
