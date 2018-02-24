@@ -37,6 +37,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 static qboolean GLimp_SwitchFullscreen( int width, int height );
 qboolean GLimp_InitGL (void);
 
+extern int isKeyboard;
 extern cvar_t *vid_fullscreen;
 extern cvar_t *vid_ref;
 qboolean gl_set = false;
@@ -379,7 +380,11 @@ void GLimp_BeginFrame( float camera_separation )
 */
 void GLimp_EndFrame (void)
 {
-	vglStopRendering();
+	if (isKeyboard){
+		vglStopRenderingInit();
+		vglUpdateCommonDialog();
+		vglStopRenderingTerm();
+	}else vglStopRendering();
 }
 
 /*
