@@ -170,8 +170,6 @@ void R_DrawTriangleOutlines (void)
 	if (!gl_showtris->value)
 		return;
 
-
-	glDisable (GL_TEXTURE_2D);
 	glDisable (GL_DEPTH_TEST);
 	GL_Color(1,1,1,1);
 	const float color[] = {1, 1, 1, 1};
@@ -202,7 +200,6 @@ void R_DrawTriangleOutlines (void)
 	}
 
 	glEnable (GL_DEPTH_TEST);
-	glEnable (GL_TEXTURE_2D);
 	GL_EnableState(GL_TEXTURE_COORD_ARRAY);
 }
 
@@ -559,11 +556,11 @@ void R_DrawAlphaSurfaces (void)
 		GL_Bind(s->texinfo->image->texnum);
 		c_brush_polys++;
 		if (s->texinfo->flags & SURF_TRANS33)
-			glColor4f (intens,intens,intens,0.33);
+			GL_Color (intens,intens,intens,0.33);
 		else if (s->texinfo->flags & SURF_TRANS66)
-			glColor4f (intens,intens,intens,0.66);
+			GL_Color (intens,intens,intens,0.66);
 		else
-			glColor4f (intens,intens,intens,1);
+			GL_Color (intens,intens,intens,1);
 		if (s->flags & SURF_DRAWTURB)
 			EmitWaterPolys (s);
 		else

@@ -254,14 +254,12 @@ void Draw_Fill (int x, int y, int w, int h, int c)
 	if ( (unsigned)c > 255)
 		ri.Sys_Error (ERR_FATAL, "Draw_Fill: bad color");
 
-	glDisable(GL_TEXTURE_2D);
-
 	color.c = d_8to24table[c];
 	
-	DrawQuad_NoTex(x, y, w, h, color.v[0]/255.0, color.v[1]/255.0, color.v[2]/255.0, 1);
+	DrawQuad_NoTex(x, y, w, h, (color.v[0]) / 255.0f, (color.v[1]) / 255.0f, (color.v[2]) / 255.0f, 1.0f);
 	
 	GL_Color(1,1,1,1);
-	glEnable(GL_TEXTURE_2D);
+
 }
 
 //=============================================================================
@@ -275,10 +273,8 @@ Draw_FadeScreen
 void Draw_FadeScreen (void)
 {
 	glEnable (GL_BLEND);
-	glDisable (GL_TEXTURE_2D);
-	DrawQuad_NoTex(0, 0, vid.width, vid.height, 0, 0, 0, 0.8);
+	DrawQuad_NoTex(0, 0, vid.width, vid.height, 0, 0, 0, 0.8f);
 	GL_Color (1,1,1,1);
-	glEnable (GL_TEXTURE_2D);
 	glDisable (GL_BLEND);
 }
 

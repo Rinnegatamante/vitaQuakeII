@@ -837,7 +837,7 @@ void	R_SetGL2D (void)
 	glDisable (GL_CULL_FACE);
 	glDisable (GL_BLEND);
 	GL_EnableState(GL_ALPHA_TEST);
-	glColor4f (1,1,1,1);
+	GL_Color (1,1,1,1);
 }
 
 static void GL_DrawColoredStereoLinePair( float r, float g, float b, float y )
@@ -1202,7 +1202,7 @@ void R_BeginFrame( float camera_separation )
 	glDisable (GL_CULL_FACE);
 	glDisable (GL_BLEND);
 	GL_EnableState(GL_ALPHA_TEST);
-	glColor4f (1,1,1,1);
+	GL_Color(1,1,1,1);
 
 	/*
 	** draw buffer stuff
@@ -1332,7 +1332,6 @@ void R_DrawBeam( entity_t *e )
 		VectorAdd( start_points[i], direction, end_points[i] );
 	}
 
-	glDisable( GL_TEXTURE_2D );
 	glEnable( GL_BLEND );
 	glDepthMask( GL_FALSE );
 
