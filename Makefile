@@ -6,7 +6,7 @@ INCLUDES	:= include
 LIBS = -lvitaGL -lvorbisfile -lvorbis -logg -lspeexdsp -lmpg123 \
 	-lSceLibKernel_stub -lSceAppMgr_stub -lSceSysmodule_stub \
 	-lSceCtrl_stub -lSceTouch_stub -lm -lSceNet_stub -lSceNetCtl_stub \
-	-lSceAppUtil_stub -lc -lScePower_stub -lSceCommonDialog_stub \
+	-lSceAppUtil_stub -lc -lScePower_stub -lSceMotion_stub -lSceCommonDialog_stub \
 	-lSceAudio_stub -lSceGxm_stub -lSceDisplay_stub -lSceNet_stub -lSceNetCtl_stub
 
 SYSTEM = 	psp2/vid_psp2.o \
@@ -35,7 +35,7 @@ CLIENT =	client/cl_input.o \
 			client/snd_mem.o \
 			client/snd_mix.o \
 			client/qmenu.o \
-			client/cl_newfx.o 
+			client/cl_newfx.o
 
 QCOMMON = 	qcommon/cmd.o \
 			qcommon/cmodel.o \
@@ -45,7 +45,7 @@ QCOMMON = 	qcommon/cmd.o \
 			qcommon/files.o \
 			qcommon/md4.o \
 			qcommon/net_chan.o \
-			qcommon/pmove.o 
+			qcommon/pmove.o
 
 SERVER = 	server/sv_ccmds.o \
 			server/sv_ents.o \
@@ -139,7 +139,7 @@ CPPSOURCES	:= audiodec
 CFILES		:=	$(CLIENT) $(QCOMMON) $(SERVER) $(GAME) $(SYSTEM) $(REFGL)
 CPPFILES   := $(foreach dir,$(CPPSOURCES), $(wildcard $(dir)/*.cpp))
 BINFILES := $(foreach dir,$(DATA), $(wildcard $(dir)/*.bin))
-OBJS     := $(addsuffix .o,$(BINFILES)) $(CFILES:.c=.o) $(CPPFILES:.cpp=.o) 
+OBJS     := $(addsuffix .o,$(BINFILES)) $(CFILES:.c=.o) $(CPPFILES:.cpp=.o)
 
 PREFIX  = arm-vita-eabi
 CC      = $(PREFIX)-gcc
@@ -154,12 +154,12 @@ ASFLAGS = $(CFLAGS)
 all: $(TARGET).vpk
 
 $(TARGET).vpk: $(TARGET).velf
-	vita-make-fself -s $< build\eboot.bin
+	vita-make-fself -s $< build/eboot.bin
 	vita-mksfoex -s TITLE_ID=$(TITLE) "$(TARGET)" param.sfo
 	cp -f param.sfo build/sce_sys/param.sfo
-	
+
 	#------------ Comment this if you don't have 7zip ------------------
-	7z a -tzip $(TARGET).vpk -r .\build\sce_sys\* .\build\eboot.bin 
+	7z a -tzip $(TARGET).vpk -r ./build/sce_sys/* ./build/eboot.bin
 	#-------------------------------------------------------------------
 
 %.velf: %.elf
