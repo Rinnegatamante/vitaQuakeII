@@ -8,7 +8,7 @@ of the License, or (at your option) any later version.
 
 This program is distributed in the hope that it will be useful,
 but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
 See the GNU General Public License for more details.
 
@@ -85,7 +85,7 @@ void M_PushMenu ( void (*draw) (void), const char *(*key) (int k) )
 {
 	int		i;
 
-	if (Cvar_VariableValue ("maxclients") == 1 
+	if (Cvar_VariableValue ("maxclients") == 1
 		&& Com_ServerState ())
 		Cvar_Set ("paused", "1");
 
@@ -242,7 +242,7 @@ const char *Default_MenuKey( menuframework_s *m, int key )
 	case K_AUX30:
 	case K_AUX31:
 	case K_AUX32:
-		
+
 	case K_KP_ENTER:
 	case K_AUX1:
 		if ( m )
@@ -370,7 +370,7 @@ void M_DrawTextBox (int x, int y, int width, int lines)
 	M_DrawCharacter (cx, cy+8, 9);
 }
 
-		
+
 /*
 =======================================================================
 
@@ -603,7 +603,7 @@ char *bindnames[][2] =
 {"invprev",			"prev item"},
 {"invnext",			"next item"},
 
-{"cmd help", 		"help computer" }, 
+{"cmd help", 		"help computer" },
 { 0, 0 }
 };
 
@@ -694,7 +694,7 @@ static void DrawKeyBindingFunc( void *self )
 	menuaction_s *a = ( menuaction_s * ) self;
 
 	M_FindKeysForCommand( bindnames[a->generic.localdata[0]][0], keys);
-		
+
 	if (keys[0] == -1)
 	{
 		Menu_DrawString( a->generic.x + a->generic.parent->x + 16, a->generic.y + a->generic.parent->y, "???" );
@@ -951,7 +951,7 @@ static void Keys_MenuInit( void )
 	Menu_AddItem( &s_keys_menu, ( void * ) &s_keys_inv_next_action );
 
 	Menu_AddItem( &s_keys_menu, ( void * ) &s_keys_help_computer_action );
-	
+
 	Menu_SetStatusBar( &s_keys_menu, "enter to change, backspace to clear" );
 	Menu_Center( &s_keys_menu );
 }
@@ -967,7 +967,7 @@ static const char *Keys_MenuKey( int key )
 	menuaction_s *item = ( menuaction_s * ) Menu_ItemAtCursor( &s_keys_menu );
 
 	if ( bind_grab )
-	{	
+	{
 		if ( key != K_AUX4 && key != '`' )
 		{
 			char cmd[1024];
@@ -975,7 +975,7 @@ static const char *Keys_MenuKey( int key )
 			Com_sprintf (cmd, sizeof(cmd), "bind \"%s\" \"%s\"\n", Key_KeynumToString(key), bindnames[item->generic.localdata[0]][0]);
 			Cbuf_InsertText (cmd);
 		}
-		
+
 		Menu_SetStatusBar( &s_keys_menu, "enter to change, backspace to clear" );
 		bind_grab = false;
 		return menu_out_sound;
@@ -1022,6 +1022,7 @@ static menuslider_s		s_options_sensitivity_slider;
 static menulist_s		s_options_freelook_box;
 static menulist_s		s_options_noalttab_box;
 static menulist_s		s_options_alwaysrun_box;
+static menulist_s		s_options_use_gyro_box;
 static menulist_s		s_options_invertmouse_box;
 static menulist_s		s_options_lookspring_box;
 static menulist_s		s_options_fps_box;
@@ -1047,6 +1048,9 @@ extern cvar_t	*rightanalog_sensitivity;
 cvar_t	*pstv_rumble;
 static menuslider_s		s_options_leftanalog_slider;
 static menuslider_s		s_options_rightanalog_slider;
+static menuslider_s		s_options_vert_motioncam_slider;
+static menuslider_s		s_options_hor_motioncam_slider;
+cvar_t *use_gyro;
 static menulist_s		s_options_rumble_box;
 #endif
 
@@ -1068,6 +1072,11 @@ static void JoystickFunc( void *unused )
 static void CustomizeControlsFunc( void *unused )
 {
 	M_Menu_Keys_f();
+}
+
+static void UseGyroFunc( void *unused )
+{
+	Cvar_SetValue( "use_gyro", s_options_use_gyro_box.curvalue );
 }
 
 static void AlwaysRunFunc( void *unused )
@@ -1108,6 +1117,16 @@ static void RightAnalogSpeedFunc( void *unused )
 	Cvar_SetValue( "rightanalog_sensitivity", s_options_rightanalog_slider.curvalue / 2.0F );
 }
 
+static void VertMotionCamSpeedFunc( void *unused )
+{
+	Cvar_SetValue( "vert_motioncam_sensitivity", s_options_vert_motioncam_slider.curvalue / 2.0F );
+}
+
+static void HorMotionCamSpeedFunc( void *unused )
+{
+	Cvar_SetValue( "hor_motioncam_sensitivity", s_options_hor_motioncam_slider.curvalue / 2.0F );
+}
+
 static void fpsFunc( void *unused )
 {
 	Cvar_SetValue( "cl_drawfps", s_options_fps_box.curvalue );
@@ -1143,6 +1162,9 @@ static void ControlsSetMenuItemValues( void )
 	Cvar_SetValue( "cl_run", ClampCvar( 0, 1, cl_run->value ) );
 	s_options_alwaysrun_box.curvalue		= cl_run->value;
 
+	Cvar_SetValue( "use_gyro", ClampCvar( 0, 1, use_gyro->value ) );
+	s_options_use_gyro_box.curvalue		= use_gyro->value;
+
 	s_options_invertmouse_box.curvalue		= m_pitch->value < 0;
 
 	Cvar_SetValue( "lookspring", ClampCvar( 0, 1, lookspring->value ) );
@@ -1156,7 +1178,7 @@ static void ControlsSetMenuItemValues( void )
 
 	Cvar_SetValue( "crosshair", ClampCvar( 0, 3, crosshair->value ) );
 	s_options_crosshair_box.curvalue		= crosshair->value;
-	
+
 	Cvar_SetValue( "pstv_rumble", ClampCvar( 0, 1, pstv_rumble->value ) );
 	s_options_rumble_box.curvalue		= pstv_rumble->value;
 
@@ -1168,11 +1190,11 @@ static void ControlsSetMenuItemValues( void )
 	#ifdef _3DS
 	s_options_circlepad_slider.curvalue 	= ( circlepad_sensitivity->value ) * 2;
 	#endif
-	
+
 	#ifdef PSP2
 	s_options_leftanalog_slider.curvalue 	= ( leftanalog_sensitivity->value ) * 2;
 	#endif
-	
+
 }
 
 static void ControlsResetDefaultsFunc( void *unused )
@@ -1182,7 +1204,7 @@ static void ControlsResetDefaultsFunc( void *unused )
 	//#ifdef _3DS
 	Sys_DefaultConfig();
 	//#endif
-	
+
 	Cbuf_Execute();
 
 	ControlsSetMenuItemValues();
@@ -1247,7 +1269,7 @@ static void UpdateSoundQualityFunc( void *unused )
 		Cvar_SetValue( "s_khz", 11 );
 		Cvar_SetValue( "s_loadas8bit", true );
 	}
-	
+
 	Cvar_SetValue( "s_primary", s_options_compatibility_list.curvalue );
 
 	M_DrawTextBox( 8, 120 - 48, 36, 3 );
@@ -1321,7 +1343,7 @@ void Options_MenuInit( void )
 	s_options_cdvolume_slider.minvalue		= 0;
 	s_options_cdvolume_slider.maxvalue		= 10;
 	s_options_cdvolume_slider.curvalue		= Cvar_VariableValue( "cd_volume" ) * 10;
-	
+
 	s_options_cdvolume_box.generic.type	= MTYPE_SPINCONTROL;
 	s_options_cdvolume_box.generic.x		= 0;
 	s_options_cdvolume_box.generic.y		= 10;
@@ -1391,6 +1413,29 @@ void Options_MenuInit( void )
 	s_options_rightanalog_slider.minvalue		= 2;
 	s_options_rightanalog_slider.maxvalue		= 22;
 
+	s_options_use_gyro_box.generic.type = MTYPE_SPINCONTROL;
+	s_options_use_gyro_box.generic.x	= 0;
+	s_options_use_gyro_box.generic.y	= 50;
+	s_options_use_gyro_box.generic.name	= "use gyro for camera";
+	s_options_use_gyro_box.generic.callback = UseGyroFunc;
+	s_options_use_gyro_box.itemnames = yesno_names;
+
+	s_options_vert_motioncam_slider.generic.type	= MTYPE_SLIDER;
+	s_options_vert_motioncam_slider.generic.x		= 0;
+	s_options_vert_motioncam_slider.generic.y		= 60;
+	s_options_vert_motioncam_slider.generic.name	= "vert motion camera sensitivity";
+	s_options_vert_motioncam_slider.generic.callback = VertMotionCamSpeedFunc;
+	s_options_vert_motioncam_slider.minvalue		= 0;
+	s_options_vert_motioncam_slider.maxvalue		= 20;
+
+	s_options_hor_motioncam_slider.generic.type	= MTYPE_SLIDER;
+	s_options_hor_motioncam_slider.generic.x		= 0;
+	s_options_hor_motioncam_slider.generic.y		= 70;
+	s_options_hor_motioncam_slider.generic.name	= "hor motion camera sensitivity";
+	s_options_hor_motioncam_slider.generic.callback = HorMotionCamSpeedFunc;
+	s_options_hor_motioncam_slider.minvalue		= 0;
+	s_options_hor_motioncam_slider.maxvalue		= 20;
+
 	/*s_options_sensitivity_slider.generic.type	= MTYPE_SLIDER;
 	s_options_sensitivity_slider.generic.x		= 0;
 	s_options_sensitivity_slider.generic.y		= 50;
@@ -1411,14 +1456,14 @@ void Options_MenuInit( void )
 
 	s_options_alwaysrun_box.generic.type = MTYPE_SPINCONTROL;
 	s_options_alwaysrun_box.generic.x	= 0;
-	s_options_alwaysrun_box.generic.y	= 60;
+	s_options_alwaysrun_box.generic.y	= 80;
 	s_options_alwaysrun_box.generic.name	= "always run";
 	s_options_alwaysrun_box.generic.callback = AlwaysRunFunc;
 	s_options_alwaysrun_box.itemnames = yesno_names;
 
 	s_options_invertmouse_box.generic.type = MTYPE_SPINCONTROL;
 	s_options_invertmouse_box.generic.x	= 0;
-	s_options_invertmouse_box.generic.y	= 70;
+	s_options_invertmouse_box.generic.y	= 90;
 	s_options_invertmouse_box.generic.name	= "invert camera";
 	s_options_invertmouse_box.generic.callback = InvertMouseFunc;
 	s_options_invertmouse_box.itemnames = yesno_names;
@@ -1432,7 +1477,7 @@ void Options_MenuInit( void )
 
 	s_options_fps_box.generic.type = MTYPE_SPINCONTROL;
 	s_options_fps_box.generic.x	= 0;
-	s_options_fps_box.generic.y	= 90;
+	s_options_fps_box.generic.y	= 100;
 	s_options_fps_box.generic.name	= "show fps";
 	s_options_fps_box.generic.callback = fpsFunc;
 	s_options_fps_box.itemnames = yesno_names;
@@ -1494,6 +1539,9 @@ void Options_MenuInit( void )
 	Menu_AddItem( &s_options_menu, ( void * ) &s_options_cdvolume_slider );
 	//Menu_AddItem( &s_options_menu, ( void * ) &s_options_leftanalog_slider );
 	Menu_AddItem( &s_options_menu, ( void * ) &s_options_rightanalog_slider );
+	Menu_AddItem( &s_options_menu, ( void * ) &s_options_use_gyro_box );
+        Menu_AddItem( &s_options_menu, ( void * ) &s_options_vert_motioncam_slider );
+        Menu_AddItem( &s_options_menu, ( void * ) &s_options_hor_motioncam_slider );
 	//#endif
 	//Menu_AddItem( &s_options_menu, ( void * ) &s_options_sensitivity_slider );
 	Menu_AddItem( &s_options_menu, ( void * ) &s_options_alwaysrun_box );
@@ -1995,14 +2043,14 @@ void M_Menu_Credits_f( void )
 	else
 	{
 		isdeveloper = Developer_searchpath (1);
-		
+
 		if (isdeveloper == 1)			// xatrix
 			credits = xatcredits;
 		else if (isdeveloper == 2)		// ROGUE
 			credits = roguecredits;
 		else
 		{
-			credits = idcredits;	
+			credits = idcredits;
 		}
 
 	}
@@ -2556,7 +2604,7 @@ void RulesChangeFunc ( void *self )
 	// ROGUE GAMES
 	else if(Developer_searchpath(2) == 2)
 	{
-		if (s_rules_box.curvalue == 2)			// tag	
+		if (s_rules_box.curvalue == 2)			// tag
 		{
 			s_maxclients_field.generic.statusbar = NULL;
 			s_startserver_dmoptions_action.generic.statusbar = NULL;
@@ -2852,7 +2900,7 @@ void StartServer_MenuInit( void )
 	s_rules_box.generic.x	= 0;
 	s_rules_box.generic.y	= 20;
 	s_rules_box.generic.name	= "rules";
-	
+
 //PGM - rogue games only available with rogue DLL.
 	if(Developer_searchpath(2) == 2)
 		s_rules_box.itemnames = dm_coop_names_rogue;
@@ -2891,7 +2939,7 @@ void StartServer_MenuInit( void )
 	/*
 	** maxclients determines the maximum number of players that can join
 	** the game.  If maxclients is only "1" then we should default the menu
-	** option to 8 players, otherwise use whatever its current value is. 
+	** option to 8 players, otherwise use whatever its current value is.
 	** Clamping will be done when the server is actually started.
 	*/
 	s_maxclients_field.generic.type = MTYPE_FIELD;
@@ -2905,7 +2953,7 @@ void StartServer_MenuInit( void )
 	s_maxclients_field.visible_length = 3;
 	if ( Cvar_VariableValue( "maxclients" ) == 1 )
 		strcpy( s_maxclients_field.buffer, "8" );
-	else 
+	else
 		strcpy( s_maxclients_field.buffer, Cvar_VariableString("maxclients") );
 
 	s_hostname_field.generic.type = MTYPE_FIELD;
@@ -3037,7 +3085,7 @@ static void DMFlagCallback( void *self )
 			flags |= DF_NO_FALLING;
 		goto setvalue;
 	}
-	else if ( f == &s_weapons_stay_box ) 
+	else if ( f == &s_weapons_stay_box )
 	{
 		bit = DF_WEAPONS_STAY;
 	}
@@ -3162,7 +3210,7 @@ void DMOptions_MenuInit( void )
 	{
 		"no", "yes", 0
 	};
-	static const char *teamplay_names[] = 
+	static const char *teamplay_names[] =
 	{
 		"disabled", "by skin", "by model", 0
 	};
@@ -3665,8 +3713,8 @@ void MPNicknameCallback( void *self )
 	param.initialText = initial_text;
 	param.inputTextBuffer = input_text;
 	sceImeDialogInit(&param);
-}	
-	
+}
+
 void DownloadOptionsFunc( void *self )
 {
 	M_Menu_DownloadOptions_f();
@@ -3738,7 +3786,7 @@ static qboolean PlayerConfig_ScanDirectories( void )
 	/*
 	** get a list of directories
 	*/
-	do 
+	do
 	{
 		path = FS_NextPath( path );
 		Com_sprintf( findname, sizeof(findname), "%s/players/*.*", path );
@@ -3949,7 +3997,7 @@ qboolean PlayerConfig_MenuInit( void )
 		}
 	}
 
-	s_player_config_menu.x = viddef.width / 2 - 95; 
+	s_player_config_menu.x = viddef.width / 2 - 95;
 	s_player_config_menu.y = viddef.height / 2 - 97;
 	s_player_config_menu.nitems = 0;
 
@@ -4100,7 +4148,7 @@ void PlayerConfig_MenuDraw( void )
 
 		re.RenderFrame( &refdef );
 
-		Com_sprintf( scratch, sizeof( scratch ), "/players/%s/%s_i.pcx", 
+		Com_sprintf( scratch, sizeof( scratch ), "/players/%s/%s_i.pcx",
 			s_pmi[s_player_model_box.curvalue].directory,
 			s_pmi[s_player_model_box.curvalue].skindisplaynames[s_player_skin_box.curvalue] );
 		re.DrawPic( s_player_config_menu.x - 40, refdef.y, scratch );
@@ -4117,8 +4165,8 @@ const char *PlayerConfig_MenuKey (int key)
 
 		Cvar_Set( "name", s_player_name_field.buffer );
 
-		Com_sprintf( scratch, sizeof( scratch ), "%s/%s", 
-			s_pmi[s_player_model_box.curvalue].directory, 
+		Com_sprintf( scratch, sizeof( scratch ), "%s/%s",
+			s_pmi[s_player_model_box.curvalue].directory,
 			s_pmi[s_player_model_box.curvalue].skindisplaynames[s_player_skin_box.curvalue] );
 
 		Cvar_Set( "skin", scratch );
@@ -4297,4 +4345,3 @@ void M_Keydown (int key)
 		if ( ( s = m_keyfunc( key ) ) != 0 )
 			S_StartLocalSound( ( char * ) s );
 }
-

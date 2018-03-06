@@ -23,6 +23,9 @@ SceMotionState motionstate;
 cvar_t *in_joystick;
 cvar_t *leftanalog_sensitivity;
 cvar_t *rightanalog_sensitivity;
+cvar_t *vert_motioncam_sensitivity;
+cvar_t *hor_motioncam_sensitivity;
+cvar_t *use_gyro;
 extern cvar_t *pstv_rumble;
 
 uint64_t rumble_tick;
@@ -32,6 +35,9 @@ void IN_Init (void)
 	in_joystick	= Cvar_Get ("in_joystick", "1",	CVAR_ARCHIVE);
 	leftanalog_sensitivity = Cvar_Get ("leftanalog_sensitivity", "2.0", CVAR_ARCHIVE);
 	rightanalog_sensitivity = Cvar_Get ("rightanalog_sensitivity", "2.0", CVAR_ARCHIVE);
+        vert_motioncam_sensitivity = Cvar_Get ("vert_motioncam_sensitivity", "2.0", CVAR_ARCHIVE);
+	hor_motioncam_sensitivity = Cvar_Get ("hor_motioncam_sensitivity", "2.0", CVAR_ARCHIVE);
+        use_gyro = Cvar_Get ("use_gyro", "2.0", CVAR_ARCHIVE);
 	pstv_rumble	= Cvar_Get ("pstv_rumble", "1",	CVAR_ARCHIVE);
 
 	sceMotionReset();
@@ -129,14 +135,14 @@ void IN_Move (usercmd_t *cmd)
 
   // gyro analog support for camera movement
 
-  //if (motioncam.value){
-if (true){
+  
+  if (use_gyro->value){
     sceMotionGetState(&motionstate);
 
     // not sure why YAW or the horizontal x axis is the controlled by angularVelocity.y
     // and the PITCH or the vertical y axis is controlled by angularVelocity.x but its what seems to work
-    float x_gyro_cam = motionstate.angularVelocity.y *  10; //motion_sensitivity.value;
-    float y_gyro_cam = motionstate.angularVelocity.x * 10; //motion_sensitivity.value;
+    float x_gyro_cam = motionstate.angularVelocity.y *  hor_motioncam_sensitivity->value; //motion_sensitivity.value;
+    float y_gyro_cam = motionstate.angularVelocity.x * vert_motioncam_sensitivity->value; //motion_sensitivity.value;
 
     cl.viewangles[YAW] -= x_gyro_cam;
 
