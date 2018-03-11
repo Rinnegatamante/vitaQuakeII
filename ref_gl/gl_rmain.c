@@ -272,7 +272,6 @@ void R_DrawNullModel (void)
     glPushMatrix ();
 	R_RotateForEntity (currententity);
 
-	glDisable (GL_TEXTURE_2D);
 	float color[4] = {shadelight[0], shadelight[1], shadelight[2], 1};
 	
 	float* pPos = gVertexBuffer;
@@ -300,7 +299,6 @@ void R_DrawNullModel (void)
 	
 	GL_Color (1,1,1,1);
 	glPopMatrix ();
-	glEnable (GL_TEXTURE_2D);
 }
 
 /*

@@ -35,7 +35,7 @@ CLIENT =	client/cl_input.o \
 			client/snd_mem.o \
 			client/snd_mix.o \
 			client/qmenu.o \
-			client/cl_newfx.o
+			client/cl_newfx.o 
 
 QCOMMON = 	qcommon/cmd.o \
 			qcommon/cmodel.o \
@@ -45,7 +45,7 @@ QCOMMON = 	qcommon/cmd.o \
 			qcommon/files.o \
 			qcommon/md4.o \
 			qcommon/net_chan.o \
-			qcommon/pmove.o
+			qcommon/pmove.o 
 
 SERVER = 	server/sv_ccmds.o \
 			server/sv_ents.o \
@@ -139,14 +139,14 @@ CPPSOURCES	:= audiodec
 CFILES		:=	$(CLIENT) $(QCOMMON) $(SERVER) $(GAME) $(SYSTEM) $(REFGL)
 CPPFILES   := $(foreach dir,$(CPPSOURCES), $(wildcard $(dir)/*.cpp))
 BINFILES := $(foreach dir,$(DATA), $(wildcard $(dir)/*.bin))
-OBJS     := $(addsuffix .o,$(BINFILES)) $(CFILES:.c=.o) $(CPPFILES:.cpp=.o)
+OBJS     := $(addsuffix .o,$(BINFILES)) $(CFILES:.c=.o) $(CPPFILES:.cpp=.o) 
 
 PREFIX  = arm-vita-eabi
 CC      = $(PREFIX)-gcc
 CXX      = $(PREFIX)-g++
-CFLAGS  = -ffast-math -mtune=cortex-a9 -mfpu=neon -fsigned-char -fno-lto -g -Wl,-q -O3 \
-		-DREF_HARD_LINKED -DHAVE_OGGVORBIS -DHAVE_MPG123 -DHAVE_LIBSPEEXDSP \
-		-DUSE_AUDIO_RESAMPLER -DRELEASE -DGAME_HARD_LINKED -DPSP2
+CFLAGS  = -ffast-math -mtune=cortex-a9 -mfpu=neon -fsigned-char -g -Wl,-q -O3 \
+		-DREF_HARD_LINKED -DHAVE_OGGVORBIS -DHAVE_MPG123 \
+		-DHAVE_LIBSPEEXDSP -DUSE_AUDIO_RESAMPLER -DRELEASE -DGAME_HARD_LINKED -DPSP2
 
 CXXFLAGS  = $(CFLAGS) -fno-exceptions -std=gnu++11 -fpermissive
 ASFLAGS = $(CFLAGS)
@@ -157,9 +157,9 @@ $(TARGET).vpk: $(TARGET).velf
 	vita-make-fself -s $< build\eboot.bin
 	vita-mksfoex -s TITLE_ID=$(TITLE) "$(TARGET)" param.sfo
 	cp -f param.sfo build/sce_sys/param.sfo
-
+	
 	#------------ Comment this if you don't have 7zip ------------------
-	7z a -tzip $(TARGET).vpk -r .\build\sce_sys\* .\build\eboot.bin
+	7z a -tzip $(TARGET).vpk -r .\build\sce_sys\* .\build\eboot.bin  .\build\shaders\*
 	#-------------------------------------------------------------------
 
 %.velf: %.elf

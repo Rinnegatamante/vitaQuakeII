@@ -1014,11 +1014,12 @@ CONTROLS MENU
 static cvar_t *win_noalttab;
 extern cvar_t *in_joystick;
 extern cvar_t *cl_drawfps;
+extern cvar_t *cl_maxfps;
 
 static menuframework_s	s_options_menu;
 static menuaction_s		s_options_defaults_action;
 static menuaction_s		s_options_customize_options_action;
-static menuslider_s		s_options_sensitivity_slider;
+static menulist_s		s_options_framecap_box;
 static menulist_s		s_options_freelook_box;
 static menulist_s		s_options_noalttab_box;
 static menulist_s		s_options_alwaysrun_box;
@@ -1089,10 +1090,10 @@ static void FreeLookFunc( void *unused )
 	Cvar_SetValue( "freelook", s_options_freelook_box.curvalue );
 }
 
-static void MouseSpeedFunc( void *unused )
+/*static void MouseSpeedFunc( void *unused )
 {
 	Cvar_SetValue( "sensitivity", s_options_sensitivity_slider.curvalue / 2.0F );
-}
+}*/
 
 #ifdef _3DS
 static void CirclepadSpeedFunc( void *unused )
@@ -1131,6 +1132,11 @@ static void fpsFunc( void *unused )
 {
 	Cvar_SetValue( "cl_drawfps", s_options_fps_box.curvalue );
 }
+
+static void framecapFunc( void *unused )
+{
+	Cvar_SetValue( "cl_maxfps", s_options_framecap_box.curvalue ? 30 : 90 );
+}
 #endif
 
 static void NoAltTabFunc( void *unused )
@@ -1157,7 +1163,7 @@ static void ControlsSetMenuItemValues( void )
 
 	#endif
 
-	s_options_sensitivity_slider.curvalue	= ( sensitivity->value ) * 2;
+	s_options_framecap_box.curvalue	= (cl_maxfps->value == 30);
 
 	Cvar_SetValue( "cl_run", ClampCvar( 0, 1, cl_run->value ) );
 	s_options_alwaysrun_box.curvalue		= cl_run->value;
@@ -1413,6 +1419,12 @@ void Options_MenuInit( void )
 	s_options_rightanalog_slider.minvalue		= 2;
 	s_options_rightanalog_slider.maxvalue		= 22;
 
+	s_options_framecap_box.generic.type	= MTYPE_SPINCONTROL;
+	s_options_framecap_box.generic.x		= 0;
+	s_options_framecap_box.generic.y		= 50;
+	s_options_framecap_box.generic.name	= "limit framerate";
+	s_options_framecap_box.generic.callback = framecapFunc;
+	s_options_framecap_box.itemnames = yesno_names;
 	s_options_use_gyro_box.generic.type = MTYPE_SPINCONTROL;
 	s_options_use_gyro_box.generic.x	= 0;
 	s_options_use_gyro_box.generic.y	= 50;
@@ -1435,19 +1447,11 @@ void Options_MenuInit( void )
 	s_options_hor_motioncam_slider.generic.callback = HorMotionCamSpeedFunc;
 	s_options_hor_motioncam_slider.minvalue		= 0;
 	s_options_hor_motioncam_slider.maxvalue		= 20;
-
-	/*s_options_sensitivity_slider.generic.type	= MTYPE_SLIDER;
-	s_options_sensitivity_slider.generic.x		= 0;
-	s_options_sensitivity_slider.generic.y		= 50;
-	s_options_sensitivity_slider.generic.name	= "look speed";
-	s_options_sensitivity_slider.generic.callback = RightAnalogSpeedFunc;
-	s_options_sensitivity_slider.minvalue		= 2;
-	s_options_sensitivity_slider.maxvalue		= 22;*/
 		#else
 	s_options_sensitivity_slider.generic.type	= MTYPE_SLIDER;
 	s_options_sensitivity_slider.generic.x		= 0;
 	s_options_sensitivity_slider.generic.y		= 50;
-	s_options_sensitivity_slider.generic.name	= "mouse speed";
+	s_options_sensitivity_slider.generic.name	= "look speed";
 	s_options_sensitivity_slider.generic.callback = MouseSpeedFunc;
 	s_options_sensitivity_slider.minvalue		= 2;
 	s_options_sensitivity_slider.maxvalue		= 22;
@@ -1543,7 +1547,7 @@ void Options_MenuInit( void )
         Menu_AddItem( &s_options_menu, ( void * ) &s_options_vert_motioncam_slider );
         Menu_AddItem( &s_options_menu, ( void * ) &s_options_hor_motioncam_slider );
 	//#endif
-	//Menu_AddItem( &s_options_menu, ( void * ) &s_options_sensitivity_slider );
+	Menu_AddItem( &s_options_menu, ( void * ) &s_options_framecap_box );
 	Menu_AddItem( &s_options_menu, ( void * ) &s_options_alwaysrun_box );
 	Menu_AddItem( &s_options_menu, ( void * ) &s_options_invertmouse_box );
 	//Menu_AddItem( &s_options_menu, ( void * ) &s_options_lookspring_box );

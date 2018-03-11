@@ -50,7 +50,7 @@ extern uint64_t rumble_tick;
 void *GetGameAPI (void *import);
 
 int y = 20;
-void vita2d_printf(const char *format, ...){
+void LOG_FILE(const char *format, ...){
 	#ifndef RELEASE
 	__gnuc_va_list arg;
 	int done;
@@ -76,7 +76,7 @@ void Sys_Error (char *error, ...)
 	va_start (argptr,error);
 	vsnprintf (str,512, error, argptr);
 	va_end (argptr);
-	vita2d_printf(str);
+	LOG_FILE(str);
 
 	while(1)
 	{
@@ -111,7 +111,7 @@ char *Sys_ConsoleInput (void)
 
 void Sys_ConsoleOutput (char *string)
 {
-	vita2d_printf("%s",string);
+	LOG_FILE("%s",string);
 }
 
 void utf2ascii(char* dst, uint16_t* src){
