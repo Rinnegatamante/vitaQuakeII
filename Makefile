@@ -6,7 +6,7 @@ INCLUDES	:= include
 LIBS = -lvitaGL -lvorbisfile -lvorbis -logg -lspeexdsp -lmpg123 \
 	-lSceLibKernel_stub -lSceAppMgr_stub -lSceSysmodule_stub \
 	-lSceCtrl_stub -lSceTouch_stub -lm -lSceNet_stub -lSceNetCtl_stub \
-	-lSceAppUtil_stub -lc -lScePower_stub -lSceCommonDialog_stub \
+	-lSceAppUtil_stub -lc -lScePower_stub -lSceMotion_stub -lSceCommonDialog_stub \
 	-lSceAudio_stub -lSceGxm_stub -lSceDisplay_stub -lSceNet_stub -lSceNetCtl_stub
 
 SYSTEM = 	psp2/vid_psp2.o \

@@ -7,7 +7,7 @@ as published by the Free Software Foundation; either version 2
 of the License, or (at your option) any later version.
 This program is distributed in the hope that it will be useful,
 but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 See the GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
@@ -18,9 +18,14 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include <vitasdk.h>
 
 SceCtrlData pad;
+SceMotionState motionstate;
+
 cvar_t *in_joystick;
 cvar_t *leftanalog_sensitivity;
 cvar_t *rightanalog_sensitivity;
+cvar_t *vert_motioncam_sensitivity;
+cvar_t *hor_motioncam_sensitivity;
+cvar_t *use_gyro;
 extern cvar_t *pstv_rumble;
 
 uint64_t rumble_tick;
@@ -30,7 +35,13 @@ void IN_Init (void)
 	in_joystick	= Cvar_Get ("in_joystick", "1",	CVAR_ARCHIVE);
 	leftanalog_sensitivity = Cvar_Get ("leftanalog_sensitivity", "2.0", CVAR_ARCHIVE);
 	rightanalog_sensitivity = Cvar_Get ("rightanalog_sensitivity", "2.0", CVAR_ARCHIVE);
+        vert_motioncam_sensitivity = Cvar_Get ("vert_motioncam_sensitivity", "2.0", CVAR_ARCHIVE);
+	hor_motioncam_sensitivity = Cvar_Get ("hor_motioncam_sensitivity", "2.0", CVAR_ARCHIVE);
+        use_gyro = Cvar_Get ("use_gyro", "2.0", CVAR_ARCHIVE);
 	pstv_rumble	= Cvar_Get ("pstv_rumble", "1",	CVAR_ARCHIVE);
+
+	sceMotionReset();
+  sceMotionStartSampling();
 }
 
 void IN_RescaleAnalog(int *x, int *y, int dead) {
@@ -84,13 +95,13 @@ void IN_StopRumble (void)
 
 void IN_Move (usercmd_t *cmd)
 {
-	
+
 	sceCtrlPeekBufferPositive(0, &pad, 1);
 	int left_x = pad.lx - 127;
 	int left_y = pad.ly - 127;
 	int right_x = pad.rx - 127;
 	int right_y = pad.ry - 127;
-	
+
 	/*if(hidKeysDown() & KEY_TOUCH)
 		hidTouchRead(&old_touch);
 
@@ -104,20 +115,42 @@ void IN_Move (usercmd_t *cmd)
 		}
 		old_touch = touch;
 	}*/
-	
+
 	// Left analog support for player movement
 	int x_mov = abs(left_x) < 30 ? 0 : (left_x * cl_sidespeed->value) * 0.01;
 	int y_mov = abs(left_y) < 30 ? 0 : (left_y * cl_forwardspeed->value) * 0.01;
 	cmd->forwardmove -= y_mov;
 	cmd->sidemove += x_mov;
-	
+
 	// Right analog support for camera movement
 	IN_RescaleAnalog(&right_x, &right_y, 30);
 	float x_cam = (right_x * rightanalog_sensitivity->value) * 0.008;
 	float y_cam = (right_y * rightanalog_sensitivity->value) * 0.008;
 	cl.viewangles[YAW] -= x_cam;
-	if (m_pitch->value > 0) cl.viewangles[PITCH] += y_cam;
-	else cl.viewangles[PITCH] -= y_cam;
+
+	if (m_pitch->value > 0)
+		cl.viewangles[PITCH] += y_cam;
+	else
+		cl.viewangles[PITCH] -= y_cam;
+
+  // gyro analog support for camera movement
+
+  
+  if (use_gyro->value){
+    sceMotionGetState(&motionstate);
+
+    // not sure why YAW or the horizontal x axis is the controlled by angularVelocity.y
+    // and the PITCH or the vertical y axis is controlled by angularVelocity.x but its what seems to work
+    float x_gyro_cam = motionstate.angularVelocity.y *  hor_motioncam_sensitivity->value; //motion_sensitivity.value;
+    float y_gyro_cam = motionstate.angularVelocity.x * vert_motioncam_sensitivity->value; //motion_sensitivity.value;
+
+    cl.viewangles[YAW] -= x_gyro_cam;
+
+    if (m_pitch->value > 0)
+      cl.viewangles[PITCH] += y_gyro_cam;
+    else
+      cl.viewangles[PITCH] -= y_gyro_cam;
+  }
 
 }
 
