@@ -609,7 +609,7 @@ void SCR_PlayCinematic (char *arg)
 
 	Com_sprintf (name, sizeof(name), "video/%s", arg);
 	FS_FOpenFile (name, &cl.cinematic_file);
-	if (!cl.cinematic_file)
+	//->if (!cl.cinematic_file) TODO: Fix cinematics playback
 	{
 //		Com_Error (ERR_DROP, "Cinematic %s not found.\n", name);
 		SCR_FinishCinematic ();
