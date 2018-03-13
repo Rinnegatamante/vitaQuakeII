@@ -291,15 +291,14 @@ extern unsigned	r_rawpalette[256];
 
 void Draw_StretchRaw (int x, int y, int w, int h, int cols, int rows, byte *data)
 {
-	unsigned	image32[256*256];
-	unsigned char image8[256*256];
+	unsigned	image32[320*240];
 	int			i, j, trows;
 	byte		*source;
 	int			frac, fracstep;
 	float		hscale;
 	int			row;
 	float		t;
-
+	
 	GL_Bind (0);
 
 	if (rows<=256)
@@ -337,12 +336,12 @@ void Draw_StretchRaw (int x, int y, int w, int h, int cols, int rows, byte *data
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
-	if ( ( gl_config.renderer == GL_RENDERER_MCD ) || ( gl_config.renderer & GL_RENDERER_RENDITION ) ) 
+	//if ( ( gl_config.renderer == GL_RENDERER_MCD ) || ( gl_config.renderer & GL_RENDERER_RENDITION ) ) 
 		GL_DisableState(GL_ALPHA_TEST);
 
 	DrawPic(x, y, w, h, 0, 0, 1, t);
 
-	if ( ( gl_config.renderer == GL_RENDERER_MCD ) || ( gl_config.renderer & GL_RENDERER_RENDITION ) ) 
+	//if ( ( gl_config.renderer == GL_RENDERER_MCD ) || ( gl_config.renderer & GL_RENDERER_RENDITION ) ) 
 		GL_EnableState(GL_ALPHA_TEST);
 }
 
