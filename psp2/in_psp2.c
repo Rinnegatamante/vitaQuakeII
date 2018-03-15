@@ -35,9 +35,9 @@ void IN_Init (void)
 	in_joystick	= Cvar_Get ("in_joystick", "1",	CVAR_ARCHIVE);
 	leftanalog_sensitivity = Cvar_Get ("leftanalog_sensitivity", "2.0", CVAR_ARCHIVE);
 	rightanalog_sensitivity = Cvar_Get ("rightanalog_sensitivity", "2.0", CVAR_ARCHIVE);
-        vert_motioncam_sensitivity = Cvar_Get ("vert_motioncam_sensitivity", "2.0", CVAR_ARCHIVE);
+	vert_motioncam_sensitivity = Cvar_Get ("vert_motioncam_sensitivity", "2.0", CVAR_ARCHIVE);
 	hor_motioncam_sensitivity = Cvar_Get ("hor_motioncam_sensitivity", "2.0", CVAR_ARCHIVE);
-        use_gyro = Cvar_Get ("use_gyro", "2.0", CVAR_ARCHIVE);
+	use_gyro = Cvar_Get ("use_gyro", "0", CVAR_ARCHIVE);
 	pstv_rumble	= Cvar_Get ("pstv_rumble", "1",	CVAR_ARCHIVE);
 
 	sceMotionReset();
