@@ -96,6 +96,8 @@ void GLimp_Shutdown( void )
 */
 int GLimp_Init( void *hinstance, void *wndproc )
 {
+	vglInit(0x800000);
+	vglUseVram(GL_TRUE);
 	gl_config.allow_cds = true;
 	return true;
 }
