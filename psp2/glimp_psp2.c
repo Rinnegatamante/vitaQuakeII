@@ -98,6 +98,7 @@ int GLimp_Init( void *hinstance, void *wndproc )
 {
 	vglInit(0x800000);
 	vglUseVram(GL_TRUE);
+	vglMapHeapMem();
 	gl_config.allow_cds = true;
 	return true;
 }
@@ -370,7 +371,7 @@ qboolean GLimp_InitGL (void)
 void GLimp_BeginFrame( float camera_separation )
 {
 	vglStartRendering();
-	vglIndexPointer(GL_SHORT, 0, MAX_INDICES, indices);
+	vglIndexPointerMapped(indices);
 }
 
 /*
