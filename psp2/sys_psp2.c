@@ -508,7 +508,7 @@ int main (int argc, char **argv)
 	scePowerSetGpuXbarClockFrequency(166);
 	
 	sceSysmoduleLoadModule(SCE_SYSMODULE_NET);
-	sceCtrlSetSamplingMode(SCE_CTRL_MODE_ANALOG);
+	sceCtrlSetSamplingMode(SCE_CTRL_MODE_ANALOG_WIDE);
 	
 	Sys_MkdirRecursive("ux0:/data/quake2/baseq2");
 	
