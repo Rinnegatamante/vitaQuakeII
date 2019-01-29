@@ -119,8 +119,12 @@ image_t	*Draw_FindPic (char *name)
 
 	if (name[0] != '/' && name[0] != '\\')
 	{
-		Com_sprintf (fullname, sizeof(fullname), "pics/%s.pcx", name);
+		Com_sprintf (fullname, sizeof(fullname), "pics/%s.tga", name);
 		gl = GL_FindImage (fullname, it_pic);
+		if (!gl) {
+			Com_sprintf (fullname, sizeof(fullname), "pics/%s.pcx", name);
+			gl = GL_FindImage (fullname, it_pic);
+		}
 	}
 	else
 		gl = GL_FindImage (name+1, it_pic);

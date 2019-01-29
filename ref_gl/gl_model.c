@@ -467,9 +467,12 @@ void Mod_LoadTexinfo (lump_t *l)
 			out->next = loadmodel->texinfo + next;
 		else
 		    out->next = NULL;
-		Com_sprintf (name, sizeof(name), "textures/%s.wal", in->texture);
-
+		Com_sprintf (name, sizeof(name), "textures/%s.tga", in->texture);
 		out->image = GL_FindImage (name, it_wall);
+		if (!out->image) {
+			Com_sprintf (name, sizeof(name), "textures/%s.wal", in->texture);
+			out->image = GL_FindImage (name, it_wall);
+		}
 		if (!out->image)
 		{
 			ri.Con_Printf (PRINT_ALL, "Couldn't load %s\n", name);
@@ -1123,6 +1126,8 @@ struct model_s *R_RegisterModel (char *name)
 	int		i;
 	dsprite_t	*sprout;
 	dmdl_t		*pheader;
+	
+	char md2skin[MAX_QPATH];
 
 	mod = Mod_ForName (name, false);
 	if (mod)
@@ -1133,14 +1138,22 @@ struct model_s *R_RegisterModel (char *name)
 		if (mod->type == mod_sprite)
 		{
 			sprout = (dsprite_t *)mod->extradata;
-			for (i=0 ; i<sprout->numframes ; i++)
-				mod->skins[i] = GL_FindImage (sprout->frames[i].name, it_sprite);
+			for (i=0 ; i<sprout->numframes ; i++) {
+				COM_StripExtension(sprout->frames[i].name, md2skin);
+				strcat(md2skin, ".tga");
+				mod->skins[i] = GL_FindImage (md2skin, it_sprite);
+				if (!mod->skins[i]) mod->skins[i] = GL_FindImage (sprout->frames[i].name, it_sprite);	
+			}
 		}
 		else if (mod->type == mod_alias)
 		{
 			pheader = (dmdl_t *)mod->extradata;
-			for (i=0 ; i<pheader->num_skins ; i++)
-				mod->skins[i] = GL_FindImage ((char *)pheader + pheader->ofs_skins + i*MAX_SKINNAME, it_skin);
+			for (i=0 ; i<pheader->num_skins ; i++) {
+				COM_StripExtension((char *)pheader + pheader->ofs_skins + i*MAX_SKINNAME, md2skin);
+				strcat(md2skin, ".tga");
+				mod->skins[i] = GL_FindImage (md2skin, it_skin);
+				if (!mod->skins[i]) mod->skins[i] = GL_FindImage ((char *)pheader + pheader->ofs_skins + i*MAX_SKINNAME, it_skin);
+			}
 //PGM
 			mod->numframes = pheader->num_frames;
 //PGM
