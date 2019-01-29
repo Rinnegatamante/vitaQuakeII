@@ -19,6 +19,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 
 #include "gl_local.h"
+#include <stdlib.h>
+#include <jpeglib.h>
 
 image_t		gltextures[MAX_GLTEXTURES];
 int			numgltextures;
@@ -655,6 +657,115 @@ void LoadTGA (char *name, byte **pic, int *width, int *height)
 	ri.FS_FreeFile (buffer);
 }
 
+/*
+==============
+LoadJPG
+==============
+*/
+void LoadJPG (char *filename, byte **pic, int *width, int *height)
+{
+	struct jpeg_decompress_struct	cinfo;
+	struct jpeg_error_mgr			jerr;
+	byte							*rawdata, *rgbadata, *scanline, *p, *q;
+	int								rawsize, i;
+
+	// Load JPEG file into memory
+	rawsize = ri.FS_LoadFile(filename, (void **)&rawdata);
+	if (!rawdata)
+	{
+		ri.Con_Printf (PRINT_DEVELOPER, "Bad jpg file %s\n", filename);
+		return;	
+	}
+
+	// Knightmare- check for bad data
+	if (	rawdata[6] != 'J'
+		||	rawdata[7] != 'F'
+		||	rawdata[8] != 'I'
+		||	rawdata[9] != 'F') {
+		ri.Con_Printf(PRINT_ALL, "Bad jpg file %s\n", filename);
+		ri.FS_FreeFile(rawdata);
+		return;
+	}
+
+	// Initialise libJpeg Object
+	cinfo.err = jpeg_std_error(&jerr);
+	jpeg_create_decompress(&cinfo);
+
+	// Feed JPEG memory into the libJpeg Object
+	jpeg_mem_src(&cinfo, rawdata, rawsize);
+
+	// Process JPEG header
+	jpeg_read_header(&cinfo, true); // bombs out here
+
+	// Start Decompression
+	jpeg_start_decompress(&cinfo);
+
+	// Check Color Components
+	if(cinfo.output_components != 3)
+	{
+		ri.Con_Printf(PRINT_ALL, "Invalid JPEG color components\n");
+		jpeg_destroy_decompress(&cinfo);
+		ri.FS_FreeFile(rawdata);
+		return;
+	}
+
+	// Allocate Memory for decompressed image
+	rgbadata = malloc(cinfo.output_width * cinfo.output_height * 4);
+	if(!rgbadata)
+	{
+		ri.Con_Printf(PRINT_ALL, "Insufficient RAM for JPEG buffer\n");
+		jpeg_destroy_decompress(&cinfo);
+		ri.FS_FreeFile(rawdata);
+		return;
+	}
+
+	// Pass sizes to output
+	*width = cinfo.output_width; *height = cinfo.output_height;
+
+	// Allocate Scanline buffer
+	scanline = malloc(cinfo.output_width * 3);
+	if(!scanline)
+	{
+		ri.Con_Printf(PRINT_ALL, "Insufficient RAM for JPEG scanline buffer\n");
+		free(rgbadata);
+		jpeg_destroy_decompress(&cinfo);
+		ri.FS_FreeFile(rawdata);
+		return;
+	}
+
+	// Read Scanlines, and expand from RGB to RGBA
+	q = rgbadata;
+	while(cinfo.output_scanline < cinfo.output_height)
+	{
+		p = scanline;
+		jpeg_read_scanlines(&cinfo, &scanline, 1);
+
+		for(i=0; i<cinfo.output_width; i++)
+		{
+			q[0] = p[0];
+			q[1] = p[1];
+			q[2] = p[2];
+			q[3] = 255;
+
+			p+=3; q+=4;
+		}
+	}
+
+	// Free the scanline buffer
+	free(scanline);
+
+	// Finish Decompression
+	jpeg_finish_decompress(&cinfo);
+
+	// Destroy JPEG object
+	jpeg_destroy_decompress(&cinfo);
+
+	// Free raw data buffer
+	FS_FreeFile(rawdata);
+
+	// Return the 'rgbadata'
+	*pic = rgbadata;
+}
 
 /*
 ====================================================================
@@ -865,34 +976,13 @@ GL_Upload32
 Returns has_alpha
 ===============
 */
-void GL_BuildPalettedTexture( unsigned char *paletted_texture, unsigned char *scaled, int scaled_width, int scaled_height )
-{
-	int i;
-
-	for ( i = 0; i < scaled_width * scaled_height; i++ )
-	{
-		unsigned int r, g, b, c;
-
-		r = ( scaled[0] >> 3 ) & 31;
-		g = ( scaled[1] >> 2 ) & 63;
-		b = ( scaled[2] >> 3 ) & 31;
-
-		c = r | ( g << 5 ) | ( b << 11 );
-
-		paletted_texture[i] = gl_state.d_16to8table[c];
-
-		scaled += 4;
-	}
-}
-
 int		upload_width, upload_height;
 qboolean uploaded_paletted;
 
 qboolean GL_Upload32 (unsigned *data, int width, int height,  qboolean mipmap)
 {
 	int			samples;
-	unsigned	scaled[256*256];
-	unsigned char paletted_texture[256*256];
+	unsigned	scaled[1024*1024];
 	int			scaled_width, scaled_height;
 	int			i, c;
 	byte		*scan;
@@ -916,7 +1006,7 @@ qboolean GL_Upload32 (unsigned *data, int width, int height,  qboolean mipmap)
 		scaled_height >>= (int)gl_picmip->value;
 	}
 
-	// don't ever bother with >256 textures
+	// don't ever bother with >1024 textures
 	if (scaled_width > 256)
 		scaled_width = 256;
 	if (scaled_height > 256)
@@ -926,7 +1016,7 @@ qboolean GL_Upload32 (unsigned *data, int width, int height,  qboolean mipmap)
 		scaled_width = 1;
 	if (scaled_height < 1)
 		scaled_height = 1;
-
+	
 	upload_width = scaled_width;
 	upload_height = scaled_height;
 
@@ -1165,7 +1255,8 @@ image_t	*GL_FindImage (char *name, imagetype_t type)
 	int		i, len;
 	byte	*pic, *palette;
 	int		width, height;
-
+	char	s[128], *tmp;
+	
 	if (!name)
 		return NULL;	//	ri.Sys_Error (ERR_DROP, "GL_FindImage: NULL name");
 	len = strlen(name);
@@ -1187,28 +1278,44 @@ image_t	*GL_FindImage (char *name, imagetype_t type)
 	//
 	pic = NULL;
 	palette = NULL;
-	if (!strcmp(name+len-4, ".pcx"))
-	{
-		LoadPCX (name, &pic, &palette, &width, &height);
-		if (!pic)
-			return NULL; // ri.Sys_Error (ERR_DROP, "GL_FindImage: can't load %s", name);
-		image = GL_LoadPic (name, pic, width, height, type, 8);
-	}
-	else if (!strcmp(name+len-4, ".wal"))
-	{
-		image = GL_LoadWal (name);
-	}
-	else if (!strcmp(name+len-4, ".tga"))
+	if (!strcmp(name+len-4, ".tga"))
 	{
 		LoadTGA (name, &pic, &width, &height);
 		if (!pic)
 			return NULL; // ri.Sys_Error (ERR_DROP, "GL_FindImage: can't load %s", name);
 		image = GL_LoadPic (name, pic, width, height, type, 32);
 	}
+	else if (!strcmp(name+len-4, ".jpg"))
+	{
+		LoadJPG(name, &pic, &width, &height);
+		if (!pic)
+			return NULL; // ri.Sys_Error (ERR_DROP, "GL_FindImage: can't load %s", name);
+		image = GL_LoadPic (name, pic, width, height, type, 32);
+	}
+	else if (!strcmp(name+len-4, ".pcx") || !strcmp(name+len-4, ".wal"))
+	{
+		strncpy (s, name, sizeof(s));
+		s[len-3]='t'; s[len-2]='g'; s[len-1]='a';
+		image = GL_FindImage(s,type);
+		if (image) 
+			return image;
+		strncpy (s, name, sizeof(s));
+		s[len-3]='j'; s[len-2]='p'; s[len-1]='g';
+		image = GL_FindImage(s,type);
+		if (image)
+			return image;
+		if (!strcmp(name+len-4, ".pcx")) {
+			LoadPCX (name, &pic, &palette, &width, &height);
+			if (!pic)
+				return NULL; // ri.Sys_Error (ERR_DROP, "GL_FindImage: can't load %s", name);
+			image = GL_LoadPic (name, pic, width, height, type, 8);
+		} else if (!strcmp(name+len-4, ".wal")) {
+			image = GL_LoadWal (name);
+		}
+	}
 	else
-		return NULL;	//	ri.Sys_Error (ERR_DROP, "GL_FindImage: bad extension on: %s", name);
-
-
+		return NULL; //	ri.Sys_Error (ERR_DROP, "GL_FindImage: bad extension on: %s", name);
+	
 	if (pic)
 		free(pic);
 	if (palette)
