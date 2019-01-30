@@ -268,6 +268,10 @@ void GL_DrawAliasShadow (dmdl_t *paliashdr, int posenum)
 
 	height = -lheight + 1.0;
 
+	glEnable(GL_STENCIL_TEST);
+	glStencilFunc(GL_EQUAL, 1, 2);
+	glStencilOp(GL_KEEP, GL_KEEP, GL_INCR);
+	
 	int prim;
 	float* pPos;
 	float color[4] = {0,0,0,0.5};
@@ -317,7 +321,9 @@ void GL_DrawAliasShadow (dmdl_t *paliashdr, int posenum)
 		vglVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, c, gVertexBuffer);
 		GL_DrawPolygon(prim, c);
 		GL_EnableState(GL_TEXTURE_COORD_ARRAY);
-	}	
+	}
+	
+	glDisable(GL_STENCIL_TEST);
 }
 
 /*
