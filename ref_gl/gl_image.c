@@ -34,7 +34,7 @@ cvar_t		*intensity;
 unsigned	d_8to24table[256];
 
 qboolean GL_Upload8 (byte *data, int width, int height,  qboolean mipmap, qboolean is_sky );
-qboolean GL_Upload32 (unsigned *data, int width, int height,  qboolean mipmap);
+qboolean GL_Upload32 (uint32_t *data, int width, int height,  qboolean mipmap);
 
 
 int		gl_solid_format = 3;
@@ -852,52 +852,110 @@ void R_FloodFillSkin( byte *skin, int skinwidth, int skinheight )
 
 //=======================================================
 
+/*
+================
+GL_ResampleTextureLerpLine
+from DarkPlaces
+================
+*/
+
+void GL_ResampleTextureLerpLine (byte *in, byte *out, int inwidth, int outwidth) 
+{ 
+	int j, xi, oldx = 0, f, fstep, l1, l2, endx;
+
+	fstep = (int) (inwidth*65536.0f/outwidth); 
+	endx = (inwidth-1); 
+	for (j = 0,f = 0;j < outwidth;j++, f += fstep) 
+	{ 
+		xi = (int) f >> 16; 
+		if (xi != oldx) 
+		{ 
+			in += (xi - oldx) * 4; 
+			oldx = xi; 
+		} 
+		if (xi < endx) 
+		{ 
+			l2 = f & 0xFFFF; 
+			l1 = 0x10000 - l2; 
+			*out++ = (byte) ((in[0] * l1 + in[4] * l2) >> 16);
+			*out++ = (byte) ((in[1] * l1 + in[5] * l2) >> 16); 
+			*out++ = (byte) ((in[2] * l1 + in[6] * l2) >> 16); 
+			*out++ = (byte) ((in[3] * l1 + in[7] * l2) >> 16); 
+		} 
+		else // last pixel of the line has no pixel to lerp to 
+		{ 
+			*out++ = in[0]; 
+			*out++ = in[1]; 
+			*out++ = in[2]; 
+			*out++ = in[3]; 
+		} 
+	} 
+}
 
 /*
 ================
 GL_ResampleTexture
 ================
 */
-void GL_ResampleTexture (unsigned *in, int inwidth, int inheight, unsigned *out,  int outwidth, int outheight)
-{
-	int		i, j;
-	unsigned	*inrow, *inrow2;
-	unsigned	frac, fracstep;
-	unsigned	p1[1024], p2[1024];
-	byte		*pix1, *pix2, *pix3, *pix4;
+void GL_ResampleTexture (uint32_t *indata, int inwidth, int inheight, uint32_t *outdata, int outwidth, int outheight) 
+{ 
+	int i, j, yi, oldy, f, fstep, l1, l2, endy = (inheight-1);
+	
+	byte *inrow, *out, *row1, *row2; 
+	out = (byte*)outdata; 
+	fstep = (int) (inheight*65536.0f/outheight); 
 
-	fracstep = inwidth*0x10000/outwidth;
+	row1 = malloc(outwidth*4); 
+	row2 = malloc(outwidth*4); 
+	inrow = (byte*)indata; 
+	oldy = 0; 
+	GL_ResampleTextureLerpLine (inrow, row1, inwidth, outwidth); 
+	GL_ResampleTextureLerpLine (inrow + inwidth*4, row2, inwidth, outwidth); 
+	for (i = 0, f = 0;i < outheight;i++,f += fstep) 
+	{ 
+		yi = f >> 16; 
+		if (yi != oldy) 
+		{ 
+			inrow = (byte *)indata + inwidth*4*yi; 
+			if (yi == oldy+1) 
+				memcpy(row1, row2, outwidth*4); 
+			else 
+				GL_ResampleTextureLerpLine (inrow, row1, inwidth, outwidth);
 
-	frac = fracstep>>2;
-	for (i=0 ; i<outwidth ; i++)
-	{
-		p1[i] = 4*(frac>>16);
-		frac += fracstep;
-	}
-	frac = 3*(fracstep>>2);
-	for (i=0 ; i<outwidth ; i++)
-	{
-		p2[i] = 4*(frac>>16);
-		frac += fracstep;
-	}
-
-	for (i=0 ; i<outheight ; i++, out += outwidth)
-	{
-		inrow = in + inwidth*(int)((i+0.25)*inheight/outheight);
-		inrow2 = in + inwidth*(int)((i+0.75)*inheight/outheight);
-		frac = fracstep >> 1;
-		for (j=0 ; j<outwidth ; j++)
-		{
-			pix1 = (byte *)inrow + p1[j];
-			pix2 = (byte *)inrow + p2[j];
-			pix3 = (byte *)inrow2 + p1[j];
-			pix4 = (byte *)inrow2 + p2[j];
-			((byte *)(out+j))[0] = (pix1[0] + pix2[0] + pix3[0] + pix4[0])>>2;
-			((byte *)(out+j))[1] = (pix1[1] + pix2[1] + pix3[1] + pix4[1])>>2;
-			((byte *)(out+j))[2] = (pix1[2] + pix2[2] + pix3[2] + pix4[2])>>2;
-			((byte *)(out+j))[3] = (pix1[3] + pix2[3] + pix3[3] + pix4[3])>>2;
-		}
-	}
+			if (yi < endy) 
+				GL_ResampleTextureLerpLine (inrow + inwidth*4, row2, inwidth, outwidth); 
+			else 
+				memcpy(row2, row1, outwidth*4); 
+			oldy = yi; 
+		} 
+		if (yi < endy) 
+		{ 
+			l2 = f & 0xFFFF; 
+			l1 = 0x10000 - l2; 
+			for (j = 0;j < outwidth;j++) 
+			{ 
+				*out++ = (byte) ((*row1++ * l1 + *row2++ * l2) >> 16); 
+				*out++ = (byte) ((*row1++ * l1 + *row2++ * l2) >> 16); 
+				*out++ = (byte) ((*row1++ * l1 + *row2++ * l2) >> 16); 
+				*out++ = (byte) ((*row1++ * l1 + *row2++ * l2) >> 16); 
+			} 
+			row1 -= outwidth*4; 
+			row2 -= outwidth*4; 
+		} 
+		else // last line has no pixels to lerp to 
+		{ 
+			for (j = 0;j < outwidth;j++) 
+			{ 
+				*out++ = *row1++; 
+				*out++ = *row1++; 
+				*out++ = *row1++; 
+				*out++ = *row1++; 
+			} 
+			row1 -= outwidth*4; 
+		} 
+	} 
+	free(row1); 
+	free(row2); 
 }
 
 /*
@@ -908,7 +966,7 @@ Scale up the pixel values in a texture to increase the
 lighting range
 ================
 */
-void GL_LightScaleTexture (unsigned *in, int inwidth, int inheight, qboolean only_gamma )
+void GL_LightScaleTexture (uint32_t *in, int inwidth, int inheight, qboolean only_gamma )
 {
 	if ( only_gamma )
 	{
@@ -979,10 +1037,10 @@ Returns has_alpha
 int		upload_width, upload_height;
 qboolean uploaded_paletted;
 
-qboolean GL_Upload32 (unsigned *data, int width, int height,  qboolean mipmap)
+qboolean GL_Upload32 (uint32_t *data, int width, int height,  qboolean mipmap)
 {
 	int			samples;
-	unsigned	scaled[1024*1024];
+	uint32_t	scaled[1024*1024];
 	int			scaled_width, scaled_height;
 	int			i, c;
 	byte		*scan;
@@ -1007,10 +1065,10 @@ qboolean GL_Upload32 (unsigned *data, int width, int height,  qboolean mipmap)
 	}
 
 	// don't ever bother with >1024 textures
-	if (scaled_width > 256)
-		scaled_width = 256;
-	if (scaled_height > 256)
-		scaled_height = 256;
+	if (scaled_width > 1024)
+		scaled_width = 1024;
+	if (scaled_height > 1024)
+		scaled_height = 1024;
 
 	if (scaled_width < 1)
 		scaled_width = 1;
@@ -1063,15 +1121,10 @@ qboolean GL_Upload32 (unsigned *data, int width, int height,  qboolean mipmap)
 
 	glTexImage2D( GL_TEXTURE_2D, 0, comp, scaled_width, scaled_height, 0, GL_RGBA, GL_UNSIGNED_BYTE, scaled );
 
+done:
 	if (mipmap)
 	{
 		glGenerateMipmap(GL_TEXTURE_2D);
-	}
-done: ;
-
-
-	if (mipmap)
-	{
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, gl_filter_min);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, gl_filter_max);
 	}
@@ -1086,7 +1139,7 @@ done: ;
 
 qboolean GL_Upload8 (byte *data, int width, int height,  qboolean mipmap, qboolean is_sky )
 {
-	unsigned	trans[512*256];
+	uint32_t	trans[512*256];
 	int			i, s;
 	int			p;
 
@@ -1199,7 +1252,7 @@ nonscrap:
 		if (bits == 8)
 			image->has_alpha = GL_Upload8 (pic, width, height, (image->type != it_pic && image->type != it_sky), image->type == it_sky );
 		else
-			image->has_alpha = GL_Upload32 ((unsigned *)pic, width, height, (image->type != it_pic && image->type != it_sky) );
+			image->has_alpha = GL_Upload32 ((uint32_t *)pic, width, height, (image->type != it_pic && image->type != it_sky) );
 		image->upload_width = upload_width;		// after power of 2 and scales
 		image->upload_height = upload_height;
 		image->paletted = uploaded_paletted;
@@ -1255,7 +1308,7 @@ image_t	*GL_FindImage (char *name, imagetype_t type)
 	int		i, len;
 	byte	*pic, *palette;
 	int		width, height;
-	char	s[128], *tmp;
+	char	s[128];
 	
 	if (!name)
 		return NULL;	//	ri.Sys_Error (ERR_DROP, "GL_FindImage: NULL name");
@@ -1363,7 +1416,7 @@ void GL_FreeUnusedImages (void)
 		if (image->type == it_pic)
 			continue;		// don't free pics
 		// free it
-		glDeleteTextures (1, &image->texnum);
+		glDeleteTextures (1, (uint32_t*)&image->texnum);
 		memset (image, 0, sizeof(*image));
 	}
 }
@@ -1477,7 +1530,7 @@ void	GL_ShutdownImages (void)
 		if (!image->registration_sequence)
 			continue;		// free image_t slot
 		// free it
-		glDeleteTextures (1, &image->texnum);
+		glDeleteTextures (1, (uint32_t*)&image->texnum);
 		memset (image, 0, sizeof(*image));
 	}
 }

@@ -434,6 +434,114 @@ void Mod_LoadEdges (lump_t *l)
 	}
 }
 
+//=======================================================
+
+// store the names and sizes of size reference .wal files
+typedef struct walsize_s
+{
+	char	name[MAX_OSPATH];
+	long	hash;
+	int		width;
+	int		height;
+} walsize_t;
+
+#define NUM_WALSIZES 256
+walsize_t walSizeList[NUM_WALSIZES];
+static unsigned walSizeListIndex;
+
+/*
+===============
+Mod_InitWalSizeList
+===============
+*/
+void Mod_InitWalSizeList (void)
+{
+	int		i;
+
+	for (i=0; i<NUM_WALSIZES; i++) {
+		Com_sprintf(walSizeList[i].name, sizeof(walSizeList[i].name), "\0");
+		walSizeList[i].hash = 0;
+		walSizeList[i].width = 0;
+		walSizeList[i].height = 0;
+	}
+	walSizeListIndex = 0;
+}
+
+/*
+===============
+Mod_CheckWalSizeList
+===============
+*/
+qboolean Mod_CheckWalSizeList (const char *name, int *width, int *height)
+{
+	int		i;
+	long	hash;
+
+	hash = Com_HashFileName(name, 0, false);
+	for (i=0; i<NUM_WALSIZES; i++)
+	{
+		if (hash == walSizeList[i].hash) {	// compare hash first
+			if (walSizeList[i].name && strlen(walSizeList[i].name)
+				&& !strcmp(name, walSizeList[i].name))
+			{	// return size of texture
+				if (width)
+					*width = walSizeList[i].width;
+				if (height)
+					*height = walSizeList[i].height;
+				return true;
+			}
+		}
+	}
+	return false;
+}
+
+/*
+===============
+Mod_AddToWalSizeList
+===============
+*/
+void Mod_AddToWalSizeList (const char *name, int width, int height)
+{
+	Com_sprintf(walSizeList[walSizeListIndex].name, sizeof(walSizeList[walSizeListIndex].name), "%s", name);
+	walSizeList[walSizeListIndex].hash = Com_HashFileName(name, 0, false);
+	walSizeList[walSizeListIndex].width = width;
+	walSizeList[walSizeListIndex].height = height;
+	walSizeListIndex++;
+
+	// wrap around to start of list
+	if (walSizeListIndex >= NUM_WALSIZES)
+		walSizeListIndex = 0;
+}
+/*
+=================
+Mod_GetWalSize
+Adapted from Q2E
+=================
+*/
+static void Mod_GetWalSize (const char *name, int *width, int *height)
+{
+	char			path[MAX_QPATH];
+	miptex_t		*mt;
+	
+	Com_sprintf (path, sizeof(path), "textures/%s.wal", name);
+
+	if (Mod_CheckWalSizeList(name, width, height)) // check if already in list
+		return;
+
+	ri.FS_LoadFile (path, (void **)&mt); // load .wal file 
+	if (!mt)
+	{	// set null value to tell us to get actual size of texture
+		*width = *height = -1;
+		Mod_AddToWalSizeList(name, *width, *height); // add to list
+		return;
+	}
+	*width = LittleLong (mt->width); // grab size from wal
+	*height = LittleLong (mt->height);
+	ri.FS_FreeFile ((void *)mt); // free the wal
+
+	Mod_AddToWalSizeList(name, *width, *height); // add to list
+}
+
 /*
 =================
 Mod_LoadTexinfo
@@ -475,6 +583,20 @@ void Mod_LoadTexinfo (lump_t *l)
 			ri.Con_Printf (PRINT_ALL, "Couldn't load %s\n", name);
 			out->image = r_notexture;
 		}
+		
+		// Q2E HACK: find .wal dimensions for texture coord generation
+		// NOTE: Once Q3 map support is added, be be sure to disable this
+		// for Q3 format maps, because they will be natively textured with
+		// hi-res textures.
+		Mod_GetWalSize (in->texture, &out->texWidth, &out->texHeight);
+
+		// If no .wal texture was found, use width & height of actual texture
+		if (out->texWidth == -1 || out->texHeight == -1)
+		{
+			out->texWidth = out->image->width;
+			out->texHeight = out->image->height;
+		}
+		
 	}
 
 	// count animation frames
@@ -1098,6 +1220,8 @@ void R_BeginRegistration (char *model)
 	registration_sequence++;
 	r_oldviewcluster = -1;		// force markleafs
 
+	Mod_InitWalSizeList ();
+	
 	Com_sprintf (fullname, sizeof(fullname), "maps/%s.bsp", model);
 
 	// explicitly free the old map if different
