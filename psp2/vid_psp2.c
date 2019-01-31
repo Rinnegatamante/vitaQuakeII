@@ -363,8 +363,9 @@ void    VID_MenuInit (void)
     Menu_AddItem( &s_opengl_menu, ( void * ) &s_tq_slider );
     Menu_AddItem( &s_opengl_menu, ( void * ) &s_shadows_slider );
 
-    Menu_AddItem( &s_opengl_menu, ( void * ) &s_cancel_action );
 	Menu_AddItem( &s_opengl_menu, ( void * ) &s_defaults_action );
+    Menu_AddItem( &s_opengl_menu, ( void * ) &s_cancel_action );
+	
 
     Menu_Center( &s_opengl_menu );
 
