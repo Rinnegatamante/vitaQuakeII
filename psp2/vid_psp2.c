@@ -30,6 +30,8 @@ cvar_t *vid_fullscreen;
 cvar_t *vid_gamma;
 cvar_t *scr_viewsize;
 
+extern int msaa;
+
 static cvar_t *sw_mode;
 static cvar_t *sw_stipplealpha;
 static cvar_t *gl_picmip;
@@ -47,6 +49,7 @@ static menuframework_s *s_current_menu;
 
 static menulist_s       s_mode_list;
 static menulist_s       s_ref_list;
+static menulist_s       s_msaa;
 static menuslider_s     s_tq_slider;
 static menuslider_s     s_screensize_slider;
 static menuslider_s     s_brightness_slider;
@@ -138,6 +141,15 @@ qboolean VID_GetModeInfo( int *width, int *height, int mode )
 
 static void NullCallback( void *unused )
 {
+}
+
+static void MsaaCallback( void *unused )
+{
+	char res_str[64];
+	FILE *f = fopen("ux0:data/quake2/antialiasing.cfg", "wb");
+	sprintf(res_str, "%d", s_msaa.curvalue);
+	fwrite(res_str, 1, strlen(res_str), f);
+	fclose(f);
 }
 
 static void ScreenSizeCallback( void *s )
@@ -257,6 +269,14 @@ void    VID_MenuInit (void)
 		0
 	};
 	
+	static const char *msaa_modes[] =
+	{
+		"disabled",
+		"MSAA 2x",
+		"MSAA 4x",
+		0
+	};
+	
 	static const char *refs[] =
 	{
 		"vitaGL",
@@ -279,8 +299,6 @@ void    VID_MenuInit (void)
 		gl_mode = Cvar_Get( "gl_mode", "3", 0 );
     if ( !scr_viewsize )
         scr_viewsize = Cvar_Get ("viewsize", "100", CVAR_ARCHIVE);
-
-	s_ref_list.curvalue = REF_OPENGL;
 	
     s_screensize_slider.curvalue = scr_viewsize->value/10;
 
@@ -288,7 +306,7 @@ void    VID_MenuInit (void)
 
 	s_mode_list.curvalue = gl_mode->value;
     s_ref_list.curvalue = REF_OPENGL;
-
+	s_msaa.curvalue = msaa;
     s_opengl_menu.x = viddef.width * 0.50;
 	s_opengl_menu.nitems = 0;
 
@@ -323,11 +341,12 @@ void    VID_MenuInit (void)
     s_brightness_slider.maxvalue = 13;
     s_brightness_slider.curvalue = ( 1.3 - vid_gamma->value + 0.5 ) * 10;
 
-    s_defaults_action.generic.type = MTYPE_ACTION;
-    s_defaults_action.generic.name = "reset to defaults";
-    s_defaults_action.generic.x    = 0;
-    s_defaults_action.generic.y    = 90;
-    s_defaults_action.generic.callback = ResetDefaults;
+	s_msaa.generic.type = MTYPE_SPINCONTROL;
+	s_msaa.generic.name = "anti-aliasing";
+	s_msaa.generic.x = 0;
+	s_msaa.generic.y = 40;
+	s_msaa.generic.callback = MsaaCallback;
+	s_msaa.itemnames = msaa_modes;
 
     s_cancel_action.generic.type = MTYPE_ACTION;
     s_cancel_action.generic.name = "cancel";
@@ -360,6 +379,7 @@ void    VID_MenuInit (void)
 	Menu_AddItem( &s_opengl_menu, ( void * ) &s_mode_list );
 	Menu_AddItem( &s_opengl_menu, ( void * ) &s_screensize_slider );
     Menu_AddItem( &s_opengl_menu, ( void * ) &s_brightness_slider );
+	Menu_AddItem( &s_opengl_menu, ( void * ) &s_msaa );
     Menu_AddItem( &s_opengl_menu, ( void * ) &s_tq_slider );
     Menu_AddItem( &s_opengl_menu, ( void * ) &s_shadows_slider );
 
