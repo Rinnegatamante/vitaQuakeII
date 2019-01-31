@@ -444,7 +444,26 @@ extern void utf2ascii(char* dst, uint16_t* src);
 //=============================================================================
 int quake_main (unsigned int argc, void* argv){
 	int	time, oldtime, newtime;
-	Qcommon_Init (argc, argv);
+	
+	// Official mission packs support
+	#ifdef ROGUE
+	char* int_argv[4] = {"", "+set", "game", "rogue"};
+	Qcommon_Init(4, int_argv);
+	#elif defined(XATRIX)
+	char* int_argv[4] = {"", "+set", "game", "xatrix"};
+	Qcommon_Init(4, int_argv);
+	#else
+	SceAppUtilAppEventParam eventParam;
+	memset(&eventParam, 0, sizeof(SceAppUtilAppEventParam));
+	sceAppUtilReceiveAppEvent(&eventParam);
+	if (eventParam.type == 0x05){
+		char buffer[2048], fname[256];
+		memset(buffer, 0, 2048);
+		sceAppUtilAppEventParseLiveArea(&eventParam, buffer);
+		sprintf(fname, "app0:%s.bin", buffer);
+		sceAppMgrLoadExec(fname, NULL, NULL);	
+	}else Qcommon_Init (argc, argv);
+	#endif
 	oldtime = Sys_Milliseconds ();
 
 	while (1)

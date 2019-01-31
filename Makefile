@@ -132,14 +132,19 @@ GAME = 		game/m_tank.o \
 			game/m_parasite.o \
 			game/m_soldier.o \
 			game/m_supertank.o
+			
+ROGUE_DIRS = rogue
+ROGUE := $(foreach dir,$(ROGUE_DIRS), $(wildcard $(dir)/*.c))
 
+XATRIX_DIRS = xatrix
+XATRIX := $(foreach dir,$(XATRIX_DIRS), $(wildcard $(dir)/*.c))
 
 CPPSOURCES	:= audiodec
 
-CFILES		:=	$(CLIENT) $(QCOMMON) $(SERVER) $(GAME) $(SYSTEM) $(REFGL)
 CPPFILES   := $(foreach dir,$(CPPSOURCES), $(wildcard $(dir)/*.cpp))
-BINFILES := $(foreach dir,$(DATA), $(wildcard $(dir)/*.bin))
-OBJS     := $(addsuffix .o,$(BINFILES)) $(CFILES:.c=.o) $(CPPFILES:.cpp=.o) 
+OBJS     := $(CLIENT) $(QCOMMON) $(SERVER) $(GAME) $(SYSTEM) $(REFGL) $(CPPFILES:.cpp=.o)
+OBJS_ROGUE := $(CLIENT) $(QCOMMON) $(SERVER) $(SYSTEM) $(REFGL) $(CPPFILES:.cpp=.o) $(ROGUE:.c=.o)
+OBJS_XATRIX := $(CLIENT) $(QCOMMON) $(SERVER) $(SYSTEM) $(REFGL) $(CPPFILES:.cpp=.o) $(XATRIX:.c=.o)
 
 PREFIX  = arm-vita-eabi
 CC      = $(PREFIX)-gcc
@@ -147,11 +152,26 @@ CXX      = $(PREFIX)-g++
 CFLAGS  = -ffast-math -mtune=cortex-a9 -mfpu=neon -fsigned-char -g -Wl,-q -O3 \
 		-DREF_HARD_LINKED -DHAVE_OGGVORBIS -DHAVE_MPG123 \
 		-DHAVE_LIBSPEEXDSP -DUSE_AUDIO_RESAMPLER -DRELEASE -DGAME_HARD_LINKED -DPSP2
-
+CFLAGS += -DOSTYPE=\"$(OSTYPE)\" -DARCH=\"$(ARCH)\"
 CXXFLAGS  = $(CFLAGS) -fno-exceptions -std=gnu++11 -fpermissive
 ASFLAGS = $(CFLAGS)
 
 all: $(TARGET).vpk
+
+rogue: rogue.bin
+rogue: CFLAGS += -DROGUE
+
+xatrix: xatrix.bin
+xatrix: CFLAGS += -DXATRIX
+
+baseq2: $(TARGET).velf
+	vita-make-fself -s $< build\eboot.bin
+	
+rogue.bin: rogue.velf
+	vita-make-fself -s $< build\rogue.bin
+	
+xatrix.bin: xatrix.velf
+	vita-make-fself -s $< build\xatrix.bin
 
 $(TARGET).vpk: $(TARGET).velf
 	vita-make-fself -s $< build\eboot.bin
@@ -159,7 +179,7 @@ $(TARGET).vpk: $(TARGET).velf
 	cp -f param.sfo build/sce_sys/param.sfo
 	
 	#------------ Comment this if you don't have 7zip ------------------
-	7z a -tzip $(TARGET).vpk -r .\build\sce_sys\* .\build\eboot.bin  .\build\shaders\*
+	7z a -tzip $(TARGET).vpk -r .\build\sce_sys\* .\build\eboot.bin  .\build\shaders\* .\build\rogue.bin .\build\xatrix.bin
 	#-------------------------------------------------------------------
 
 %.velf: %.elf
@@ -170,6 +190,12 @@ $(TARGET).vpk: $(TARGET).velf
 
 $(TARGET).elf: $(OBJS)
 	$(CXX) $(CXXFLAGS) $^ $(LIBS) -o $@
+	
+rogue.elf: $(OBJS_ROGUE)
+	$(CXX) $(CXXFLAGS) $^ $(LIBS) -o $@
+	
+xatrix.elf: $(OBJS_XATRIX)
+	$(CXX) $(CXXFLAGS) $^ $(LIBS) -o $@
 
 clean:
-	@rm -rf $(TARGET).velf $(TARGET).elf $(OBJS)
+	@rm -rf $(TARGET).velf $(TARGET).elf $(OBJS) $(OBJS_ROGUE) $(OBJS_XATRIX)
