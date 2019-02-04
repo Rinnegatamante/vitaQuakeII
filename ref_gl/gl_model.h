@@ -75,6 +75,8 @@ typedef struct
 typedef struct mtexinfo_s
 {
 	float		vecs[2][4];
+	int			texWidth;	// added Q2E hack
+	int			texHeight; // added Q2E hack
 	int			flags;
 	int			numframes;
 	struct mtexinfo_s	*next;		// animation chain

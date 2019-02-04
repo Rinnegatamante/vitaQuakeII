@@ -25,8 +25,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include <stdio.h>
 #include <unistd.h>
 
-#include "../qcommon/qcommon.h"
-#include "../client/keys.h"
+#include "../client/client.h"
 #include "../client/qmenu.h"
 #include "errno.h"
 
@@ -36,7 +35,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 int _newlib_heap_size_user = 192 * 1024 * 1024;
 int	curtime;
 unsigned	sys_frame_time;
-
+char cmd_line[256];
+	
 int		hunkcount;
 
 static byte	*membase;
@@ -147,9 +147,29 @@ void Sys_DefaultConfig(void)
 	
 }
 
+void simulateKeyPress(char* text){
+	
+	//We first delete the current text
+	int i;
+	for (i=0;i<100;i++){
+		Key_Event(K_BACKSPACE, true, Sys_Milliseconds() + i * 2);
+		Key_Event(K_BACKSPACE, false, Sys_Milliseconds() + i * 2 + 1);
+	}
+	
+	i = 0;
+	while (*text){
+		Key_Event(*text, true, Sys_Milliseconds() + (i++));
+		Key_Event(*text, false, Sys_Milliseconds() + (i++));
+		text++;
+	}
+	
+	Key_Event(K_ENTER, true, Sys_Milliseconds() + (i++));
+	Key_Event(K_ENTER, false, Sys_Milliseconds() + (i++));
+}
+
 extern menufield_s s_maxclients_field;
 uint16_t input_text[SCE_IME_DIALOG_MAX_TEXT_LENGTH + 1];
-char* targetKeyboard;
+char *targetKeyboard;
 void Sys_SetKeys(uint32_t keys, uint32_t state){
 	if (!isKeyboard){
 		if( keys & SCE_CTRL_START)
@@ -188,6 +208,9 @@ void Sys_SetKeys(uint32_t keys, uint32_t state){
 				utf2ascii(targetKeyboard, input_text);
 				if (targetKeyboard == s_maxclients_field.buffer){ // Max players == 100
 					if (atoi(targetKeyboard) > 100) sprintf(targetKeyboard, "100");
+				} else if (targetKeyboard == cmd_line) {
+					utf2ascii(cmd_line, input_text);
+					simulateKeyPress(cmd_line);
 				}
 			}
 
@@ -410,13 +433,37 @@ void	Sys_Init (void)
 }
 
 extern void IN_StopRumble();
+extern uint16_t input_text[SCE_IME_DIALOG_MAX_TEXT_LENGTH + 1];
+static uint16_t title[SCE_IME_DIALOG_MAX_TITLE_LENGTH];
+static uint16_t initial_text[SCE_IME_DIALOG_MAX_TEXT_LENGTH];
+extern char title_keyboard[256];
+
+extern void ascii2utf(uint16_t* dst, char* src);
+extern void utf2ascii(char* dst, uint16_t* src);
 
 //=============================================================================
 int quake_main (unsigned int argc, void* argv){
 	int	time, oldtime, newtime;
-	vglInit(0x800000);
-	Qcommon_Init (argc, argv);
-
+	
+	// Official mission packs support
+	#ifdef ROGUE
+	char* int_argv[4] = {"", "+set", "game", "rogue"};
+	Qcommon_Init(4, int_argv);
+	#elif defined(XATRIX)
+	char* int_argv[4] = {"", "+set", "game", "xatrix"};
+	Qcommon_Init(4, int_argv);
+	#else
+	SceAppUtilAppEventParam eventParam;
+	memset(&eventParam, 0, sizeof(SceAppUtilAppEventParam));
+	sceAppUtilReceiveAppEvent(&eventParam);
+	if (eventParam.type == 0x05){
+		char buffer[2048], fname[256];
+		memset(buffer, 0, 2048);
+		sceAppUtilAppEventParseLiveArea(&eventParam, buffer);
+		sprintf(fname, "app0:%s.bin", buffer);
+		sceAppMgrLoadExec(fname, NULL, NULL);	
+	}else Qcommon_Init (argc, argv);
+	#endif
 	oldtime = Sys_Milliseconds ();
 
 	while (1)
@@ -425,6 +472,34 @@ int quake_main (unsigned int argc, void* argv){
 		// Rumble effect managing (PSTV only)
 		if (rumble_tick != 0) {
 			if (sceKernelGetProcessTimeWide() - rumble_tick > 500000) IN_StopRumble(); // 0.5 sec
+		}
+		
+		// OSK management for Console
+		if (cls.key_dest == key_console) {
+			SceCtrlData tmp_pad, oldpad;
+			sceCtrlPeekBufferPositive(0, &tmp_pad, 1);
+			if (!isKeyboard) {
+				if ((tmp_pad.buttons & SCE_CTRL_SELECT) && (!(oldpad.buttons & SCE_CTRL_SELECT))) {
+					isKeyboard = 1;
+					memset(cmd_line, 0, 256);
+					targetKeyboard = cmd_line;
+					memset(input_text, 0, (SCE_IME_DIALOG_MAX_TEXT_LENGTH + 1) << 1);
+					memset(initial_text, 0, (SCE_IME_DIALOG_MAX_TEXT_LENGTH) << 1);
+					sprintf(title_keyboard, "Insert Quake command");
+					ascii2utf(title, title_keyboard);
+					SceImeDialogParam param;
+					sceImeDialogParamInit(&param);
+					param.supportedLanguages = 0x0001FFFF;
+					param.languagesForced = SCE_TRUE;
+					param.type = SCE_IME_TYPE_BASIC_LATIN;
+					param.title = title;
+					param.maxTextLength = SCE_IME_DIALOG_MAX_TEXT_LENGTH;
+					param.initialText = initial_text;
+					param.inputTextBuffer = input_text;
+					sceImeDialogInit(&param);
+				}
+			}
+			oldpad = tmp_pad;
 		}
 		
 		do {
@@ -452,7 +527,7 @@ int main (int argc, char **argv)
 	scePowerSetGpuXbarClockFrequency(166);
 	
 	sceSysmoduleLoadModule(SCE_SYSMODULE_NET);
-	sceCtrlSetSamplingMode(SCE_CTRL_MODE_ANALOG);
+	sceCtrlSetSamplingMode(SCE_CTRL_MODE_ANALOG_WIDE);
 	
 	Sys_MkdirRecursive("ux0:/data/quake2/baseq2");
 	

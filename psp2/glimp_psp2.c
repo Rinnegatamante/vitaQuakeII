@@ -41,6 +41,7 @@ extern int isKeyboard;
 extern cvar_t *vid_fullscreen;
 extern cvar_t *vid_ref;
 qboolean gl_set = false;
+int msaa;
 
 /*
 ** GLimp_SetMode
@@ -96,6 +97,27 @@ void GLimp_Shutdown( void )
 */
 int GLimp_Init( void *hinstance, void *wndproc )
 {
+	char res_str[64];
+	FILE *f = fopen("ux0:data/quake2/antialiasing.cfg", "rb");
+	if (f != NULL){
+		fread(res_str, 1, 64, f);
+		fclose(f);
+		sscanf(res_str, "%d", &msaa);
+	}
+	// Initializing vitaGL
+	switch (msaa) {
+	case 1:
+		vglInitExtended(0x800000, 960, 544, 0x1000000, SCE_GXM_MULTISAMPLE_2X);
+		break;
+	case 2:
+		vglInitExtended(0x800000, 960, 544, 0x1000000, SCE_GXM_MULTISAMPLE_4X);
+		break;
+	default:
+		vglInitExtended(0x800000, 960, 544, 0x1000000, SCE_GXM_MULTISAMPLE_NONE);
+		break;
+	}
+	vglUseVram(GL_TRUE);
+	vglMapHeapMem();
 	gl_config.allow_cds = true;
 	return true;
 }
@@ -368,7 +390,7 @@ qboolean GLimp_InitGL (void)
 void GLimp_BeginFrame( float camera_separation )
 {
 	vglStartRendering();
-	vglIndexPointer(GL_SHORT, 0, MAX_INDICES, indices);
+	vglIndexPointerMapped(indices);
 }
 
 /*

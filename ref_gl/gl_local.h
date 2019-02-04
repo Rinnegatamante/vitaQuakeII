@@ -305,7 +305,7 @@ void	R_SetPalette ( const unsigned char *palette);
 
 int		Draw_GetPalette (void);
 
-void GL_ResampleTexture (unsigned *in, int inwidth, int inheight, unsigned *out,  int outwidth, int outheight);
+void GL_ResampleTexture (uint32_t *in, int inwidth, int inheight, uint32_t *out,  int outwidth, int outheight);
 
 struct image_s *R_RegisterSkin (char *name);
 

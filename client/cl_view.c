@@ -567,7 +567,6 @@ V_Init
 */
 void V_Init (void)
 {
-	Com_Printf("V_Init called");
 	Cmd_AddCommand ("gun_next", V_Gun_Next_f);
 	Cmd_AddCommand ("gun_prev", V_Gun_Prev_f);
 	Cmd_AddCommand ("gun_model", V_Gun_Model_f);

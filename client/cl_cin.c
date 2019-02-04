@@ -436,12 +436,14 @@ byte *SCR_ReadNextFrame (void)
 	int		start, end, count;
 
 	// read the next frame
-	r = fread (&command, 4, 1, cl.cinematic_file);
+	r = fread (&command, 1, 4, cl.cinematic_file);
 	if (r == 0)		// we'll give it one more chance
-		r = fread (&command, 4, 1, cl.cinematic_file);
+		r = fread (&command, 1, 4, cl.cinematic_file);
 
-	if (r != 1)
+	if (r != 4){
 		return NULL;
+	}	
+		
 	command = LittleLong(command);
 	if (command == 2)
 		return NULL;	// last frame marker
@@ -522,11 +524,8 @@ void SCR_RunCinematic (void)
 	cin.pic_pending = SCR_ReadNextFrame ();
 	if (!cin.pic_pending)
 	{
-		SCR_StopCinematic ();
-		SCR_FinishCinematic ();
-		cl.cinematictime = 1;	// hack to get the black screen behind loading
-		SCR_BeginLoadingPlaque ();
-		cl.cinematictime = 0;
+		SCR_FinishCinematic();
+		cl.cinematictime = 0;	// done
 		return;
 	}
 }
@@ -582,6 +581,7 @@ void SCR_PlayCinematic (char *arg)
 	int		old_khz;
 
 	// make sure CD isn't playing music
+	SCR_StopCinematic();
 	CDAudio_Stop();
 
 	cl.cinematicframe = 0;
