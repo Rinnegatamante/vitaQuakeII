@@ -8,7 +8,7 @@ of the License, or (at your option) any later version.
 
 This program is distributed in the hope that it will be useful,
 but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
 See the GNU General Public License for more details.
 
@@ -49,27 +49,27 @@ int msaa;
 int GLimp_SetMode( int *pwidth, int *pheight, int mode, qboolean fullscreen )
 {
 	int width, height;
-	
+
 	ri.Con_Printf( PRINT_ALL, "Initializing OpenGL display\n");
 	ri.Con_Printf (PRINT_ALL, "...setting mode %d:", mode );
-	
+
 	if ( !ri.Vid_GetModeInfo( &width, &height, mode ) )
 	{
 		ri.Con_Printf( PRINT_ALL, " invalid mode\n" );
 		return rserr_invalid_mode;
 	}
-	
+
 	ri.Con_Printf( PRINT_ALL, " %d %d\n", width, height );
-	
+
 	// destroy the existing window
 	GLimp_Shutdown ();
 
 	*pwidth = width;
 	*pheight = height;
 	ri.Vid_NewWindow (width, height);
-	
+
 	if (!gl_set) GLimp_InitGL();
-	
+
 	return rserr_ok;
 }
 
@@ -84,7 +84,7 @@ int GLimp_SetMode( int *pwidth, int *pheight, int mode, qboolean fullscreen )
 */
 void GLimp_Shutdown( void )
 {
-	
+
 }
 
 
@@ -105,17 +105,7 @@ int GLimp_Init( void *hinstance, void *wndproc )
 		sscanf(res_str, "%d", &msaa);
 	}
 	// Initializing vitaGL
-	switch (msaa) {
-	case 1:
-		vglInitExtended(0x800000, 960, 544, 0x1000000, SCE_GXM_MULTISAMPLE_2X);
-		break;
-	case 2:
-		vglInitExtended(0x800000, 960, 544, 0x1000000, SCE_GXM_MULTISAMPLE_4X);
-		break;
-	default:
-		vglInitExtended(0x800000, 960, 544, 0x1000000, SCE_GXM_MULTISAMPLE_NONE);
-		break;
-	}
+	vglInitExtended(0x800000, 960, 544, 0x1000000);
 	vglUseVram(GL_TRUE);
 	vglMapHeapMem();
 	gl_config.allow_cds = true;
@@ -191,7 +181,7 @@ void GL_SetProgram(){
 	}
 }
 
-void GL_EnableState(GLenum state){	
+void GL_EnableState(GLenum state){
 	switch (state){
 		case GL_TEXTURE_COORD_ARRAY:
 			if (!texcoord_state){
@@ -215,13 +205,13 @@ void GL_EnableState(GLenum state){
 			if (!alpha_state){
 				state_mask += 0x08;
 				alpha_state = 1;
-			} 
+			}
 			break;
 	}
 	GL_SetProgram();
 }
 
-void GL_DisableState(GLenum state){	
+void GL_DisableState(GLenum state){
 	switch (state){
 		case GL_TEXTURE_COORD_ARRAY:
 			if (texcoord_state){
@@ -239,7 +229,7 @@ void GL_DisableState(GLenum state){
 			if (alpha_state){
 				state_mask -= 0x08;
 				alpha_state = 0;
-			} 
+			}
 			break;
 		default:
 			break;
@@ -277,8 +267,8 @@ void GL_ResetShaders(){
 		for (i=0;i<4;i++){
 			glDeleteShader(vs[i]);
 		}
-	}else shaders_set = true; 
-	
+	}else shaders_set = true;
+
 	// Loading shaders
 	for (i=0;i<9;i++){
 		fs[i] = glCreateShader(GL_FRAGMENT_SHADER);
@@ -286,7 +276,7 @@ void GL_ResetShaders(){
 	for (i=0;i<4;i++){
 		vs[i] = glCreateShader(GL_VERTEX_SHADER);
 	}
-	
+
 	GL_LoadShader("app0:shaders/modulate_f.gxp", MODULATE, GL_TRUE);
 	GL_LoadShader("app0:shaders/modulate_rgba_f.gxp", MODULATE_WITH_COLOR, GL_TRUE);
 	GL_LoadShader("app0:shaders/replace_f.gxp", REPLACE, GL_TRUE);
@@ -295,13 +285,13 @@ void GL_ResetShaders(){
 	GL_LoadShader("app0:shaders/replace_alpha_f.gxp", REPLACE_A, GL_TRUE);
 	GL_LoadShader("app0:shaders/texture2d_v.gxp", TEXTURE2D, GL_FALSE);
 	GL_LoadShader("app0:shaders/texture2d_rgba_v.gxp", TEXTURE2D_WITH_COLOR, GL_FALSE);
-	
+
 	GL_LoadShader("app0:shaders/rgba_f.gxp", RGBA_COLOR, GL_TRUE);
 	GL_LoadShader("app0:shaders/vertex_f.gxp", MONO_COLOR, GL_TRUE);
 	GL_LoadShader("app0:shaders/rgba_alpha_f.gxp", RGBA_A, GL_TRUE);
 	GL_LoadShader("app0:shaders/rgba_v.gxp", COLOR, GL_FALSE);
 	GL_LoadShader("app0:shaders/vertex_v.gxp", VERTEX_ONLY, GL_FALSE);
-	
+
 	// Setting up programs
 	for (i=0;i<9;i++){
 		programs[i] = glCreateProgram();
@@ -395,7 +385,7 @@ void GLimp_BeginFrame( float camera_separation )
 
 /*
 ** GLimp_EndFrame
-** 
+**
 ** Responsible for doing a swapbuffers and possibly for other stuff
 ** as yet to be determined.  Probably better not to make this a GLimp
 ** function and instead do a call to GLimp_SwapBuffers.
@@ -414,5 +404,5 @@ void GLimp_EndFrame (void)
 */
 void GLimp_AppActivate( qboolean active )
 {
-	
+
 }
