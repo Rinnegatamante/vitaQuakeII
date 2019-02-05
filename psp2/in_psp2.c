@@ -135,7 +135,7 @@ void IN_Move (usercmd_t *cmd)
 
   // gyro analog support for camera movement
 
-  
+
   if (use_gyro->value){
     sceMotionGetState(&motionstate);
 
@@ -146,7 +146,7 @@ void IN_Move (usercmd_t *cmd)
 
     cl.viewangles[YAW] -= x_gyro_cam;
 
-    if (m_pitch->value > 0)
+    if (g_pitch->value > 0)
       cl.viewangles[PITCH] += y_gyro_cam;
     else
       cl.viewangles[PITCH] -= y_gyro_cam;

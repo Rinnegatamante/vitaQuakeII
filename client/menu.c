@@ -427,7 +427,7 @@ void M_Main_Draw (void)
 	re.DrawPic( xoffset - 30 - w, ystart, "m_main_plaque" );
 
 	re.DrawPic( xoffset - 30 - w, ystart + h + 5, "m_main_logo" );
-	
+
 	Menu_DrawString( xoffset - 180 - w, ystart - 20, "Thanks to XandridFire and RaveHeart for the awesome support on Patreon" );
 }
 
@@ -1028,6 +1028,7 @@ static menulist_s		s_options_noalttab_box;
 static menulist_s		s_options_alwaysrun_box;
 static menulist_s		s_options_use_gyro_box;
 static menulist_s		s_options_invertmouse_box;
+static menulist_s		s_options_invertgyro_box;
 static menulist_s		s_options_lookspring_box;
 static menulist_s		s_options_fps_box;
 static menulist_s		s_options_crosshair_box;
@@ -1180,7 +1181,9 @@ static void ControlsSetMenuItemValues( void )
 	Cvar_SetValue( "use_gyro", ClampCvar( 0, 1, use_gyro->value ) );
 	s_options_use_gyro_box.curvalue		= use_gyro->value;
 
-	s_options_invertmouse_box.curvalue		= m_pitch->value < 0;
+	s_options_invertmouse_box.curvalue	= m_pitch->value < 0;
+	s_options_invertgyro_box.curvalue	= g_pitch->value < 0;
+
 
 	Cvar_SetValue( "lookspring", ClampCvar( 0, 1, lookspring->value ) );
 	s_options_lookspring_box.curvalue		= lookspring->value;
@@ -1196,7 +1199,7 @@ static void ControlsSetMenuItemValues( void )
 
 	Cvar_SetValue( "pstv_rumble", ClampCvar( 0, 1, pstv_rumble->value ) );
 	s_options_rumble_box.curvalue		= pstv_rumble->value;
-	
+
 	Cvar_SetValue( "gl_shadows", ClampCvar( 0, 1, gl_shadows->value ) );
 	s_options_dynamic_shadows.curvalue		= gl_shadows->value;
 
@@ -1237,6 +1240,18 @@ static void InvertMouseFunc( void *unused )
 	else
 	{
 		Cvar_SetValue( "m_pitch", -fabs( m_pitch->value ) );
+	}
+}
+
+static void InvertGyroFunc( void *unused )
+{
+	if ( s_options_invertgyro_box.curvalue == 0 )
+	{
+		Cvar_SetValue( "g_pitch", fabs( g_pitch->value ) );
+	}
+	else
+	{
+		Cvar_SetValue( "g_pitch", -fabs( g_pitch->value ) );
 	}
 }
 
@@ -1436,7 +1451,7 @@ void Options_MenuInit( void )
 	s_options_framecap_box.generic.name	= "limit framerate";
 	s_options_framecap_box.generic.callback = framecapFunc;
 	s_options_framecap_box.itemnames = yesno_names;
-	
+
 	s_options_use_gyro_box.generic.type = MTYPE_SPINCONTROL;
 	s_options_use_gyro_box.generic.x	= 0;
 	s_options_use_gyro_box.generic.y	= 50;
@@ -1444,9 +1459,16 @@ void Options_MenuInit( void )
 	s_options_use_gyro_box.generic.callback = UseGyroFunc;
 	s_options_use_gyro_box.itemnames = yesno_names;
 
+	s_options_invertgyro_box.generic.type = MTYPE_SPINCONTROL;
+	s_options_invertgyro_box.generic.x	= 0;
+	s_options_invertgyro_box.generic.y	= 60;
+	s_options_invertgyro_box.generic.name	= "invert gyro camera";
+	s_options_invertgyro_box.generic.callback = InvertGyroFunc;
+	s_options_invertgyro_box.itemnames = yesno_names;
+
 	s_options_vert_motioncam_slider.generic.type	= MTYPE_SLIDER;
 	s_options_vert_motioncam_slider.generic.x		= 0;
-	s_options_vert_motioncam_slider.generic.y		= 60;
+	s_options_vert_motioncam_slider.generic.y		= 70;
 	s_options_vert_motioncam_slider.generic.name	= "vert gyro sensitivity";
 	s_options_vert_motioncam_slider.generic.callback = VertMotionCamSpeedFunc;
 	s_options_vert_motioncam_slider.minvalue		= 0;
@@ -1454,7 +1476,7 @@ void Options_MenuInit( void )
 
 	s_options_hor_motioncam_slider.generic.type	= MTYPE_SLIDER;
 	s_options_hor_motioncam_slider.generic.x		= 0;
-	s_options_hor_motioncam_slider.generic.y		= 70;
+	s_options_hor_motioncam_slider.generic.y		= 80;
 	s_options_hor_motioncam_slider.generic.name	= "hor gyro sensitivity";
 	s_options_hor_motioncam_slider.generic.callback = HorMotionCamSpeedFunc;
 	s_options_hor_motioncam_slider.minvalue		= 0;
@@ -1524,7 +1546,7 @@ void Options_MenuInit( void )
 	s_options_rumble_box.generic.name	= "rumble when hit";
 	s_options_rumble_box.generic.callback = RumbleFunc;
 	s_options_rumble_box.itemnames = yesno_names;
-	
+
 	s_options_dynamic_shadows.generic.type = MTYPE_SPINCONTROL;
 	s_options_dynamic_shadows.generic.x	= 0;
 	s_options_dynamic_shadows.generic.y	= 140;
@@ -1563,12 +1585,13 @@ void Options_MenuInit( void )
 	Menu_AddItem( &s_options_menu, ( void * ) &s_options_rightanalog_slider );
 	Menu_AddItem( &s_options_menu, ( void * ) &s_options_invertmouse_box );
 	Menu_AddItem( &s_options_menu, ( void * ) &s_options_use_gyro_box );
-    Menu_AddItem( &s_options_menu, ( void * ) &s_options_vert_motioncam_slider );
-    Menu_AddItem( &s_options_menu, ( void * ) &s_options_hor_motioncam_slider );
+	Menu_AddItem( &s_options_menu, ( void * ) &s_options_invertgyro_box );
+  	Menu_AddItem( &s_options_menu, ( void * ) &s_options_vert_motioncam_slider );
+ 	Menu_AddItem( &s_options_menu, ( void * ) &s_options_hor_motioncam_slider );
 	//#endif
-	
+
 	//Menu_AddItem( &s_options_menu, ( void * ) &s_options_alwaysrun_box );
-	
+
 	//Menu_AddItem( &s_options_menu, ( void * ) &s_options_lookspring_box );
 	Menu_AddItem( &s_options_menu, ( void * ) &s_options_framecap_box );
 	Menu_AddItem( &s_options_menu, ( void * ) &s_options_fps_box );
