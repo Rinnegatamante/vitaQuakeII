@@ -31,6 +31,7 @@ cvar_t *vid_gamma;
 cvar_t *scr_viewsize;
 
 extern int msaa;
+extern uint8_t is_uma0;
 
 static cvar_t *sw_mode;
 static cvar_t *sw_stipplealpha;
@@ -146,7 +147,9 @@ static void NullCallback( void *unused )
 static void MsaaCallback( void *unused )
 {
 	char res_str[64];
-	FILE *f = fopen("ux0:data/quake2/antialiasing.cfg", "wb");
+	FILE *f = NULL;
+	if (is_uma0) f = fopen("uma0:data/quake2/antialiasing.cfg", "wb");
+	else f = fopen("ux0:data/quake2/antialiasing.cfg", "wb");
 	sprintf(res_str, "%d", s_msaa.curvalue);
 	fwrite(res_str, 1, strlen(res_str), f);
 	fclose(f);

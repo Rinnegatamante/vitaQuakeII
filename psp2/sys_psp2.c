@@ -47,6 +47,8 @@ int isKeyboard;
 
 extern uint64_t rumble_tick;
 
+uint8_t is_uma0 = 0;
+
 void *GetGameAPI (void *import);
 
 int y = 20;
@@ -528,8 +530,12 @@ int main (int argc, char **argv)
 	
 	sceSysmoduleLoadModule(SCE_SYSMODULE_NET);
 	sceCtrlSetSamplingMode(SCE_CTRL_MODE_ANALOG_WIDE);
-	
-	Sys_MkdirRecursive("ux0:/data/quake2/baseq2");
+
+	FILE *f = fopen("uma0:/data/quake2/baseq2/pak0.pak", "rb");
+	if (f) {
+		fclose(f);
+		is_uma0 = 1;
+	}
 	
 	// We need a bigger stack to run Quake 2, so we create a new thread with a proper stack size
 	SceUID main_thread = sceKernelCreateThread("Quake II", quake_main, 0x40, 0x800000, 0, 0, NULL);

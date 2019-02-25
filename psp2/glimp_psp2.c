@@ -40,6 +40,7 @@ qboolean GLimp_InitGL (void);
 extern int isKeyboard;
 extern cvar_t *vid_fullscreen;
 extern cvar_t *vid_ref;
+extern uint8_t is_uma0;
 qboolean gl_set = false;
 int msaa;
 
@@ -98,7 +99,9 @@ void GLimp_Shutdown( void )
 int GLimp_Init( void *hinstance, void *wndproc )
 {
 	char res_str[64];
-	FILE *f = fopen("ux0:data/quake2/antialiasing.cfg", "rb");
+	FILE *f = NULL;
+	if (is_uma0) f = fopen("uma0:data/quake2/antialiasing.cfg", "rb");
+	else f = fopen("ux0:data/quake2/antialiasing.cfg", "rb");
 	if (f != NULL){
 		fread(res_str, 1, 64, f);
 		fclose(f);

@@ -19,6 +19,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include <unistd.h>
 extern "C"{
 	#include "../client/client.h"
+	extern uint8_t is_uma0;
 }
 #include "audio_decoder.h"
 
@@ -166,7 +167,7 @@ void CDAudio_Play(int track, qboolean looping)
 {
 	CDAudio_Stop();
 	char fname[256];
-	sprintf (fname, "ux0:/data/quake2/baseq2/music/track");
+	sprintf (fname, "%s:/data/quake2/baseq2/music/track", is_uma0 ? "uma0" : "ux0");
 	if (track < 10){
 		sprintf(fname, "%s0", fname);
 	}

@@ -39,6 +39,7 @@ QUAKE FILESYSTEM
 =============================================================================
 */
 
+extern uint8_t is_uma0;
 
 //
 // in memory
@@ -782,7 +783,8 @@ void FS_InitFilesystem (void)
 	// basedir <path>
 	// allows the game to run from outside the data tree
 	//
-	fs_basedir = Cvar_Get ("basedir", "ux0:/data/quake2", CVAR_NOSET);
+	if (is_uma0) fs_basedir = Cvar_Get ("basedir", "uma0:/data/quake2", CVAR_NOSET);
+	else fs_basedir = Cvar_Get ("basedir", "ux0:/data/quake2", CVAR_NOSET);
 
 	#ifdef _3DS
 	FS_AddGameDirectory ("romfs:/"BASEDIRNAME );
