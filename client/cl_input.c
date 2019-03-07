@@ -22,6 +22,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "client.h"
 
 cvar_t	*cl_nodelta;
+extern cvar_t *gl_xflip;
 
 extern	unsigned	sys_frame_time;
 unsigned	frame_msec;
@@ -248,11 +249,16 @@ void CL_AdjustAngles (void)
 	else
 		speed = cls.frametime;
 
+	if (gl_xflip->value) cl.viewangles[YAW] *= -1;
+	
 	if (!(in_strafe.state & 1))
 	{
 		cl.viewangles[YAW] -= speed*cl_yawspeed->value*CL_KeyState (&in_right);
 		cl.viewangles[YAW] += speed*cl_yawspeed->value*CL_KeyState (&in_left);
 	}
+	
+	if (gl_xflip->value) cl.viewangles[YAW] *= -1;
+	
 	if (in_klook.state & 1)
 	{
 		cl.viewangles[PITCH] -= speed*cl_pitchspeed->value * CL_KeyState (&in_forward);
@@ -288,6 +294,8 @@ void CL_BaseMove (usercmd_t *cmd)
 
 	cmd->sidemove += cl_sidespeed->value * CL_KeyState (&in_moveright);
 	cmd->sidemove -= cl_sidespeed->value * CL_KeyState (&in_moveleft);
+	
+	if(gl_xflip->value) cmd->sidemove *= -1;
 
 	cmd->upmove += cl_upspeed->value * CL_KeyState (&in_up);
 	cmd->upmove -= cl_upspeed->value * CL_KeyState (&in_down);

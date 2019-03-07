@@ -137,6 +137,8 @@ cvar_t	*vid_fullscreen;
 cvar_t	*vid_gamma;
 cvar_t	*vid_ref;
 
+cvar_t  *gl_xflip;
+
 /*
 =================
 R_CullBox
@@ -682,23 +684,27 @@ void R_SetupGL (void)
 	//
 	// set up projection matrix
 	//
-    screenaspect = (float)r_newrefdef.width/r_newrefdef.height;
+	screenaspect = (float)r_newrefdef.width/r_newrefdef.height;
 //	yfov = 2*atan((float)r_newrefdef.height/r_newrefdef.width)*180/M_PI;
 	glMatrixMode(GL_PROJECTION);
-    glLoadIdentity ();
-    MYgluPerspective (r_newrefdef.fov_y,  screenaspect,  4,  4096);
+	glLoadIdentity ();
+	MYgluPerspective (r_newrefdef.fov_y,  screenaspect,  4,  4096);
 
 	glCullFace(GL_FRONT);
 
 	glMatrixMode(GL_MODELVIEW);
-    glLoadIdentity ();
+	glLoadIdentity ();
 
     glRotatef (-90,  1, 0, 0);	    // put Z going up
     glRotatef (90,  0, 0, 1);	    // put Z going up
-    glRotatef (-r_newrefdef.viewangles[2],  1, 0, 0);
-    glRotatef (-r_newrefdef.viewangles[0],  0, 1, 0);
-    glRotatef (-r_newrefdef.viewangles[1],  0, 0, 1);
-    glTranslatef (-r_newrefdef.vieworg[0],  -r_newrefdef.vieworg[1],  -r_newrefdef.vieworg[2]);
+	if (gl_xflip->value){
+		glScalef (1, -1, 1);
+		glCullFace(GL_BACK);
+	}
+	glRotatef (-r_newrefdef.viewangles[2],  1, 0, 0);
+	glRotatef (-r_newrefdef.viewangles[0],  0, 1, 0);
+	glRotatef (-r_newrefdef.viewangles[1],  0, 0, 1);
+	glTranslatef (-r_newrefdef.vieworg[0],  -r_newrefdef.vieworg[1],  -r_newrefdef.vieworg[2]);
 
 //	if ( gl_state.camera_separation != 0 && gl_state.stereo_enabled )
 //		qglTranslatef ( gl_state.camera_separation, 0, 0 );
@@ -978,6 +984,8 @@ void R_Register( void )
 	vid_fullscreen = ri.Cvar_Get( "vid_fullscreen", "0", CVAR_ARCHIVE );
 	vid_gamma = ri.Cvar_Get( "vid_gamma", "1.0", CVAR_ARCHIVE );
 	vid_ref = ri.Cvar_Get( "vid_ref", "soft", CVAR_ARCHIVE );
+	
+	gl_xflip = ri.Cvar_Get( "gl_xflip", "0", CVAR_ARCHIVE);
 
 	ri.Cmd_AddCommand( "imagelist", GL_ImageList_f );
 	ri.Cmd_AddCommand( "screenshot", GL_ScreenShot_f );

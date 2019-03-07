@@ -1017,7 +1017,7 @@ static cvar_t *win_noalttab;
 extern cvar_t *in_joystick;
 extern cvar_t *cl_drawfps;
 extern cvar_t *cl_maxfps;
-extern cvar_t *gl_shadows;
+extern cvar_t *gl_xflip;
 
 static menuframework_s	s_options_menu;
 static menuaction_s		s_options_defaults_action;
@@ -1032,7 +1032,7 @@ static menulist_s		s_options_invertgyro_box;
 static menulist_s		s_options_lookspring_box;
 static menulist_s		s_options_fps_box;
 static menulist_s		s_options_crosshair_box;
-static menulist_s		s_options_dynamic_shadows;
+static menulist_s		s_options_specular_box;
 static menuslider_s		s_options_sfxvolume_slider;
 static menuslider_s		s_options_cdvolume_slider;
 static menulist_s		s_options_joystick_box;
@@ -1138,9 +1138,9 @@ static void fpsFunc( void *unused )
 	Cvar_SetValue( "cl_drawfps", s_options_fps_box.curvalue );
 }
 
-static void shadowsFunc( void *unused )
+static void SpecularFunc( void *unused )
 {
-	Cvar_SetValue( "gl_shadows", s_options_dynamic_shadows.curvalue );
+	Cvar_SetValue( "gl_xflip", s_options_specular_box.curvalue );
 }
 
 static void framecapFunc( void *unused )
@@ -1200,8 +1200,8 @@ static void ControlsSetMenuItemValues( void )
 	Cvar_SetValue( "pstv_rumble", ClampCvar( 0, 1, pstv_rumble->value ) );
 	s_options_rumble_box.curvalue		= pstv_rumble->value;
 
-	Cvar_SetValue( "gl_shadows", ClampCvar( 0, 1, gl_shadows->value ) );
-	s_options_dynamic_shadows.curvalue		= gl_shadows->value;
+	Cvar_SetValue( "gl_xflip", ClampCvar( 0, 1, gl_xflip->value ) );
+	s_options_specular_box.curvalue		= gl_xflip->value;
 
 	Cvar_SetValue( "in_joystick", ClampCvar( 0, 1, in_joystick->value ) );
 	s_options_joystick_box.curvalue		= in_joystick->value;
@@ -1546,13 +1546,13 @@ void Options_MenuInit( void )
 	s_options_rumble_box.generic.name	= "rumble when hit";
 	s_options_rumble_box.generic.callback = RumbleFunc;
 	s_options_rumble_box.itemnames = yesno_names;
-
-	s_options_dynamic_shadows.generic.type = MTYPE_SPINCONTROL;
-	s_options_dynamic_shadows.generic.x	= 0;
-	s_options_dynamic_shadows.generic.y	= 140;
-	s_options_dynamic_shadows.generic.name	= "render dynamic shadows";
-	s_options_dynamic_shadows.generic.callback = shadowsFunc;
-	s_options_dynamic_shadows.itemnames = yesno_names;
+	
+	s_options_specular_box.generic.type = MTYPE_SPINCONTROL;
+	s_options_specular_box.generic.x	= 0;
+	s_options_specular_box.generic.y	= 130;
+	s_options_specular_box.generic.name	= "specular mode";
+	s_options_specular_box.generic.callback = SpecularFunc;
+	s_options_specular_box.itemnames = yesno_names;
 
 	s_options_customize_options_action.generic.type	= MTYPE_ACTION;
 	s_options_customize_options_action.generic.x		= 0;
@@ -1598,7 +1598,7 @@ void Options_MenuInit( void )
 	//Menu_AddItem( &s_options_menu, ( void * ) &s_options_freelook_box );
 	Menu_AddItem( &s_options_menu, ( void * ) &s_options_crosshair_box );
 	Menu_AddItem( &s_options_menu, ( void * ) &s_options_rumble_box );
-//	Menu_AddItem( &s_options_menu, ( void * ) &s_options_dynamic_shadows );
+	Menu_AddItem( &s_options_menu, ( void * ) &s_options_specular_box );
 	Menu_AddItem( &s_options_menu, ( void * ) &s_options_customize_options_action );
 	Menu_AddItem( &s_options_menu, ( void * ) &s_options_defaults_action );
 	Menu_AddItem( &s_options_menu, ( void * ) &s_options_console_action );

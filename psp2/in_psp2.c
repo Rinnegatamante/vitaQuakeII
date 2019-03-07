@@ -27,6 +27,7 @@ cvar_t *vert_motioncam_sensitivity;
 cvar_t *hor_motioncam_sensitivity;
 cvar_t *use_gyro;
 extern cvar_t *pstv_rumble;
+extern cvar_t *gl_xflip;
 
 uint64_t rumble_tick;
 
@@ -120,13 +121,15 @@ void IN_Move (usercmd_t *cmd)
 	int x_mov = abs(left_x) < 30 ? 0 : (left_x * cl_sidespeed->value) * 0.01;
 	int y_mov = abs(left_y) < 30 ? 0 : (left_y * cl_forwardspeed->value) * 0.01;
 	cmd->forwardmove -= y_mov;
-	cmd->sidemove += x_mov;
+	if (gl_xflip->value) cmd->sidemove -= x_mov;
+	else cmd->sidemove += x_mov;
 
 	// Right analog support for camera movement
 	IN_RescaleAnalog(&right_x, &right_y, 30);
 	float x_cam = (right_x * rightanalog_sensitivity->value) * 0.008;
 	float y_cam = (right_y * rightanalog_sensitivity->value) * 0.008;
-	cl.viewangles[YAW] -= x_cam;
+	if (gl_xflip->value) cl.viewangles[YAW] += x_cam;
+	else cl.viewangles[YAW] -= x_cam;
 
 	if (m_pitch->value > 0)
 		cl.viewangles[PITCH] += y_cam;
