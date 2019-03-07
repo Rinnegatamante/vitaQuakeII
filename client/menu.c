@@ -428,7 +428,7 @@ void M_Main_Draw (void)
 
 	re.DrawPic( xoffset - 30 - w, ystart + h + 5, "m_main_logo" );
 
-	Menu_DrawString( xoffset - 180 - w, ystart - 20, "Thanks to XandridFire and RaveHeart for the awesome support on Patreon" );
+	Menu_DrawString( xoffset - 245 - w, ystart - 20, "Thanks to XandridFire, Tain Sueiras, nobodywasishere and RaveHeart for the awesome support on Patreon" );
 }
 
 
