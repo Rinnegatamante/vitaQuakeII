@@ -491,7 +491,7 @@ void R_DrawAliasModel (entity_t *e)
 
 	if ( e->flags & RF_WEAPONMODEL )
 	{
-		if ( r_lefthand->value == 2 )
+		if ( r_lefthand->value == 3 )
 			return;
 	}
 
@@ -672,18 +672,18 @@ void R_DrawAliasModel (entity_t *e)
 	if (currententity->flags & RF_DEPTHHACK) // hack the depth range to prevent view model from poking into walls
 		glDepthRange (gldepthmin, gldepthmin + 0.3*(gldepthmax-gldepthmin));
 
-	if ( ( currententity->flags & RF_WEAPONMODEL ) && ( r_lefthand->value == 1.0f ) )
+	if (currententity->flags & RF_WEAPONMODEL)
 	{
 		extern void MYgluPerspective( GLdouble fovy, GLdouble aspect, GLdouble zNear, GLdouble zFar );
 
 		glMatrixMode( GL_PROJECTION );
 		glPushMatrix();
 		glLoadIdentity();
-		glScalef( -1, 1, 1 );
+		if (r_lefthand->value == 1.0f) glScalef( -1, 1, 1 );
 	    MYgluPerspective( r_newrefdef.fov_y, ( float ) r_newrefdef.width / r_newrefdef.height,  4,  4096);
 		glMatrixMode( GL_MODELVIEW );
 
-		glCullFace( GL_BACK );
+		if (r_lefthand->value == 1.0f) glCullFace( GL_BACK );
 	}
 
     glPushMatrix ();
@@ -747,12 +747,12 @@ void R_DrawAliasModel (entity_t *e)
 
 	glPopMatrix ();
 
-	if ( ( currententity->flags & RF_WEAPONMODEL ) && ( r_lefthand->value == 1.0f ) )
+	if (currententity->flags & RF_WEAPONMODEL)
 	{
 		glMatrixMode( GL_PROJECTION );
 		glPopMatrix();
 		glMatrixMode( GL_MODELVIEW );
-		glCullFace( GL_FRONT );
+		if (r_lefthand->value == 1.0f) glCullFace( GL_FRONT );
 	}
 
 	if ( currententity->flags & RF_TRANSLUCENT )

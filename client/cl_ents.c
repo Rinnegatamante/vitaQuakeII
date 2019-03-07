@@ -1283,7 +1283,8 @@ void CL_AddPacketEntities (frame_t *frame)
 	}
 }
 
-
+// RIOT - Centered gun
+extern cvar_t *hand;
 
 /*
 ==============
@@ -1294,7 +1295,8 @@ void CL_AddViewWeapon (player_state_t *ps, player_state_t *ops)
 {
 	entity_t	gun;		// view model
 	int			i;
-
+	vec3_t	anglemove, anglemove2; // RIOT - Centered gun
+	
 	// allow the gun to be completely removed
 	if (!cl_gun->value)
 		return;
@@ -1319,6 +1321,19 @@ void CL_AddViewWeapon (player_state_t *ps, player_state_t *ops)
 			+ cl.lerpfrac * (ps->gunoffset[i] - ops->gunoffset[i]);
 		gun.angles[i] = cl.refdef.viewangles[i] + LerpAngle (ops->gunangles[i],
 			ps->gunangles[i], cl.lerpfrac);
+	}
+	
+	// RIOT - Centered gun
+	if(hand->value == 2.0f)
+	{
+		// Get the movement
+		AngleVectors(gun.angles, NULL, anglemove, anglemove2);
+
+		// Move the gun
+		VectorScale(anglemove, -8.0f, anglemove);
+		VectorScale(anglemove2, -5.0f, anglemove2);
+		VectorAdd(gun.origin, anglemove, gun.origin);
+		VectorAdd(gun.origin, anglemove2, gun.origin);
 	}
 
 	if (gun_frame)
