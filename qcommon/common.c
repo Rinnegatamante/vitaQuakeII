@@ -102,14 +102,16 @@ void Com_Printf (char *fmt, ...)
 {
 	va_list		argptr;
 	char		msg[MAXPRINTMSG];
-
+	int i;
+	
 	va_start (argptr,fmt);
-	vsprintf (msg,fmt,argptr);
+	int msgLen = vsnprintf(msg, MAXPRINTMSG, fmt,argptr);
+	if (msgLen >= MAXPRINTMSG) msgLen = MAXPRINTMSG-1;
 	va_end (argptr);
 
 	if (rd_target)
 	{
-		if ((strlen (msg) + strlen(rd_buffer)) > (rd_buffersize - 1))
+		if ((msgLen + strlen(rd_buffer)) > (rd_buffersize - 1))
 		{
 			rd_flush(rd_target, rd_buffer);
 			*rd_buffer = 0;
@@ -119,6 +121,36 @@ void Com_Printf (char *fmt, ...)
 	}
 
 	Con_Print (msg);
+		
+	// remove unprintable characters
+	for(i=0; i<msgLen; ++i)
+	{
+		char c = msg[i];
+		if(c < ' ' && (c < '\t' || c > '\r'))
+		{
+			switch(c)
+			{
+				// no idea if the following two are ever sent here, but in conchars.pcx they look like this
+				// so do the replacements.. won't hurt I guess..
+				case 0x10:
+					msg[i] = '[';
+					break;
+				case 0x11:
+					msg[i] = ']';
+					break;
+				// horizontal line chars
+				case 0x1D:
+				case 0x1F:
+					msg[i] = '-';
+					break;
+				case 0x1E:
+					msg[i] = '=';
+					break;
+				default: // just replace all other unprintable chars with space, should be good enough
+					msg[i] = ' ';
+			}
+		}
+	}	
 		
 	// also echo to debugging console
 	Sys_ConsoleOutput (msg);
