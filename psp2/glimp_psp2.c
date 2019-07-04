@@ -43,6 +43,9 @@ extern cvar_t *vid_ref;
 extern uint8_t is_uma0;
 qboolean gl_set = false;
 int msaa;
+float *gVertexBufferPtr;
+float *gColorBufferPtr;
+float *gTexCoordBufferPtr;
 
 /*
 ** GLimp_SetMode
@@ -380,9 +383,9 @@ qboolean GLimp_InitGL (void)
 	for (i=0;i<MAX_INDICES;i++){
 		indices[i] = i;
 	}
-	gVertexBuffer = (float*)malloc(sizeof(float)*VERTEXARRAYSIZE);
-	gColorBuffer = (float*)malloc(sizeof(float)*VERTEXARRAYSIZE);
-	gTexCoordBuffer = (float*)malloc(sizeof(float)*VERTEXARRAYSIZE);
+	gVertexBufferPtr = (float*)malloc(0x400000);
+	gColorBufferPtr = (float*)malloc(0x200000);
+	gTexCoordBufferPtr = (float*)malloc(0x200000);
 	gl_set = true;
 	return true;
 }
@@ -394,6 +397,9 @@ void GLimp_BeginFrame( float camera_separation )
 {
 	vglStartRendering();
 	vglIndexPointerMapped(indices);
+	gVertexBuffer = gVertexBufferPtr;
+	gColorBuffer = gColorBufferPtr;
+	gTexCoordBuffer = gTexCoordBufferPtr;
 }
 
 /*

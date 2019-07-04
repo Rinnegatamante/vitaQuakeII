@@ -238,13 +238,13 @@ void EmitWaterPolys (msurface_t *fa)
 			t = ot + r_turbsin[(int)((os*0.125+rdt) * TURBSCALE) & 255];
 			t *= (1.0/64);
 
-			*pUV++ = s;
-			*pUV++ = t;
-			memcpy(pPoint, &v[0], sizeof(vec3_t));
-			pPoint += 3;
+			*gTexCoordBuffer++ = s;
+			*gTexCoordBuffer++ = t;
+			memcpy(gVertexBuffer, &v[0], sizeof(vec3_t));
+			gVertexBuffer += 3;
 		}
-		vglVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, p->numverts, gVertexBuffer);
-		vglVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 0, p->numverts, gTexCoordBuffer);
+		vglVertexAttribPointerMapped(0, pPoint);
+		vglVertexAttribPointerMapped(1, pUV);
 		GL_DrawPolygon(GL_TRIANGLE_FAN, p->numverts);
 	}
 }
@@ -503,8 +503,6 @@ void R_ClearSkyBox (void)
 	}
 }
 
-float* SkyPos;
-float* SkyTex;
 void MakeSkyVec (float s, float t, int axis)
 {
 	vec3_t		v, b;
@@ -538,12 +536,12 @@ void MakeSkyVec (float s, float t, int axis)
 
 	t = 1.0 - t;
 	
-	*SkyTex++ = s;
-	*SkyTex++ = t;
+	*gTexCoordBuffer++ = s;
+	*gTexCoordBuffer++ = t;
 	
-	*SkyPos++ = v[0];
-	*SkyPos++ = v[1];
-	*SkyPos++ = v[2];
+	*gVertexBuffer++ = v[0];
+	*gVertexBuffer++ = v[1];
+	*gVertexBuffer++ = v[2];
 }
 
 /*
@@ -586,14 +584,14 @@ glRotatef (r_newrefdef.time * skyrotate, skyaxis[0], skyaxis[1], skyaxis[2]);
 
 		GL_Bind (sky_images[skytexorder[i]]->texnum);
 
-		SkyPos = gVertexBuffer;
-		SkyTex = gTexCoordBuffer;
+		float *SkyPos = gVertexBuffer;
+		float *SkyTex = gTexCoordBuffer;
 		MakeSkyVec (skymins[0][i], skymins[1][i], i);
 		MakeSkyVec (skymins[0][i], skymaxs[1][i], i);
 		MakeSkyVec (skymaxs[0][i], skymaxs[1][i], i);
 		MakeSkyVec (skymaxs[0][i], skymins[1][i], i);
-		vglVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 4, gVertexBuffer);
-		vglVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 0, 4, gTexCoordBuffer);
+		vglVertexAttribPointerMapped(0, SkyPos);
+		vglVertexAttribPointerMapped(1, SkyTex);
 		GL_DrawPolygon(GL_TRIANGLE_FAN, 4);
 		
 	}

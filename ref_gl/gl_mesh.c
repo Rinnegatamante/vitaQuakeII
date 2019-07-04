@@ -184,19 +184,19 @@ void GL_DrawAliasFrameLerp (dmdl_t *paliashdr, float backlerp)
 				index_xyz = order[2];
 				order += 3;
 				
-				*pPos++ = s_lerped[index_xyz][0];
-				*pPos++ = s_lerped[index_xyz][1];
-				*pPos++ = s_lerped[index_xyz][2];
-				*pColor++ = shadelight[0];
-				*pColor++ = shadelight[1];
-				*pColor++ = shadelight[2];
-				*pColor++ = alpha;
+				*gVertexBuffer++ = s_lerped[index_xyz][0];
+				*gVertexBuffer++ = s_lerped[index_xyz][1];
+				*gVertexBuffer++ = s_lerped[index_xyz][2];
+				*gColorBuffer++ = shadelight[0];
+				*gColorBuffer++ = shadelight[1];
+				*gColorBuffer++ = shadelight[2];
+				*gColorBuffer++ = alpha;
 					
 			} while (--count);
 			GL_DisableState(GL_TEXTURE_COORD_ARRAY);
 			GL_EnableState(GL_COLOR_ARRAY);
-			vglVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, c, gVertexBuffer);
-			vglVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, 0, c, gColorBuffer);
+			vglVertexAttribPointerMapped(0, pPos);
+			vglVertexAttribPointerMapped(1, pColor);
 			GL_DrawPolygon(prim, c);
 			GL_DisableState(GL_COLOR_ARRAY);
 			GL_EnableState(GL_TEXTURE_COORD_ARRAY);
@@ -206,27 +206,27 @@ void GL_DrawAliasFrameLerp (dmdl_t *paliashdr, float backlerp)
 			do
 			{
 				// texture coordinates come from the draw list
-				*pTexCoord++ = ((float *)order)[0];
-				*pTexCoord++ = ((float *)order)[1];
+				*gTexCoordBuffer++ = ((float *)order)[0];
+				*gTexCoordBuffer++ = ((float *)order)[1];
 				index_xyz = order[2];
 				order += 3;
 
 					// normals and vertexes come from the frame list
 				l = shadedots[verts[index_xyz].lightnormalindex];
 				
-				*pPos++ = s_lerped[index_xyz][0];
-				*pPos++ = s_lerped[index_xyz][1];
-				*pPos++ = s_lerped[index_xyz][2];
-				*pColor++ = l*shadelight[0];
-				*pColor++ = l*shadelight[1];
-				*pColor++ = l*shadelight[2];
-				*pColor++ = alpha;
+				*gVertexBuffer++ = s_lerped[index_xyz][0];
+				*gVertexBuffer++ = s_lerped[index_xyz][1];
+				*gVertexBuffer++ = s_lerped[index_xyz][2];
+				*gColorBuffer++ = l*shadelight[0];
+				*gColorBuffer++ = l*shadelight[1];
+				*gColorBuffer++ = l*shadelight[2];
+				*gColorBuffer++ = alpha;
 				
 			} while (--count);
 			GL_EnableState(GL_COLOR_ARRAY);
-			vglVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, c, gVertexBuffer);
-			vglVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 0, c, gTexCoordBuffer);
-			vglVertexAttribPointer(2, 4, GL_FLOAT, GL_FALSE, 0, c, gColorBuffer);
+			vglVertexAttribPointerMapped(0, pPos);
+			vglVertexAttribPointerMapped(1, pTexCoord);
+			vglVertexAttribPointerMapped(2, pColor);
 			GL_DrawPolygon(prim, c);
 			GL_DisableState(GL_COLOR_ARRAY);
 		}
@@ -306,9 +306,9 @@ void GL_DrawAliasShadow (dmdl_t *paliashdr, int posenum)
 			point[1] -= shadevector[1]*(point[2]+lheight);
 			point[2] = height;
 //			height -= 0.001;
-			*pPos++ = point[0];
-			*pPos++ = point[1];
-			*pPos++ = point[2];
+			*gVertexBuffer++ = point[0];
+			*gVertexBuffer++ = point[1];
+			*gVertexBuffer++ = point[2];
 			
 			order += 3;
 
@@ -318,7 +318,7 @@ void GL_DrawAliasShadow (dmdl_t *paliashdr, int posenum)
 
 		GL_DisableState(GL_TEXTURE_COORD_ARRAY);
 		glUniform4fv(monocolor, 1, color);
-		vglVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, c, gVertexBuffer);
+		vglVertexAttribPointerMapped(0, pPos);
 		GL_DrawPolygon(prim, c);
 		GL_EnableState(GL_TEXTURE_COORD_ARRAY);
 	}

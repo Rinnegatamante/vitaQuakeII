@@ -222,26 +222,26 @@ void R_DrawSpriteModel (entity_t *e)
 	else
 		GL_DisableState(GL_ALPHA_TEST);
 
-	float* pPoint = gVertexBuffer;
+	float *pPoint = gVertexBuffer;
 	float texcoord[] = {0, 1, 0, 0, 1, 0, 1, 1};
 
 	VectorMA (e->origin, -frame->origin_y, up, point);
-	VectorMA (point, -frame->origin_x, right, pPoint);
-	pPoint += 3;
+	VectorMA (point, -frame->origin_x, right, gVertexBuffer);
+	gVertexBuffer += 3;
 
 	VectorMA (e->origin, frame->height - frame->origin_y, up, point);
-	VectorMA (point, -frame->origin_x, right, pPoint);
-	pPoint += 3;
+	VectorMA (point, -frame->origin_x, right, gVertexBuffer);
+	gVertexBuffer += 3;
 
 	VectorMA (e->origin, frame->height - frame->origin_y, up, point);
-	VectorMA (point, frame->width - frame->origin_x, right, pPoint);
-	pPoint += 3;
+	VectorMA (point, frame->width - frame->origin_x, right, gVertexBuffer);
+	gVertexBuffer += 3;
 
 	VectorMA (e->origin, -frame->origin_y, up, point);
-	VectorMA (point, frame->width - frame->origin_x, right, pPoint);
-	pPoint += 3;
+	VectorMA (point, frame->width - frame->origin_x, right, gVertexBuffer);
+	gVertexBuffer += 3;
 	
-	vglVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 4, gVertexBuffer);
+	vglVertexAttribPointerMapped(0, pPoint);
 	vglVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 0, 4, texcoord);
 	GL_DrawPolygon(GL_TRIANGLE_FAN, 4);
 	
@@ -278,23 +278,23 @@ void R_DrawNullModel (void)
 	
 	float* pPos = gVertexBuffer;
 	
-	*pPos++ = 0;
-	*pPos++ = 0;
-	*pPos++ = -16;
+	*gVertexBuffer++ = 0;
+	*gVertexBuffer++ = 0;
+	*gVertexBuffer++ = -16;
 	for (i=0 ; i<=4 ; i++){
-		*pPos++ = 16*cos(i*M_PI/2);
-		*pPos++ = 16*sin(i*M_PI/2);
-		*pPos++ = 0;
+		*gVertexBuffer++ = 16*cos(i*M_PI/2);
+		*gVertexBuffer++ = 16*sin(i*M_PI/2);
+		*gVertexBuffer++ = 0;
 	}
 	
 	GL_DisableState(GL_TEXTURE_COORD_ARRAY);
 	glUniform4fv(monocolor, 1, color);
-	vglVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 6, gVertexBuffer);
+	vglVertexAttribPointerMapped(0, pPos);
 	GL_DrawPolygon(GL_TRIANGLE_FAN, 6);
 	
-	gVertexBuffer[2] = 16;
+	pPos[2] = 16;
 	
-	vglVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 6, gVertexBuffer);
+	vglVertexAttribPointerMapped(0, pPos);
 	glUniform4fv(monocolor, 1, color);
 	GL_DrawPolygon(GL_TRIANGLE_FAN, 6);
 	GL_EnableState(GL_TEXTURE_COORD_ARRAY);
@@ -433,42 +433,42 @@ void GL_DrawParticles( int num_particles, const particle_t particles[], const un
 
 		*(int *)color = colortable[p->color];
 		
-		*pColor++ = color[0]/255.0f;
-		*pColor++ = color[1]/255.0f;
-		*pColor++ = color[2]/255.0f;
-		*pColor++ = p->alpha;
-		*pColor++ = color[0]/255.0f;
-		*pColor++ = color[1]/255.0f;
-		*pColor++ = color[2]/255.0f;
-		*pColor++ = p->alpha;
-		*pColor++ = color[0]/255.0f;
-		*pColor++ = color[1]/255.0f;
-		*pColor++ = color[2]/255.0f;
-		*pColor++ = p->alpha;
+		*gColorBuffer++ = color[0]/255.0f;
+		*gColorBuffer++ = color[1]/255.0f;
+		*gColorBuffer++ = color[2]/255.0f;
+		*gColorBuffer++ = p->alpha;
+		*gColorBuffer++ = color[0]/255.0f;
+		*gColorBuffer++ = color[1]/255.0f;
+		*gColorBuffer++ = color[2]/255.0f;
+		*gColorBuffer++ = p->alpha;
+		*gColorBuffer++ = color[0]/255.0f;
+		*gColorBuffer++ = color[1]/255.0f;
+		*gColorBuffer++ = color[2]/255.0f;
+		*gColorBuffer++ = p->alpha;
 		
-		*pTex++ = 0.0625;
-		*pTex++ = 0.0625;
-		*pTex++ = 1.0625;
-		*pTex++ = 0.0625;
-		*pTex++ = 0.0625;
-		*pTex++ = 1.0625;
+		*gTexCoordBuffer++ = 0.0625;
+		*gTexCoordBuffer++ = 0.0625;
+		*gTexCoordBuffer++ = 1.0625;
+		*gTexCoordBuffer++ = 0.0625;
+		*gTexCoordBuffer++ = 0.0625;
+		*gTexCoordBuffer++ = 1.0625;
 
-		*pPos++ = p->origin[0];
-		*pPos++ = p->origin[1];
-		*pPos++ = p->origin[2];
-		*pPos++ = p->origin[0] + up[0]*scale;
-		*pPos++ = p->origin[1] + up[1]*scale;
-		*pPos++ = p->origin[2] + up[2]*scale;
-		*pPos++ = p->origin[0] + right[0]*scale;
-		*pPos++ = p->origin[1] + right[1]*scale;
-		*pPos++ = p->origin[2] + right[2]*scale;
+		*gVertexBuffer++ = p->origin[0];
+		*gVertexBuffer++ = p->origin[1];
+		*gVertexBuffer++ = p->origin[2];
+		*gVertexBuffer++ = p->origin[0] + up[0]*scale;
+		*gVertexBuffer++ = p->origin[1] + up[1]*scale;
+		*gVertexBuffer++ = p->origin[2] + up[2]*scale;
+		*gVertexBuffer++ = p->origin[0] + right[0]*scale;
+		*gVertexBuffer++ = p->origin[1] + right[1]*scale;
+		*gVertexBuffer++ = p->origin[2] + right[2]*scale;
 
 	}
 
 	GL_EnableState(GL_COLOR_ARRAY);
-	vglVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, num_vertices, gVertexBuffer);
-	vglVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 0, num_vertices, gTexCoordBuffer);
-	vglVertexAttribPointer(2, 4, GL_FLOAT, GL_FALSE, 0, num_vertices, gColorBuffer);
+	vglVertexAttribPointerMapped(0, pPos);
+	vglVertexAttribPointerMapped(1, pTex);
+	vglVertexAttribPointerMapped(2, pColor);
 	GL_DrawPolygon(GL_TRIANGLES, num_vertices);
 	GL_DisableState(GL_COLOR_ARRAY);
 	
@@ -1335,19 +1335,19 @@ void R_DrawBeam( entity_t *e )
 	float* pPos = gVertexBuffer;
 	for ( i = 0; i < NUM_BEAM_SEGS; i++ )
 	{
-		memcpy(pPos, start_points[i], sizeof(vec3_t));
-		pPos+=3;
-		memcpy(pPos, end_points[i], sizeof(vec3_t));
-		pPos+=3;
-		memcpy(pPos, start_points[(i+1)%NUM_BEAM_SEGS], sizeof(vec3_t));
-		pPos+=3;
-		memcpy(pPos, end_points[(i+1)%NUM_BEAM_SEGS], sizeof(vec3_t));
-		pPos+=3;
+		memcpy(gVertexBuffer, start_points[i], sizeof(vec3_t));
+		gVertexBuffer+=3;
+		memcpy(gVertexBuffer, end_points[i], sizeof(vec3_t));
+		gVertexBuffer+=3;
+		memcpy(gVertexBuffer, start_points[(i+1)%NUM_BEAM_SEGS], sizeof(vec3_t));
+		gVertexBuffer+=3;
+		memcpy(gVertexBuffer, end_points[(i+1)%NUM_BEAM_SEGS], sizeof(vec3_t));
+		gVertexBuffer+=3;
 	}
 
 	GL_DisableState(GL_TEXTURE_COORD_ARRAY);
 	glUniform4fv(monocolor, 1, color);
-	vglVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, num_vertices, gVertexBuffer);
+	vglVertexAttribPointerMapped(0, pPos);
 	GL_DrawPolygon(GL_TRIANGLE_STRIP, num_vertices);
 	GL_EnableState(GL_TEXTURE_COORD_ARRAY);
 	

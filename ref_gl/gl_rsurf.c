@@ -112,13 +112,13 @@ void DrawGLPoly (glpoly_t *p)
 	v = p->verts[0];
 	for (i=0 ; i<p->numverts ; i++, v+= VERTEXSIZE)
 	{
-		memcpy(pnv, &v[0], sizeof(vec3_t));
-		pnv += 3;
-		memcpy(pnt, &v[3], sizeof(float)*2);
-		pnt +=2;
+		memcpy(gVertexBuffer, &v[0], sizeof(vec3_t));
+		gVertexBuffer += 3;
+		memcpy(gTexCoordBuffer, &v[3], sizeof(float)*2);
+		gTexCoordBuffer +=2;
 	}
-	vglVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, p->numverts, gVertexBuffer);
-	vglVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 0, p->numverts, gTexCoordBuffer);
+	vglVertexAttribPointerMapped(0, pnv);
+	vglVertexAttribPointerMapped(1, pnt);
 	GL_DrawPolygon(GL_TRIANGLE_FAN, p->numverts);
 }
 
@@ -147,13 +147,13 @@ void DrawGLFlowingPoly (msurface_t *fa)
 	v = p->verts[0];
 	for (i=0 ; i<p->numverts ; i++, v+= VERTEXSIZE)
 	{
-		memcpy(pnv, &v[0], sizeof(vec3_t));
-		pnv += 3;
-		memcpy(pnt, &v[3], sizeof(float)*2);
-		pnt +=2;
+		memcpy(gVertexBuffer, &v[0], sizeof(vec3_t));
+		gVertexBuffer += 3;
+		memcpy(gTexCoordBuffer, &v[3], sizeof(float)*2);
+		gTexCoordBuffer +=2;
 	}
-	vglVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, p->numverts, gVertexBuffer);
-	vglVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 0, p->numverts, gTexCoordBuffer);
+	vglVertexAttribPointerMapped(0, pnv);
+	vglVertexAttribPointerMapped(1, pnt);
 	GL_DrawPolygon(GL_TRIANGLE_FAN, p->numverts);
 }
 //PGM
@@ -187,12 +187,12 @@ void R_DrawTriangleOutlines (void)
 				for (j=2 ; j<p->numverts ; j++ )
 				{
 					float* pPos = gVertexBuffer;
-					memcpy(pPos, p->verts[0], sizeof(vec3_t));
-					memcpy(&pPos[3], p->verts[j-1], sizeof(vec3_t));
-					memcpy(&pPos[6], p->verts[j], sizeof(vec3_t));
-					memcpy(&pPos[9], p->verts[0], sizeof(vec3_t));
+					memcpy(gVertexBuffer, p->verts[0], sizeof(vec3_t));
+					memcpy(&gVertexBuffer[3], p->verts[j-1], sizeof(vec3_t));
+					memcpy(&gVertexBuffer[6], p->verts[j], sizeof(vec3_t));
+					memcpy(&gVertexBuffer[9], p->verts[0], sizeof(vec3_t));
 					glUniform4fv(monocolor, 1, color);
-					vglVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 4, gVertexBuffer);
+					vglVertexAttribPointerMapped(0, pPos);
 					GL_DrawPolygon(GL_LINE_STRIP, 4);
 				}
 			}
@@ -220,14 +220,14 @@ void DrawGLPolyChain( glpoly_t *p, float soffset, float toffset )
 			v = p->verts[0];
 			for (j=0 ; j<p->numverts ; j++, v+= VERTEXSIZE)
 			{
-				*pPos++ = v[0];
-				*pPos++ = v[1];
-				*pPos++ = v[2];
-				*pTex++ = v[5];
-				*pTex++ = v[6];
+				*gVertexBuffer++ = v[0];
+				*gVertexBuffer++ = v[1];
+				*gVertexBuffer++ = v[2];
+				*gTexCoordBuffer++ = v[5];
+				*gTexCoordBuffer++ = v[6];
 			}
-			vglVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, p->numverts, gVertexBuffer);
-			vglVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 0, p->numverts, gTexCoordBuffer);
+			vglVertexAttribPointerMapped(0, pPos);
+			vglVertexAttribPointerMapped(1, pTex);
 			GL_DrawPolygon(GL_TRIANGLE_FAN, p->numverts);
 		}
 	}
@@ -243,14 +243,14 @@ void DrawGLPolyChain( glpoly_t *p, float soffset, float toffset )
 			v = p->verts[0];
 			for (j=0 ; j<p->numverts ; j++, v+= VERTEXSIZE)
 			{
-				*pPos++ = v[0];
-				*pPos++ = v[1];
-				*pPos++ = v[2];
-				*pTex++ = v[5] - soffset;
-				*pTex++ = v[6] - toffset;
+				*gVertexBuffer++ = v[0];
+				*gVertexBuffer++ = v[1];
+				*gVertexBuffer++ = v[2];
+				*gTexCoordBuffer++ = v[5] - soffset;
+				*gTexCoordBuffer++ = v[6] - toffset;
 			}
-			vglVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, p->numverts, gVertexBuffer);
-			vglVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 0, p->numverts, gTexCoordBuffer);
+			vglVertexAttribPointerMapped(0, pPos);
+			vglVertexAttribPointerMapped(1, pTex);
 			GL_DrawPolygon(GL_TRIANGLE_FAN, p->numverts);
 		}
 	}

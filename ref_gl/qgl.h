@@ -50,9 +50,8 @@ void     QGL_Shutdown( void );
 #define GL_TEXTURE0_SGIS					0x835E
 #define GL_TEXTURE1_SGIS					0x835F
 
-#define VERTEXARRAYSIZE 18360
-extern float* gVertexBuffer;
-extern float* gColorBuffer;
-extern float* gTexCoordBuffer;
+extern float *gVertexBuffer;
+extern float *gColorBuffer;
+extern float *gTexCoordBuffer;
 
 #endif
