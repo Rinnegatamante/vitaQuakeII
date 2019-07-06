@@ -42,7 +42,7 @@ extern cvar_t *vid_fullscreen;
 extern cvar_t *vid_ref;
 extern uint8_t is_uma0;
 qboolean gl_set = false;
-int msaa;
+int msaa, scr_width = 960, scr_height = 544;
 float *gVertexBufferPtr;
 float *gColorBufferPtr;
 float *gTexCoordBufferPtr;
@@ -110,16 +110,17 @@ int GLimp_Init( void *hinstance, void *wndproc )
 		fclose(f);
 		sscanf(res_str, "%d", &msaa);
 	}
+	
 	// Initializing vitaGL
 	switch (msaa) {
 	case 1:
-		vglInitExtended(0x800000, 960, 544, 0x1000000, SCE_GXM_MULTISAMPLE_2X);
+		vglInitExtended(0x800000, scr_width, scr_height, 0x1000000, SCE_GXM_MULTISAMPLE_2X);
 		break;
 	case 2:
-		vglInitExtended(0x800000, 960, 544, 0x1000000, SCE_GXM_MULTISAMPLE_4X);
+		vglInitExtended(0x800000, scr_width, scr_height, 0x1000000, SCE_GXM_MULTISAMPLE_4X);
 		break;
 	default:
-		vglInitExtended(0x800000, 960, 544, 0x1000000, SCE_GXM_MULTISAMPLE_NONE);
+		vglInitExtended(0x800000, scr_width, scr_height, 0x1000000, SCE_GXM_MULTISAMPLE_NONE);
 		break;
 	}
 	vglUseVram(GL_TRUE);

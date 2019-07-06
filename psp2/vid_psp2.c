@@ -39,11 +39,10 @@ static cvar_t *gl_picmip;
 static cvar_t *gl_mode;
 static cvar_t *gl_driver;
 extern cvar_t *gl_shadows;
+extern int scr_width;
+extern int scr_height;
 
 extern void M_ForceMenuOff( void );
-
-int vidwidth = 960;
-int vidheight = 544;
 
 static menuframework_s  s_opengl_menu;
 static menuframework_s *s_current_menu;
@@ -122,7 +121,7 @@ typedef struct vidmode_s
 vidmode_t vid_modes[] =
 {
     { "Mode 0: 480x272",   480, 272,   0 },
-	{ "Mode 1: 640x362",   640, 362,   1 },
+	{ "Mode 1: 640x368",   640, 368,   1 },
 	{ "Mode 2: 720x408",   720, 408,   2 },
 	{ "Mode 3: 960x544",   960, 544,   3 }
 };
@@ -142,6 +141,17 @@ qboolean VID_GetModeInfo( int *width, int *height, int mode )
 
 static void NullCallback( void *unused )
 {
+}
+
+static void ResCallback( void *unused )
+{
+	char res_str[64];
+	FILE *f = NULL;
+	if (is_uma0) f = fopen("uma0:data/quake2/resolution.cfg", "wb");
+	else f = fopen("ux0:data/quake2/resolution.cfg", "wb");
+	sprintf(res_str, "%dx%d", vid_modes[s_mode_list.curvalue].width, vid_modes[s_mode_list.curvalue].height);
+	fwrite(res_str, 1, strlen(res_str), f);
+	fclose(f);
 }
 
 static void MsaaCallback( void *unused )
@@ -194,7 +204,7 @@ static void ApplyChanges( void *unused )
     gamma = ( 0.8 - ( s_brightness_slider.curvalue/10.0 - 0.5 ) ) + 0.5;
 
     Cvar_SetValue( "vid_gamma", gamma );
-    Cvar_SetValue( "gl_mode", s_mode_list.curvalue );
+    //Cvar_SetValue( "gl_mode", s_mode_list.curvalue );
 	Cvar_SetValue( "gl_picmip", 3 - s_tq_slider.curvalue );
 	
     Cvar_Set( "vid_ref", "gl" );
@@ -213,9 +223,9 @@ static void CancelChanges( void *unused )
 void    VID_Init (void)
 {
     refimport_t ri;
-
-    viddef.width = vidwidth;
-    viddef.height = vidheight;
+	
+    viddef.width = scr_width;
+    viddef.height = scr_height;
 
     ri.Cmd_AddCommand = Cmd_AddCommand;
     ri.Cmd_RemoveCommand = Cmd_RemoveCommand;
@@ -265,9 +275,9 @@ void    VID_MenuInit (void)
 
 	static const char *resolutions[] = 
 	{
-		"960x544",
-		"960x544",
-		"960x544",
+		"480x272",
+		"640x368",
+		"720x408",
 		"960x544",
 		0
 	};
@@ -306,8 +316,23 @@ void    VID_MenuInit (void)
     s_screensize_slider.curvalue = scr_viewsize->value/10;
 
     s_shadows_slider.curvalue = gl_shadows->value;
-
-	s_mode_list.curvalue = gl_mode->value;
+	
+	switch (viddef.width) {
+		case 960:
+			s_mode_list.curvalue = 3;
+			break;
+		case 720:
+			s_mode_list.curvalue = 2;
+			break;
+		case 640:
+			s_mode_list.curvalue = 1;
+			break;
+		default:
+			s_mode_list.curvalue = 0;
+			break;
+	}
+	Cvar_SetValue( "gl_mode", s_mode_list.curvalue );
+	
     s_ref_list.curvalue = REF_OPENGL;
 	s_msaa.curvalue = msaa;
     s_opengl_menu.x = viddef.width * 0.50;
@@ -324,7 +349,7 @@ void    VID_MenuInit (void)
     s_mode_list.generic.x        = 0;
     s_mode_list.generic.y        = 10;
     s_mode_list.generic.name = "video mode";
-	s_mode_list.generic.callback = NullCallback;
+	s_mode_list.generic.callback = ResCallback;
     s_mode_list.itemnames = resolutions;
 	
 	s_screensize_slider.generic.type	= MTYPE_SLIDER;

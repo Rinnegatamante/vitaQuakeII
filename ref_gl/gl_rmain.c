@@ -139,6 +139,8 @@ cvar_t	*vid_ref;
 
 cvar_t  *gl_xflip;
 
+extern int scr_width;
+
 /*
 =================
 R_CullBox
@@ -944,6 +946,22 @@ void R_Register( void )
 	gl_log = ri.Cvar_Get( "gl_log", "0", 0 );
 	gl_bitdepth = ri.Cvar_Get( "gl_bitdepth", "0", 0 );
 	gl_mode = ri.Cvar_Get( "gl_mode", "3", CVAR_ARCHIVE );
+	
+	switch (scr_width) {
+		case 960:
+			ri.Cvar_SetValue( "gl_mode", 3 );
+			break;
+		case 720:
+			ri.Cvar_SetValue( "gl_mode", 2 );
+			break;
+		case 640:
+			ri.Cvar_SetValue( "gl_mode", 1 );
+			break;
+		default:
+			ri.Cvar_SetValue( "gl_mode", 0 );
+			break;
+	}
+	
 	gl_lightmap = ri.Cvar_Get ("gl_lightmap", "0", 0);
 	gl_shadows = ri.Cvar_Get ("gl_shadows", "0", CVAR_ARCHIVE );
 	gl_dynamic = ri.Cvar_Get ("gl_dynamic", "1", 0);

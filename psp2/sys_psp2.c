@@ -46,6 +46,8 @@ static int		cursize;
 int isKeyboard;
 
 extern uint64_t rumble_tick;
+extern int scr_width;
+extern int scr_height;
 
 uint8_t is_uma0 = 0;
 
@@ -535,6 +537,15 @@ int main (int argc, char **argv)
 	if (f) {
 		fclose(f);
 		is_uma0 = 1;
+	}
+	
+	char res_str[64];
+	if (is_uma0) f = fopen("uma0:data/quake2/resolution.cfg", "rb");
+	else f = fopen("ux0:data/quake2/resolution.cfg", "rb");
+	if (f != NULL){
+		fread(res_str, 1, 64, f);
+		fclose(f);
+		sscanf(res_str, "%dx%d", &scr_width, &scr_height);
 	}
 	
 	// We need a bigger stack to run Quake 2, so we create a new thread with a proper stack size
