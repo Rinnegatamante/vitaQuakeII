@@ -349,6 +349,7 @@ void    VID_MenuInit (void)
     s_mode_list.generic.x        = 0;
     s_mode_list.generic.y        = 10;
     s_mode_list.generic.name = "video mode";
+	s_mode_list.generic.statusbar = "you need to restart vitaQuakeII to apply changes";
 	s_mode_list.generic.callback = ResCallback;
     s_mode_list.itemnames = resolutions;
 	
@@ -374,6 +375,7 @@ void    VID_MenuInit (void)
 	s_msaa.generic.x = 0;
 	s_msaa.generic.y = 40;
 	s_msaa.generic.callback = MsaaCallback;
+	s_msaa.generic.statusbar = "you need to restart vitaQuakeII to apply changes";
 	s_msaa.itemnames = msaa_modes;
 
     s_cancel_action.generic.type = MTYPE_ACTION;
