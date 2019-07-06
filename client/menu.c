@@ -2571,7 +2571,7 @@ void JoinServer_MenuInit( void )
 		s_joinserver_server_actions[i].generic.x		= 0;
 		s_joinserver_server_actions[i].generic.y		= 40 + i*10;
 		s_joinserver_server_actions[i].generic.callback = JoinServerFunc;
-		s_joinserver_server_actions[i].generic.statusbar = "press ENTER to connect";
+		s_joinserver_server_actions[i].generic.statusbar = "press CROSS to connect";
 	}
 
 	Menu_AddItem( &s_joinserver_menu, &s_joinserver_address_book_action );
