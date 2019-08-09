@@ -124,7 +124,7 @@ int GLimp_Init( void *hinstance, void *wndproc )
 		break;
 	}
 	vglUseVram(GL_TRUE);
-	vglMapHeapMem();
+
 	gl_config.allow_cds = true;
 	return true;
 }
@@ -150,15 +150,11 @@ void* GL_LoadShader(const char* filename, GLuint idx, GLboolean fragment){
 }
 
 int state_mask = 0;
-int texenv_mask = 0;
-int texcoord_state = 0;
-int alpha_state = 0;
-int color_state = 0;
 GLint monocolor;
 GLint modulcolor[2];
 
 void GL_SetProgram(){
-	switch (state_mask + texenv_mask){
+	switch (state_mask){
 		case 0x00: // Everything off
 		case 0x04: // Modulate
 		case 0x08: // Alpha Test
@@ -198,55 +194,37 @@ void GL_SetProgram(){
 	}
 }
 
-void GL_EnableState(GLenum state){
+void GL_EnableState(GLenum state){	
 	switch (state){
 		case GL_TEXTURE_COORD_ARRAY:
-			if (!texcoord_state){
-				state_mask += 0x01;
-				texcoord_state = 1;
-			}
+			state_mask |= 0x01;
 			break;
 		case GL_COLOR_ARRAY:
-			if (!color_state){
-				state_mask += 0x02;
-				color_state = 1;
-			}
+			state_mask |= 0x02;
 			break;
 		case GL_MODULATE:
-			texenv_mask = 0x04;
+			state_mask |= 0x04;
 			break;
 		case GL_REPLACE:
-			texenv_mask = 0;
+			state_mask &= ~0x04;
 			break;
 		case GL_ALPHA_TEST:
-			if (!alpha_state){
-				state_mask += 0x08;
-				alpha_state = 1;
-			}
+			state_mask |= 0x08;
 			break;
 	}
 	GL_SetProgram();
 }
 
-void GL_DisableState(GLenum state){
+void GL_DisableState(GLenum state){	
 	switch (state){
 		case GL_TEXTURE_COORD_ARRAY:
-			if (texcoord_state){
-				state_mask -= 0x01;
-				texcoord_state = 0;
-			}
+			state_mask &= ~0x01;
 			break;
 		case GL_COLOR_ARRAY:
-			if (color_state){
-				state_mask -= 0x02;
-				color_state = 0;
-			}
+			state_mask &= ~0x02;
 			break;
 		case GL_ALPHA_TEST:
-			if (alpha_state){
-				state_mask -= 0x08;
-				alpha_state = 0;
-			}
+			state_mask &= ~0x08;
 			break;
 		default:
 			break;
@@ -257,8 +235,8 @@ void GL_DisableState(GLenum state){
 float cur_clr[4];
 
 void GL_DrawPolygon(GLenum prim, int num){
-	if ((state_mask + texenv_mask) == 0x05) glUniform4fv(modulcolor[0], 1, cur_clr);
-	else if ((state_mask + texenv_mask) == 0x0D) glUniform4fv(modulcolor[1], 1, cur_clr);
+	if (state_mask == 0x05) glUniform4fv(modulcolor[0], 1, cur_clr);
+	else if (state_mask == 0x0D) glUniform4fv(modulcolor[1], 1, cur_clr);
 	vglDrawObjects(prim, num, GL_TRUE);
 }
 
