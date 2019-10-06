@@ -21,7 +21,9 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #ifdef _WIN32
 #include <io.h>
 #endif
+#ifdef PSP2
 #include <vitasdk.h>
+#endif
 #include "client.h"
 #include "../client/qmenu.h"
 
@@ -237,11 +239,6 @@ const char *Default_MenuKey( menuframework_s *m, int key )
 	case K_AUX25:
 	case K_AUX26:
 	case K_AUX27:
-	case K_AUX28:
-	case K_AUX29:
-	case K_AUX30:
-	case K_AUX31:
-	case K_AUX32:
 
 	case K_KP_ENTER:
 	case K_AUX1:
@@ -1048,7 +1045,6 @@ static menuslider_s		s_options_circlepad_slider;
 static menuslider_s		s_options_cstick_slider;
 #endif
 
-#ifdef PSP2
 extern cvar_t 	*leftanalog_sensitivity;
 extern cvar_t	*rightanalog_sensitivity;
 cvar_t	*pstv_rumble;
@@ -1058,7 +1054,6 @@ static menuslider_s		s_options_vert_motioncam_slider;
 static menuslider_s		s_options_hor_motioncam_slider;
 cvar_t *use_gyro;
 static menulist_s		s_options_rumble_box;
-#endif
 
 static void CrosshairFunc( void *unused )
 {
@@ -1112,7 +1107,6 @@ static void CStickSpeedFunc( void *unused )
 }
 #endif
 
-#ifdef PSP2
 static void LeftAnalogSpeedFunc( void *unused )
 {
 	Cvar_SetValue( "leftanalog_sensitivity", s_options_leftanalog_slider.curvalue / 2.0F );
@@ -1147,7 +1141,6 @@ static void framecapFunc( void *unused )
 {
 	Cvar_SetValue( "cl_maxfps", s_options_framecap_box.curvalue ? 30 : 90 );
 }
-#endif
 
 static void NoAltTabFunc( void *unused )
 {
@@ -1401,34 +1394,6 @@ void Options_MenuInit( void )
 	s_options_compatibility_list.itemnames		= compatibility_items;
 	s_options_compatibility_list.curvalue		= Cvar_VariableValue( "s_primary" );
 
-	#ifdef _3DS
-
-	s_options_circlepad_slider.generic.type	= MTYPE_SLIDER;
-	s_options_circlepad_slider.generic.x		= 0;
-	s_options_circlepad_slider.generic.y		= 30;
-	s_options_circlepad_slider.generic.name	= "circlepad speed";
-	s_options_circlepad_slider.generic.callback = CirclepadSpeedFunc;
-	s_options_circlepad_slider.minvalue		= 1;
-	s_options_circlepad_slider.maxvalue		= 10;
-
-	s_options_cstick_slider.generic.type	= MTYPE_SLIDER;
-	s_options_cstick_slider.generic.x		= 0;
-	s_options_cstick_slider.generic.y		= 40;
-	s_options_cstick_slider.generic.name	= "C-Stick speed";
-	s_options_cstick_slider.generic.callback = CirclepadSpeedFunc;
-	s_options_cstick_slider.minvalue		= 1;
-	s_options_cstick_slider.maxvalue		= 10;
-
-	s_options_sensitivity_slider.generic.type	= MTYPE_SLIDER;
-	s_options_sensitivity_slider.generic.x		= 0;
-	s_options_sensitivity_slider.generic.y		= 50;
-	s_options_sensitivity_slider.generic.name	= "look speed";
-	s_options_sensitivity_slider.generic.callback = CStickSpeedFunc;
-	s_options_sensitivity_slider.minvalue		= 2;
-	s_options_sensitivity_slider.maxvalue		= 22;
-
-
-	#elif defined(PSP2)
 	s_options_leftanalog_slider.generic.type	= MTYPE_SLIDER;
 	s_options_leftanalog_slider.generic.x		= 0;
 	s_options_leftanalog_slider.generic.y		= 30;
@@ -1481,15 +1446,6 @@ void Options_MenuInit( void )
 	s_options_hor_motioncam_slider.generic.callback = HorMotionCamSpeedFunc;
 	s_options_hor_motioncam_slider.minvalue		= 0;
 	s_options_hor_motioncam_slider.maxvalue		= 20;
-	#else
-	s_options_sensitivity_slider.generic.type	= MTYPE_SLIDER;
-	s_options_sensitivity_slider.generic.x		= 0;
-	s_options_sensitivity_slider.generic.y		= 90;
-	s_options_sensitivity_slider.generic.name	= "look speed";
-	s_options_sensitivity_slider.generic.callback = MouseSpeedFunc;
-	s_options_sensitivity_slider.minvalue		= 2;
-	s_options_sensitivity_slider.maxvalue		= 22;
-	#endif
 
 	s_options_alwaysrun_box.generic.type = MTYPE_SPINCONTROL;
 	s_options_alwaysrun_box.generic.x	= 0;
@@ -2746,6 +2702,7 @@ void ascii2utf(uint16_t* dst, char* src){
 	*dst=0x00;
 }
 
+#ifdef PSP2
 char title_keyboard[256];
 extern uint16_t input_text[SCE_IME_DIALOG_MAX_TEXT_LENGTH + 1];
 static uint16_t title[SCE_IME_DIALOG_MAX_TITLE_LENGTH];
@@ -2835,7 +2792,7 @@ void NicknameCallback( void *self )
 	param.inputTextBuffer = input_text;
 	sceImeDialogInit(&param);
 }
-
+#endif
 void StartServer_MenuInit( void )
 {
 	static const char *dm_coop_names[] =
@@ -2967,7 +2924,9 @@ void StartServer_MenuInit( void )
 	s_timelimit_field.generic.flags = QMF_NUMBERSONLY;
 	s_timelimit_field.generic.x	= 0;
 	s_timelimit_field.generic.y	= 36;
+#ifdef PSP2
 	s_timelimit_field.generic.callback = TimeLimitCallback;
+#endif
 	s_timelimit_field.generic.statusbar = "0 = no limit";
 	s_timelimit_field.length = 3;
 	s_timelimit_field.visible_length = 3;
@@ -2978,7 +2937,9 @@ void StartServer_MenuInit( void )
 	s_fraglimit_field.generic.flags = QMF_NUMBERSONLY;
 	s_fraglimit_field.generic.x	= 0;
 	s_fraglimit_field.generic.y	= 54;
+#ifdef PSP2
 	s_fraglimit_field.generic.callback = FragLimitCallback;
+#endif
 	s_fraglimit_field.generic.statusbar = "0 = no limit";
 	s_fraglimit_field.length = 3;
 	s_fraglimit_field.visible_length = 3;
@@ -2995,7 +2956,9 @@ void StartServer_MenuInit( void )
 	s_maxclients_field.generic.flags = QMF_NUMBERSONLY;
 	s_maxclients_field.generic.x	= 0;
 	s_maxclients_field.generic.y	= 72;
+#ifdef PSP2
 	s_maxclients_field.generic.callback = MaxPlayersCallback;
+#endif
 	s_maxclients_field.generic.statusbar = NULL;
 	s_maxclients_field.length = 3;
 	s_maxclients_field.visible_length = 3;
@@ -3009,7 +2972,9 @@ void StartServer_MenuInit( void )
 	s_hostname_field.generic.flags = 0;
 	s_hostname_field.generic.x	= 0;
 	s_hostname_field.generic.y	= 90;
+#ifdef PSP2
 	s_hostname_field.generic.callback = NicknameCallback;
+#endif
 	s_hostname_field.generic.statusbar = NULL;
 	s_hostname_field.length = 12;
 	s_hostname_field.visible_length = 12;
@@ -3620,7 +3585,7 @@ ADDRESS BOOK MENU
 
 static menuframework_s	s_addressbook_menu;
 static menufield_s		s_addressbook_fields[NUM_ADDRESSBOOK_ENTRIES];
-
+#ifdef PSP2
 void AddressCallback( void *self )
 {
 	isKeyboard = 1;
@@ -3642,7 +3607,7 @@ void AddressCallback( void *self )
 	param.inputTextBuffer = input_text;
 	sceImeDialogInit(&param);
 }
-
+#endif
 void AddressBook_MenuInit( void )
 {
 	int i;
@@ -3662,7 +3627,9 @@ void AddressBook_MenuInit( void )
 
 		s_addressbook_fields[i].generic.type = MTYPE_FIELD;
 		s_addressbook_fields[i].generic.name = 0;
+#ifdef PSP2
 		s_addressbook_fields[i].generic.callback = AddressCallback;
+#endif
 		s_addressbook_fields[i].generic.x		= 0;
 		s_addressbook_fields[i].generic.y		= i * 18 + 0;
 		s_addressbook_fields[i].generic.localdata[0] = i;
@@ -3741,7 +3708,7 @@ static int s_numplayermodels;
 static int rate_tbl[] = { 2500, 3200, 5000, 10000, 25000, 0 };
 static const char *rate_names[] = { "28.8 Modem", "33.6 Modem", "Single ISDN",
 	"Dual ISDN/Cable", "T1/LAN", "User defined", 0 };
-
+#ifdef PSP2
 void MPNicknameCallback( void *self )
 {
 	isKeyboard = 1;
@@ -3762,7 +3729,7 @@ void MPNicknameCallback( void *self )
 	param.inputTextBuffer = input_text;
 	sceImeDialogInit(&param);
 }
-
+#endif
 void DownloadOptionsFunc( void *self )
 {
 	M_Menu_DownloadOptions_f();
@@ -4051,7 +4018,9 @@ qboolean PlayerConfig_MenuInit( void )
 
 	s_player_name_field.generic.type = MTYPE_FIELD;
 	s_player_name_field.generic.name = "name";
+#ifdef PSP2
 	s_player_name_field.generic.callback = MPNicknameCallback;
+#endif
 	s_player_name_field.generic.x		= 0;
 	s_player_name_field.generic.y		= 0;
 	s_player_name_field.length	= 20;

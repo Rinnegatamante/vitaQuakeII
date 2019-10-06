@@ -19,6 +19,11 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 // gl_mesh.c: triangle model functions
 
+typedef struct
+{
+	unsigned		width, height;			// coordinates from main game
+} viddef_t;
+
 #include "gl_local.h"
 
 /*
@@ -112,8 +117,8 @@ void GL_DrawAliasFrameLerp (dmdl_t *paliashdr, float backlerp)
 
 	order = (int *)((byte *)paliashdr + paliashdr->ofs_glcmds);
 
-//	glTranslatef (frame->translate[0], frame->translate[1], frame->translate[2]);
-//	glScalef (frame->scale[0], frame->scale[1], frame->scale[2]);
+//	qglTranslatef (frame->translate[0], frame->translate[1], frame->translate[2]);
+//	qglScalef (frame->scale[0], frame->scale[1], frame->scale[2]);
 
 	if (currententity->flags & RF_TRANSLUCENT)
 		alpha = currententity->alpha;
@@ -122,7 +127,7 @@ void GL_DrawAliasFrameLerp (dmdl_t *paliashdr, float backlerp)
 
 	// PMM - added double shell
 	if ( currententity->flags & ( RF_SHELL_RED | RF_SHELL_GREEN | RF_SHELL_BLUE | RF_SHELL_DOUBLE | RF_SHELL_HALF_DAM) ){
-		GL_DisableState(GL_TEXTURE_COORD_ARRAY);
+		qglDisableClientState(GL_TEXTURE_COORD_ARRAY);
 	}
 
 	frontlerp = 1.0 - backlerp;
@@ -193,13 +198,13 @@ void GL_DrawAliasFrameLerp (dmdl_t *paliashdr, float backlerp)
 				*gColorBuffer++ = alpha;
 					
 			} while (--count);
-			GL_DisableState(GL_TEXTURE_COORD_ARRAY);
-			GL_EnableState(GL_COLOR_ARRAY);
+			qglDisableClientState(GL_TEXTURE_COORD_ARRAY);
+			qglEnableClientState(GL_COLOR_ARRAY);
 			vglVertexAttribPointerMapped(0, pPos);
-			vglVertexAttribPointerMapped(1, pColor);
+			vglVertexAttribPointerMapped(2, pColor);
 			GL_DrawPolygon(prim, c);
-			GL_DisableState(GL_COLOR_ARRAY);
-			GL_EnableState(GL_TEXTURE_COORD_ARRAY);
+			qglDisableClientState(GL_COLOR_ARRAY);
+			qglEnableClientState(GL_TEXTURE_COORD_ARRAY);
 		}
 		else
 		{
@@ -223,12 +228,12 @@ void GL_DrawAliasFrameLerp (dmdl_t *paliashdr, float backlerp)
 				*gColorBuffer++ = alpha;
 				
 			} while (--count);
-			GL_EnableState(GL_COLOR_ARRAY);
+			qglEnableClientState(GL_COLOR_ARRAY);
 			vglVertexAttribPointerMapped(0, pPos);
 			vglVertexAttribPointerMapped(1, pTexCoord);
 			vglVertexAttribPointerMapped(2, pColor);
 			GL_DrawPolygon(prim, c);
-			GL_DisableState(GL_COLOR_ARRAY);
+			qglDisableClientState(GL_COLOR_ARRAY);
 		}
 
 	}
@@ -236,7 +241,7 @@ void GL_DrawAliasFrameLerp (dmdl_t *paliashdr, float backlerp)
 //	if ( currententity->flags & ( RF_SHELL_RED | RF_SHELL_GREEN | RF_SHELL_BLUE ) )
 	// PMM - added double damage shell
 	if ( currententity->flags & ( RF_SHELL_RED | RF_SHELL_GREEN | RF_SHELL_BLUE | RF_SHELL_DOUBLE | RF_SHELL_HALF_DAM) ){
-		GL_EnableState(GL_TEXTURE_COORD_ARRAY);
+		qglEnableClientState(GL_TEXTURE_COORD_ARRAY);
 	}
 }
 
@@ -268,13 +273,12 @@ void GL_DrawAliasShadow (dmdl_t *paliashdr, int posenum)
 
 	height = -lheight + 1.0;
 
-	glEnable(GL_STENCIL_TEST);
-	glStencilFunc(GL_EQUAL, 1, 2);
-	glStencilOp(GL_KEEP, GL_KEEP, GL_INCR);
+	qglEnable(GL_STENCIL_TEST);
+	qglStencilFunc(GL_EQUAL, 1, 2);
+	qglStencilOp(GL_KEEP, GL_KEEP, GL_INCR);
 	
 	int prim;
 	float* pPos;
-	float color[4] = {0,0,0,0.5};
 	while (1)
 	{
 		// get the vertex count and primitive type
@@ -316,14 +320,14 @@ void GL_DrawAliasShadow (dmdl_t *paliashdr, int posenum)
 
 		} while (--count);
 
-		GL_DisableState(GL_TEXTURE_COORD_ARRAY);
-		glUniform4fv(monocolor, 1, color);
+		qglDisableClientState(GL_TEXTURE_COORD_ARRAY);
+		qglColor4f(0,0,0,0.5);
 		vglVertexAttribPointerMapped(0, pPos);
 		GL_DrawPolygon(prim, c);
-		GL_EnableState(GL_TEXTURE_COORD_ARRAY);
+		qglEnableClientState(GL_TEXTURE_COORD_ARRAY);
 	}
 	
-	glDisable(GL_STENCIL_TEST);
+	qglDisable(GL_STENCIL_TEST);
 }
 
 /*
@@ -670,23 +674,23 @@ void R_DrawAliasModel (entity_t *e)
 	// draw all the triangles
 	//
 	if (currententity->flags & RF_DEPTHHACK) // hack the depth range to prevent view model from poking into walls
-		glDepthRange (gldepthmin, gldepthmin + 0.3*(gldepthmax-gldepthmin));
+		qglDepthRange (gldepthmin, gldepthmin + 0.3*(gldepthmax-gldepthmin));
 
 	if (currententity->flags & RF_WEAPONMODEL)
 	{
 		extern void MYgluPerspective( GLdouble fovy, GLdouble aspect, GLdouble zNear, GLdouble zFar );
 
-		glMatrixMode( GL_PROJECTION );
-		glPushMatrix();
-		glLoadIdentity();
-		if (r_lefthand->value == 1.0f) glScalef( -1, 1, 1 );
+		qglMatrixMode( GL_PROJECTION );
+		qglPushMatrix();
+		qglLoadIdentity();
+		if (r_lefthand->value == 1.0f) qglScalef( -1, 1, 1 );
 	    MYgluPerspective( r_newrefdef.fov_y, ( float ) r_newrefdef.width / r_newrefdef.height,  4,  4096);
-		glMatrixMode( GL_MODELVIEW );
+		qglMatrixMode( GL_MODELVIEW );
 
-		if (r_lefthand->value == 1.0f) glCullFace( GL_BACK );
+		if (r_lefthand->value == 1.0f) qglCullFace( GL_BACK );
 	}
 
-    glPushMatrix ();
+    qglPushMatrix ();
 	e->angles[PITCH] = -e->angles[PITCH];	// sigh.
 	R_RotateForEntity (e);
 	e->angles[PITCH] = -e->angles[PITCH];	// sigh.
@@ -716,7 +720,7 @@ void R_DrawAliasModel (entity_t *e)
 	GL_TexEnv( GL_MODULATE );
 	if ( currententity->flags & RF_TRANSLUCENT )
 	{
-		glEnable (GL_BLEND);
+		qglEnable (GL_BLEND);
 	}
 
 
@@ -745,37 +749,37 @@ void R_DrawAliasModel (entity_t *e)
 	GL_TexEnv( GL_REPLACE );
 	//->glShadeModel (GL_FLAT);
 
-	glPopMatrix ();
+	qglPopMatrix ();
 
 	if (currententity->flags & RF_WEAPONMODEL)
 	{
-		glMatrixMode( GL_PROJECTION );
-		glPopMatrix();
-		glMatrixMode( GL_MODELVIEW );
-		if (r_lefthand->value == 1.0f) glCullFace( GL_FRONT );
+		qglMatrixMode( GL_PROJECTION );
+		qglPopMatrix();
+		qglMatrixMode( GL_MODELVIEW );
+		if (r_lefthand->value == 1.0f) qglCullFace( GL_FRONT );
 	}
 
 	if ( currententity->flags & RF_TRANSLUCENT )
 	{
-		glDisable (GL_BLEND);
+		qglDisable (GL_BLEND);
 	}
 
 	if (currententity->flags & RF_DEPTHHACK)
-		glDepthRange (gldepthmin, gldepthmax);
+		qglDepthRange (gldepthmin, gldepthmax);
 
 	if (gl_shadows->value && !(currententity->flags & (RF_TRANSLUCENT | RF_WEAPONMODEL)))
 	{
-		glPushMatrix ();
+		qglPushMatrix ();
 		R_RotateForEntity (e);
-		GL_DisableState (GL_TEXTURE_COORD_ARRAY);
-		glEnable (GL_BLEND);
+		qglDisableClientState(GL_TEXTURE_COORD_ARRAY);
+		qglEnable (GL_BLEND);
 		GL_DrawAliasShadow (paliashdr, currententity->frame );
-		GL_EnableState (GL_TEXTURE_COORD_ARRAY);
-		glDisable (GL_BLEND);
-		glPopMatrix ();
+		qglEnableClientState(GL_TEXTURE_COORD_ARRAY);
+		qglDisable (GL_BLEND);
+		qglPopMatrix ();
 	}
 
-	GL_Color (1,1,1,1);
+	qglColor4f (1,1,1,1);
 }
 
 

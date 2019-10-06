@@ -19,6 +19,11 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 // r_light.c
 
+typedef struct
+{
+	unsigned		width, height;			// coordinates from main game
+} viddef_t;
+
 #include "gl_local.h"
 
 int	r_dlightframecount;
@@ -46,8 +51,8 @@ void R_RenderDlight (dlight_t *light)
 
 	VectorSubtract (light->origin, r_origin, v);
 	
-	GL_EnableState(GL_COLOR_ARRAY);
-	GL_DisableState(GL_TEXTURE_COORD_ARRAY);
+	qglEnableClientState(GL_COLOR_ARRAY);
+	qglDisableClientState(GL_TEXTURE_COORD_ARRAY);
 	float* pPos = gVertexBuffer;
 	float* pColor = gColorBuffer;
 	
@@ -72,12 +77,12 @@ void R_RenderDlight (dlight_t *light)
 		*gColorBuffer++ = 1.0f;
 	}
 	
-	GL_Color(0,0,0,1);
+	qglColor4f(0,0,0,1);
 	vglVertexAttribPointerMapped(0, pPos);
-	vglVertexAttribPointerMapped(1, pColor);
+	vglVertexAttribPointerMapped(2, pColor);
 	GL_DrawPolygon(GL_TRIANGLE_FAN, 18);
-	GL_DisableState(GL_COLOR_ARRAY);
-	GL_EnableState(GL_TEXTURE_COORD_ARRAY);
+	qglDisableClientState(GL_COLOR_ARRAY);
+	qglEnableClientState(GL_TEXTURE_COORD_ARRAY);
 }
 
 /*
@@ -95,21 +100,21 @@ void R_RenderDlights (void)
 
 	r_dlightframecount = r_framecount + 1;	// because the count hasn't
 											//  advanced yet for this frame
-	glDepthMask (GL_FALSE);
-	GL_DisableState (GL_TEXTURE_COORD_ARRAY);
+	qglDepthMask (GL_FALSE);
+	qglDisableClientState(GL_TEXTURE_COORD_ARRAY);
 //->	glShadeModel (GL_SMOOTH);
-	glEnable (GL_BLEND);
-	glBlendFunc (GL_ONE, GL_ONE);
+	qglEnable (GL_BLEND);
+	qglBlendFunc (GL_ONE, GL_ONE);
 
 	l = r_newrefdef.dlights;
 	for (i=0 ; i<r_newrefdef.num_dlights ; i++, l++)
 		R_RenderDlight (l);
 
-	GL_Color (1,1,1,1);
-	glDisable (GL_BLEND);
-	GL_EnableState (GL_TEXTURE_COORD_ARRAY);
-	glBlendFunc (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-	glDepthMask (GL_TRUE);
+	qglColor4f (1,1,1,1);
+	qglDisable (GL_BLEND);
+	qglEnableClientState(GL_TEXTURE_COORD_ARRAY);
+	qglBlendFunc (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	qglDepthMask (GL_TRUE);
 }
 
 

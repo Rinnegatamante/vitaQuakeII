@@ -19,6 +19,11 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 // models.c -- model loading and caching
 
+typedef struct
+{
+	unsigned		width, height;			// coordinates from main game
+} viddef_t;
+
 #include "gl_local.h"
 
 model_t	*loadmodel;

@@ -39,6 +39,10 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include <stdlib.h>
 #include <time.h>
 
+#ifndef uint16_t
+#include <stdint.h>
+#endif
+
 #if (defined _M_IX86 || defined __i386__) && !defined C_ONLY && !defined __sun__
 #define id386	0	//turn off assembly
 #else
@@ -52,7 +56,10 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #endif
 
 typedef unsigned char 		byte;
-#ifdef __cplusplus
+#if (defined(__cplusplus) || !defined(PSP2))
+#ifndef PSP2
+#include <stdbool.h>
+#endif
 #define qboolean bool
 #else
 typedef enum {false, true}	qboolean;

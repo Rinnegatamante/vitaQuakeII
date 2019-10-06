@@ -121,13 +121,30 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define	K_AUX26			232
 #define	K_AUX27			233
 #define	K_AUX28			234
-#define	K_AUX29			235
-#define	K_AUX30			236
-#define	K_AUX31			237
-#define	K_AUX32			238
+
+#define	K_MOUSE4		235
+#define	K_MOUSE5		236
+#define	K_MOUSE6		237
+#define	K_MOUSE7		238
 
 #define K_MWHEELDOWN	239
 #define K_MWHEELUP		240
+
+#define K_JOY_B			241
+#define K_JOY_Y			242
+#define K_JOY_SELECT	243
+#define K_JOY_START		244
+#define K_JOY_UP		245
+#define K_JOY_DOWN		246
+#define  K_JOY_LEFT		247
+#define K_JOY_RIGHT		248
+#define K_JOY_A			249
+#define K_JOY_X			250
+#define K_JOY_L			251
+#define  K_JOY_R		252
+#define K_JOY_L2		253
+#define K_JOY_R2		254
+#define K_JOY_R3		255
 
 extern char		*keybindings[256];
 extern	int		key_repeats[256];

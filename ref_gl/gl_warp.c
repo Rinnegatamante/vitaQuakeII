@@ -19,6 +19,11 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 // gl_warp.c -- sky and water polygons
 
+typedef struct
+{
+	unsigned		width, height;			// coordinates from main game
+} viddef_t;
+
 #include "gl_local.h"
 
 extern	model_t	*loadmodel;
@@ -564,9 +569,9 @@ void R_DrawSkyBox (void)
 			return;		// nothing visible
 	}
 
-glPushMatrix ();
-glTranslatef (r_origin[0], r_origin[1], r_origin[2]);
-glRotatef (r_newrefdef.time * skyrotate, skyaxis[0], skyaxis[1], skyaxis[2]);
+qglPushMatrix ();
+qglTranslatef (r_origin[0], r_origin[1], r_origin[2]);
+qglRotatef (r_newrefdef.time * skyrotate, skyaxis[0], skyaxis[1], skyaxis[2]);
 
 	for (i=0 ; i<6 ; i++)
 	{
@@ -595,7 +600,7 @@ glRotatef (r_newrefdef.time * skyrotate, skyaxis[0], skyaxis[1], skyaxis[2]);
 		GL_DrawPolygon(GL_TRIANGLE_FAN, 4);
 		
 	}
-glPopMatrix ();
+qglPopMatrix ();
 
 }
 

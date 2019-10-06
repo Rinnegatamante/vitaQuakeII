@@ -1,21 +1,144 @@
-TARGET		:= vitaQuakeII
-TITLE		:= QUAKE0002
-SOURCES		:= source
-INCLUDES	:= include
+STATIC_LINKING := 0
+AR             := ar
 
-LIBS = -lvitaGL -lvorbisfile -lvorbis -logg -lspeexdsp -lmpg123 -lmathneon \
-	-lSceLibKernel_stub -lSceAppMgr_stub -lSceSysmodule_stub -ljpeg \
-	-lSceCtrl_stub -lSceTouch_stub -lm -lSceNet_stub -lSceNetCtl_stub \
-	-lSceAppUtil_stub -lc -lScePower_stub -lSceMotion_stub -lSceCommonDialog_stub \
-	-lSceAudio_stub -lSceGxm_stub -lSceDisplay_stub -lSceNet_stub -lSceNetCtl_stub
+ifneq ($(V),1)
+   Q := @
+endif
 
-SYSTEM = 	psp2/vid_psp2.o \
-			psp2/snddma_psp2.o \
-			psp2/sys_psp2.o \
-			psp2/in_psp2.o \
-			psp2/net_psp2.o \
-			psp2/glimp_psp2.o \
-			psp2/glob.o
+ifneq ($(SANITIZER),)
+   CFLAGS   := -fsanitize=$(SANITIZER) $(CFLAGS)
+   CXXFLAGS := -fsanitize=$(SANITIZER) $(CXXFLAGS)
+   LDFLAGS  := -fsanitize=$(SANITIZER) $(LDFLAGS)
+endif
+
+ifeq ($(platform),)
+platform = unix
+ifeq ($(shell uname -a),)
+   platform = win
+else ifneq ($(findstring MINGW,$(shell uname -a)),)
+   platform = win
+else ifneq ($(findstring Darwin,$(shell uname -a)),)
+   platform = osx
+else ifneq ($(findstring win,$(shell uname -a)),)
+   platform = win
+endif
+endif
+
+# system platform
+system_platform = unix
+ifeq ($(shell uname -a),)
+	EXE_EXT = .exe
+	system_platform = win
+else ifneq ($(findstring Darwin,$(shell uname -a)),)
+	system_platform = osx
+	arch = intel
+ifeq ($(shell uname -p),powerpc)
+	arch = ppc
+endif
+else ifneq ($(findstring MINGW,$(shell uname -a)),)
+	system_platform = win
+endif
+
+CORE_DIR    += .
+TARGET_NAME := vitaQuakeII
+LIBM		    = -lm
+
+ifeq ($(ARCHFLAGS),)
+ifeq ($(archs),ppc)
+   ARCHFLAGS = -arch ppc -arch ppc64
+else
+   ARCHFLAGS = -arch i386 -arch x86_64
+endif
+endif
+
+ifeq ($(platform), osx)
+ifndef ($(NOUNIVERSAL))
+   CXXFLAGS += $(ARCHFLAGS)
+   LFLAGS += $(ARCHFLAGS)
+endif
+endif
+
+ifeq ($(STATIC_LINKING), 1)
+EXT := a
+endif
+
+ifeq ($(platform), unix)
+	EXT ?= so
+   TARGET := $(TARGET_NAME)_libretro.$(EXT)
+   fpic := -fPIC
+   SHARED := -shared -Wl,--version-script=$(CORE_DIR)/link.T -Wl,--no-undefined
+else ifeq ($(platform), linux-portable)
+   TARGET := $(TARGET_NAME)_libretro.$(EXT)
+   fpic := -fPIC -nostdlib
+   SHARED := -shared -Wl,--version-script=$(CORE_DIR)/link.T
+	LIBM :=
+else ifneq (,$(findstring osx,$(platform)))
+   TARGET := $(TARGET_NAME)_libretro.dylib
+   fpic := -fPIC
+   SHARED := -dynamiclib
+else ifneq (,$(findstring ios,$(platform)))
+   TARGET := $(TARGET_NAME)_libretro_ios.dylib
+	fpic := -fPIC
+	SHARED := -dynamiclib
+
+ifeq ($(IOSSDK),)
+   IOSSDK := $(shell xcodebuild -version -sdk iphoneos Path)
+endif
+
+	DEFINES := -DIOS
+	CC = cc -arch armv7 -isysroot $(IOSSDK)
+ifeq ($(platform),ios9)
+CC     += -miphoneos-version-min=8.0
+CXXFLAGS += -miphoneos-version-min=8.0
+else
+CC     += -miphoneos-version-min=5.0
+CXXFLAGS += -miphoneos-version-min=5.0
+endif
+else ifneq (,$(findstring qnx,$(platform)))
+	TARGET := $(TARGET_NAME)_libretro_qnx.so
+   fpic := -fPIC
+   SHARED := -shared -Wl,--version-script=$(CORE_DIR)/link.T -Wl,--no-undefined
+else ifeq ($(platform), emscripten)
+   TARGET := $(TARGET_NAME)_libretro_emscripten.bc
+   fpic := -fPIC
+   SHARED := -shared -Wl,--version-script=$(CORE_DIR)/link.T -Wl,--no-undefined
+else ifeq ($(platform), vita)
+   TARGET := $(TARGET_NAME)_vita.a
+   CC = arm-vita-eabi-gcc
+   AR = arm-vita-eabi-ar
+   CXXFLAGS += -Wl,-q -Wall -O3
+	STATIC_LINKING = 1
+else
+   CC = gcc
+   TARGET := $(TARGET_NAME)_libretro.dll
+   SHARED := -shared -static-libgcc -static-libstdc++ -s -Wl,--version-script=$(CORE_DIR)/link.T -Wl,--no-undefined
+endif
+
+LDFLAGS += $(LIBM) -ljpeg
+
+ifeq ($(DEBUG), 1)
+   CFLAGS += -O0 -g -DDEBUG
+   CXXFLAGS += -O0 -g -DDEBUG
+else
+   CFLAGS += -O3
+   CXXFLAGS += -O3
+endif
+
+include Makefile.common
+
+SYSTEM = 	libretro/libretro.o \
+			libretro-common/file/retro_dirent.o \
+			libretro-common/encodings/encoding_utf.o \
+			libretro-common/string/stdstring.o \
+			libretro-common/file/file_path.o \
+			libretro-common/compat/fopen_utf8.o \
+			libretro-common/compat/compat_strl.o \
+			libretro-common/compat/compat_posix_string.o \
+			libretro-common/compat/compat_strcasestr.o \
+			libretro-common/compat/compat_snprintf.o \
+			libretro-common/features/features_cpu.o \
+			libretro-common/streams/file_stream.o \
+			libretro-common/vfs/vfs_implementation.o
 
 CLIENT =	client/cl_input.o \
 			client/cl_inv.o \
@@ -132,70 +255,30 @@ GAME = 		game/m_tank.o \
 			game/m_parasite.o \
 			game/m_soldier.o \
 			game/m_supertank.o
-			
-ROGUE_DIRS = rogue
-ROGUE := $(foreach dir,$(ROGUE_DIRS), $(wildcard $(dir)/*.c))
 
-XATRIX_DIRS = xatrix
-XATRIX := $(foreach dir,$(XATRIX_DIRS), $(wildcard $(dir)/*.c))
+OBJECTS := $(CLIENT) $(QCOMMON) $(SERVER) $(GAME) $(SYSTEM) $(REFGL)
 
-CPPSOURCES	:= audiodec
+CFLAGS   += -Wall -D__LIBRETRO__ $(fpic) -DREF_HARD_LINKED -DRELEASE -DGAME_HARD_LINKED -fsigned-char -DOSTYPE=\"$(OSTYPE)\" -DARCH=\"$(ARCH)\" -I$(CORE_DIR)/libretro-common/include
+CXXFLAGS += -Wall -D__LIBRETRO__ $(fpic) -fpermissive
 
-CPPFILES   := $(foreach dir,$(CPPSOURCES), $(wildcard $(dir)/*.cpp))
-OBJS     := $(CLIENT) $(QCOMMON) $(SERVER) $(GAME) $(SYSTEM) $(REFGL) $(CPPFILES:.cpp=.o)
-OBJS_ROGUE := $(CLIENT) $(QCOMMON) $(SERVER) $(SYSTEM) $(REFGL) $(CPPFILES:.cpp=.o) $(ROGUE:.c=.o)
-OBJS_XATRIX := $(CLIENT) $(QCOMMON) $(SERVER) $(SYSTEM) $(REFGL) $(CPPFILES:.cpp=.o) $(XATRIX:.c=.o)
+all: $(TARGET)
 
-PREFIX  = arm-vita-eabi
-CC      = $(PREFIX)-gcc
-CXX      = $(PREFIX)-g++
-CFLAGS  = -ffast-math -mtune=cortex-a9 -mfpu=neon -fsigned-char -g -Wl,-q -O3 \
-		-DREF_HARD_LINKED -DHAVE_OGGVORBIS -DHAVE_MPG123 \
-		-DHAVE_LIBSPEEXDSP -DUSE_AUDIO_RESAMPLER -DRELEASE -DGAME_HARD_LINKED -DPSP2
-CFLAGS += -DOSTYPE=\"$(OSTYPE)\" -DARCH=\"$(ARCH)\"
-CXXFLAGS  = $(CFLAGS) -fno-exceptions -std=gnu++11 -fpermissive
-ASFLAGS = $(CFLAGS)
+$(TARGET): $(OBJECTS)
+ifeq ($(STATIC_LINKING), 1)
+	$(AR) rcs $@ $(OBJECTS)
+else
+	@$(if $(Q), $(shell echo echo LD $@),)
+	$(Q)$(CC) $(fpic) $(SHARED) $(INCLUDES) -o $@ $(OBJECTS) $(LDFLAGS)
+endif
 
-all: $(TARGET).vpk
-
-rogue: rogue.bin
-rogue: CFLAGS += -DROGUE
-
-xatrix: xatrix.bin
-xatrix: CFLAGS += -DXATRIX
-
-baseq2: $(TARGET).velf
-	vita-make-fself -s $< build\eboot.bin
-	
-rogue.bin: rogue.velf
-	vita-make-fself -s $< build\rogue.bin
-	
-xatrix.bin: xatrix.velf
-	vita-make-fself -s $< build\xatrix.bin
-
-$(TARGET).vpk: $(TARGET).velf
-	vita-make-fself -s $< build\eboot.bin
-	vita-mksfoex -s TITLE_ID=$(TITLE) -d ATTRIBUTE2=12 "$(TARGET)" param.sfo
-	cp -f param.sfo build/sce_sys/param.sfo
-	
-	#------------ Comment this if you don't have 7zip ------------------
-	7z a -tzip $(TARGET).vpk -r .\build\sce_sys\* .\build\eboot.bin  .\build\shaders\* .\build\rogue.bin .\build\xatrix.bin
-	#-------------------------------------------------------------------
-
-%.velf: %.elf
-	cp $< $<.unstripped.elf
-	$(PREFIX)-strip -g $<
-	vita-elf-create $< $@
-	vita-make-fself -s $@ eboot.bin
-
-$(TARGET).elf: $(OBJS)
-	$(CXX) $(CXXFLAGS) $^ $(LIBS) -o $@
-	
-rogue.elf: $(OBJS_ROGUE)
-	$(CXX) $(CXXFLAGS) $^ $(LIBS) -o $@
-	
-xatrix.elf: $(OBJS_XATRIX)
-	$(CXX) $(CXXFLAGS) $^ $(LIBS) -o $@
+%.o: %.c
+	@$(if $(Q), $(shell echo echo CC $<),)
+	$(Q)$(CC) $(CFLAGS) $(fpic) -c -o $@ $<
 
 clean:
-	@rm -rf $(TARGET).velf $(TARGET).elf $(OBJS) $(OBJS_ROGUE) $(OBJS_XATRIX)
+	rm -f $(OBJECTS) $(TARGET)
+
+.PHONY: clean
+
+print-%:
+	@echo '$*=$($*)'

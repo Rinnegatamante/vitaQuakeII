@@ -20,6 +20,11 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 // draw.c
 
+typedef struct
+{
+	unsigned		width, height;			// coordinates from main game
+} viddef_t;
+
 #include "gl_local.h"
 
 image_t		*draw_chars;
@@ -38,8 +43,8 @@ void Draw_InitLocal (void)
 	// load console characters (don't bilerp characters)
 	draw_chars = GL_FindImage ("pics/conchars.pcx", it_pic);
 	GL_Bind( draw_chars->texnum );
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	qglTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	qglTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 }
 
 
@@ -47,8 +52,8 @@ void DrawQuad(float x, float y, float w, float h, float u, float v, float uw, fl
 {
   float texcoord[2*4] = {u, v, u + uw, v, u + uw, v + vh, u, v + vh};
   float vertex[3*4] = {x,y,0.5f,x+w,y,0.5f, x+w, y+h,0.5f, x, y+h,0.5f};
-  vglVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 4, vertex);
-  vglVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 0, 4, texcoord);
+  vglVertexAttribPointerMapped(0, vertex);
+  vglVertexAttribPointerMapped(1, texcoord);
   GL_DrawPolygon(GL_TRIANGLE_FAN, 4);
 }
 
@@ -56,20 +61,19 @@ void DrawPic(float x, float y, float w, float h, float u, float v, float u2, flo
 {
   float texcoord[2*4] = {u, v, u2, v, u2, v2, u, v2};
   float vertex[3*4] = {x,y,0.5f,x+w,y,0.5f, x+w, y+h,0.5f, x, y+h,0.5f};
-  vglVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 4, vertex);
-  vglVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 0, 4, texcoord);
+  vglVertexAttribPointerMapped(0, vertex);
+  vglVertexAttribPointerMapped(1, texcoord);
   GL_DrawPolygon(GL_TRIANGLE_FAN, 4);
 }
 
 void DrawQuad_NoTex(float x, float y, float w, float h, float r, float g, float b, float a)
 {
   float vertex[3*4] = {x,y,0.5f,x+w,y,0.5f, x+w, y+h,0.5f, x, y+h,0.5f};
-  float color[4] = {r, g, b, a};
-  GL_DisableState(GL_TEXTURE_COORD_ARRAY);
-  glUniform4fv(monocolor, 1, color);
-  vglVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 4, vertex);
+  qglDisableClientState(GL_TEXTURE_COORD_ARRAY);
+  qglColor4f(r, g, b, a);
+  vglVertexAttribPointerMapped(0, vertex);
   GL_DrawPolygon(GL_TRIANGLE_FAN, 4);
-  GL_EnableState(GL_TEXTURE_COORD_ARRAY);
+  qglEnableClientState(GL_TEXTURE_COORD_ARRAY);
 }
 
 /*
@@ -167,13 +171,13 @@ void Draw_StretchPic (int x, int y, int w, int h, char *pic)
 		Scrap_Upload ();
 
 	if ( ( ( gl_config.renderer == GL_RENDERER_MCD ) || ( gl_config.renderer & GL_RENDERER_RENDITION ) ) && !gl->has_alpha)
-		GL_DisableState(GL_ALPHA_TEST);
+		qglDisable(GL_ALPHA_TEST);
 
 	GL_Bind (gl->texnum);
 	DrawPic(x, y, w, h, gl->sl, gl->tl, gl->sh, gl->th);
 
 	if ( ( ( gl_config.renderer == GL_RENDERER_MCD ) || ( gl_config.renderer & GL_RENDERER_RENDITION ) ) && !gl->has_alpha)
-		GL_EnableState(GL_ALPHA_TEST);
+		qglEnable(GL_ALPHA_TEST);
 }
 
 
@@ -196,13 +200,13 @@ void Draw_Pic (int x, int y, char *pic)
 		Scrap_Upload ();
 
 	if ( ( ( gl_config.renderer == GL_RENDERER_MCD ) || ( gl_config.renderer & GL_RENDERER_RENDITION ) ) && !gl->has_alpha)
-		GL_DisableState(GL_ALPHA_TEST);
+		qglDisable(GL_ALPHA_TEST);
 
 	GL_Bind (gl->texnum);
 	DrawPic(x, y, gl->width, gl->height, gl->sl, gl->tl, gl->sh, gl->th);
 
 	if ( ( ( gl_config.renderer == GL_RENDERER_MCD ) || ( gl_config.renderer & GL_RENDERER_RENDITION ) )  && !gl->has_alpha)
-		GL_EnableState(GL_ALPHA_TEST);
+		qglEnable(GL_ALPHA_TEST);
 }
 
 /*
@@ -225,14 +229,14 @@ void Draw_TileClear (int x, int y, int w, int h, char *pic)
 	}
 
 	if ( ( ( gl_config.renderer == GL_RENDERER_MCD ) || ( gl_config.renderer & GL_RENDERER_RENDITION ) )  && !image->has_alpha)
-		GL_DisableState(GL_ALPHA_TEST);
+		qglDisable(GL_ALPHA_TEST);
 
 	
 	GL_Bind (image->texnum);
 	DrawQuad(x, y, w, h, x/64.0, y/64.0, w/64.0, h/64.0);
 
 	if ( ( ( gl_config.renderer == GL_RENDERER_MCD ) || ( gl_config.renderer & GL_RENDERER_RENDITION ) )  && !image->has_alpha)
-		GL_EnableState(GL_ALPHA_TEST);
+		qglEnable(GL_ALPHA_TEST);
 }
 
 
@@ -258,7 +262,7 @@ void Draw_Fill (int x, int y, int w, int h, int c)
 	
 	DrawQuad_NoTex(x, y, w, h, (color.v[0]) / 255.0f, (color.v[1]) / 255.0f, (color.v[2]) / 255.0f, 1.0f);
 	
-	GL_Color(1,1,1,1);
+	qglColor4f(1,1,1,1);
 
 }
 
@@ -272,10 +276,10 @@ Draw_FadeScreen
 */
 void Draw_FadeScreen (void)
 {
-	glEnable (GL_BLEND);
+	qglEnable (GL_BLEND);
 	DrawQuad_NoTex(0, 0, vid.width, vid.height, 0, 0, 0, 0.8f);
-	GL_Color (1,1,1,1);
-	glDisable (GL_BLEND);
+	qglColor4f (1,1,1,1);
+	qglDisable (GL_BLEND);
 }
 
 
@@ -331,17 +335,17 @@ void Draw_StretchRaw (int x, int y, int w, int h, int cols, int rows, byte *data
 		}
 	}
 
-	glTexImage2D(GL_TEXTURE_2D, 0, gl_tex_solid_format, 256, 256, 0, GL_RGBA, GL_UNSIGNED_BYTE, image32);
+	qglTexImage2D(GL_TEXTURE_2D, 0, gl_tex_solid_format, 256, 256, 0, GL_RGBA, GL_UNSIGNED_BYTE, image32);
 	
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	qglTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	qglTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
 	//if ( ( gl_config.renderer == GL_RENDERER_MCD ) || ( gl_config.renderer & GL_RENDERER_RENDITION ) ) 
-		GL_DisableState(GL_ALPHA_TEST);
+		qglDisable(GL_ALPHA_TEST);
 
 	DrawPic(x, y, w, h, 0, 0, 1, t);
 
 	//if ( ( gl_config.renderer == GL_RENDERER_MCD ) || ( gl_config.renderer & GL_RENDERER_RENDITION ) ) 
-		GL_EnableState(GL_ALPHA_TEST);
+		qglEnable(GL_ALPHA_TEST);
 }
 

@@ -20,6 +20,11 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 // GL_RSURF.C: surface-related refresh code
 #include <assert.h>
 
+typedef struct
+{
+	unsigned		width, height;			// coordinates from main game
+} viddef_t;
+
 #include "gl_local.h"
 
 static vec3_t	modelorg;		// relative to viewpoint
@@ -170,10 +175,9 @@ void R_DrawTriangleOutlines (void)
 	if (!gl_showtris->value)
 		return;
 
-	glDisable (GL_DEPTH_TEST);
-	GL_Color(1,1,1,1);
-	const float color[] = {1, 1, 1, 1};
-	GL_DisableState(GL_TEXTURE_COORD_ARRAY);
+	qglDisable (GL_DEPTH_TEST);
+	qglColor4f(1,1,1,1);
+	qglDisableClientState(GL_TEXTURE_COORD_ARRAY);
 	
 	for (i=0 ; i<MAX_LIGHTMAPS ; i++)
 	{
@@ -191,7 +195,6 @@ void R_DrawTriangleOutlines (void)
 					memcpy(&gVertexBuffer[3], p->verts[j-1], sizeof(vec3_t));
 					memcpy(&gVertexBuffer[6], p->verts[j], sizeof(vec3_t));
 					memcpy(&gVertexBuffer[9], p->verts[0], sizeof(vec3_t));
-					glUniform4fv(monocolor, 1, color);
 					vglVertexAttribPointerMapped(0, pPos);
 					GL_DrawPolygon(GL_LINE_STRIP, 4);
 				}
@@ -199,8 +202,8 @@ void R_DrawTriangleOutlines (void)
 		}
 	}
 
-	glEnable (GL_DEPTH_TEST);
-	GL_EnableState(GL_TEXTURE_COORD_ARRAY);
+	qglEnable (GL_DEPTH_TEST);
+	qglEnableClientState(GL_TEXTURE_COORD_ARRAY);
 }
 
 /*
@@ -274,7 +277,7 @@ void R_BlendLightmaps (void)
 		return;
 
 	// don't bother writing Z
-	glDepthMask(GL_FALSE);
+	qglDepthMask(GL_FALSE);
 
 	/*
 	** set the appropriate blending mode unless we're only looking at the
@@ -282,11 +285,11 @@ void R_BlendLightmaps (void)
 	*/
 	if (!gl_lightmap->value)
 	{
-		glEnable (GL_BLEND);
+		qglEnable (GL_BLEND);
 
 		if ( gl_saturatelighting->value )
 		{
-			glBlendFunc( GL_ONE, GL_ONE );
+			qglBlendFunc( GL_ONE, GL_ONE );
 		}
 		else
 		{
@@ -295,20 +298,20 @@ void R_BlendLightmaps (void)
 				switch ( toupper( gl_monolightmap->string[0] ) )
 				{
 				case 'I':
-					glBlendFunc (GL_ZERO, GL_SRC_COLOR );
+					qglBlendFunc (GL_ZERO, GL_SRC_COLOR );
 					break;
 				case 'L':
-					glBlendFunc (GL_ZERO, GL_SRC_COLOR );
+					qglBlendFunc (GL_ZERO, GL_SRC_COLOR );
 					break;
 				case 'A':
 				default:
-					glBlendFunc( GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA );
+					qglBlendFunc( GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA );
 					break;
 				}
 			}
 			else
 			{
-				glBlendFunc (GL_ZERO, GL_SRC_COLOR );
+				qglBlendFunc (GL_ZERO, GL_SRC_COLOR );
 			}
 		}
 	}
@@ -414,9 +417,9 @@ void R_BlendLightmaps (void)
 	/*
 	** restore state
 	*/
-	glDisable (GL_BLEND);
-	glBlendFunc (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-	glDepthMask(GL_TRUE);
+	qglDisable (GL_BLEND);
+	qglBlendFunc (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	qglDepthMask(GL_TRUE);
 }
 
 /*
@@ -440,7 +443,7 @@ void R_RenderBrushPoly (msurface_t *fa)
 
 		// warp texture, no lightmaps
 		GL_TexEnv( GL_MODULATE );
-		GL_Color( gl_state.inverse_intensity, 
+		qglColor4f( gl_state.inverse_intensity, 
 			        gl_state.inverse_intensity,
 					gl_state.inverse_intensity,
 					1.0f );
@@ -502,7 +505,7 @@ dynamic:
 
 			GL_Bind( gl_state.lightmap_textures + fa->lightmaptexturenum );
 
-			glTexSubImage2D( GL_TEXTURE_2D, 0,
+			qglTexSubImage2D( GL_TEXTURE_2D, 0,
 							  fa->light_s, fa->light_t, 
 							  smax, tmax, 
 							  GL_LIGHTMAP_FORMAT, 
@@ -542,9 +545,9 @@ void R_DrawAlphaSurfaces (void)
 	//
 	// go back to the world matrix
 	//
-    glLoadMatrixf (r_world_matrix);
+    qglLoadMatrixf (r_world_matrix);
 
-	glEnable (GL_BLEND);
+	qglEnable (GL_BLEND);
 	GL_TexEnv( GL_MODULATE );
 
 	// the textures are prescaled up for a better lighting range,
@@ -556,11 +559,11 @@ void R_DrawAlphaSurfaces (void)
 		GL_Bind(s->texinfo->image->texnum);
 		c_brush_polys++;
 		if (s->texinfo->flags & SURF_TRANS33)
-			GL_Color (intens,intens,intens,0.33);
+			qglColor4f (intens,intens,intens,0.33);
 		else if (s->texinfo->flags & SURF_TRANS66)
-			GL_Color (intens,intens,intens,0.66);
+			qglColor4f (intens,intens,intens,0.66);
 		else
-			GL_Color (intens,intens,intens,1);
+			qglColor4f (intens,intens,intens,1);
 		if (s->flags & SURF_DRAWTURB)
 			EmitWaterPolys (s);
 		else
@@ -568,8 +571,8 @@ void R_DrawAlphaSurfaces (void)
 	}
 
 	GL_TexEnv( GL_REPLACE );
-	GL_Color (1,1,1,1);
-	glDisable (GL_BLEND);
+	qglColor4f (1,1,1,1);
+	qglDisable (GL_BLEND);
 
 	r_alpha_surfaces = NULL;
 }
@@ -651,8 +654,8 @@ void R_DrawInlineBModel (void)
 
 	if ( currententity->flags & RF_TRANSLUCENT )
 	{
-		glEnable (GL_BLEND);
-		GL_Color (1,1,1,0.25);
+		qglEnable (GL_BLEND);
+		qglColor4f (1,1,1,0.25);
 		GL_TexEnv( GL_MODULATE );
 	}
 
@@ -688,8 +691,8 @@ void R_DrawInlineBModel (void)
 	}
 	else
 	{
-		glDisable (GL_BLEND);
-		GL_Color (1,1,1,1);
+		qglDisable (GL_BLEND);
+		qglColor4f (1,1,1,1);
 		GL_TexEnv( GL_REPLACE );
 	}
 }
@@ -730,7 +733,7 @@ void R_DrawBrushModel (entity_t *e)
 	if (R_CullBox (mins, maxs))
 		return;
 
-	GL_Color (1,1,1,1);
+	qglColor4f (1,1,1,1);
 	memset (gl_lms.lightmap_surfaces, 0, sizeof(gl_lms.lightmap_surfaces));
 
 	VectorSubtract (r_newrefdef.vieworg, e->origin, modelorg);
@@ -746,7 +749,7 @@ void R_DrawBrushModel (entity_t *e)
 		modelorg[2] = DotProduct (temp, up);
 	}
 
-    glPushMatrix ();
+    qglPushMatrix ();
 e->angles[0] = -e->angles[0];	// stupid quake bug
 e->angles[2] = -e->angles[2];	// stupid quake bug
 	R_RotateForEntity (e);
@@ -757,7 +760,7 @@ e->angles[2] = -e->angles[2];	// stupid quake bug
 
 	R_DrawInlineBModel ();
 
-	glPopMatrix ();
+	qglPopMatrix ();
 }
 
 /*
@@ -913,7 +916,7 @@ void R_DrawWorld (void)
 
 	gl_state.currenttextures[0] = gl_state.currenttextures[1] = -1;
 
-	GL_Color (1,1,1,1);
+	qglColor4f (1,1,1,1);
 	memset (gl_lms.lightmap_surfaces, 0, sizeof(gl_lms.lightmap_surfaces));
 	R_ClearSkyBox ();
 
@@ -1033,8 +1036,8 @@ static void LM_UploadBlock( qboolean dynamic )
 	}
 
 	GL_Bind( gl_state.lightmap_textures + texture );
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	qglTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	qglTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
 	if ( dynamic )
 	{
@@ -1046,7 +1049,7 @@ static void LM_UploadBlock( qboolean dynamic )
 				height = gl_lms.allocated[i];
 		}
 
-		glTexSubImage2D( GL_TEXTURE_2D, 
+		qglTexSubImage2D( GL_TEXTURE_2D, 
 						  0,
 						  0, 0,
 						  BLOCK_WIDTH, height,
@@ -1056,7 +1059,7 @@ static void LM_UploadBlock( qboolean dynamic )
 	}
 	else
 	{
-		glTexImage2D( GL_TEXTURE_2D, 
+		qglTexImage2D( GL_TEXTURE_2D, 
 					   0, 
 					   gl_lms.internal_format,
 					   BLOCK_WIDTH, BLOCK_HEIGHT, 
@@ -1297,9 +1300,9 @@ void GL_BeginBuildingLightmaps (model_t *m)
 	** initialize the dynamic lightmap texture
 	*/
 	GL_Bind( gl_state.lightmap_textures + 0 );
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	glTexImage2D( GL_TEXTURE_2D, 
+	qglTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	qglTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	qglTexImage2D( GL_TEXTURE_2D, 
 				   0, 
 				   gl_lms.internal_format,
 				   BLOCK_WIDTH, BLOCK_HEIGHT, 

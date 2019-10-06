@@ -21,11 +21,13 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #include <stdio.h>
 
-#include <vitaGL.h>
+#include <GL/gl.h>
+#include <GL/glu.h>
+#include <GL/glut.h>
 #include <math.h>
 
-#ifndef GL_COLOR_INDEX8_EXT
-#define GL_COLOR_INDEX8_EXT GL_COLOR_INDEX
+#ifndef qglColor4f_INDEX8_EXT
+#define qglColor4f_INDEX8_EXT qglColor4f_INDEX
 #endif
 
 #include "../client/ref.h"
@@ -42,12 +44,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 // fall over
 #define	ROLL	2
-
-
-typedef struct
-{
-	unsigned		width, height;			// coordinates from main game
-} viddef_t;
 
 extern	viddef_t	vid;
 
@@ -468,10 +464,7 @@ extern GLuint programs[9];
 extern GLint monocolor;
 extern GLint modulcolor[2];
 
-void GL_EnableState(GLenum state);
-void GL_DisableState(GLenum state);
 void GL_DrawPolygon(GLenum prim, int num);
-void GL_Color(float r, float g, float b, float a);
 void GL_ResetShaders();
 
 extern qboolean reset_shaders;
