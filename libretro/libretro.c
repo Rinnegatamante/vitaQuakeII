@@ -824,7 +824,7 @@ void Sys_MkdirRecursive(char *path) {
 }
 
 static	char	findbase[MAX_OSPATH];
-static	char	findpath[MAX_OSPATH];
+static	char	findpath[MAX_OSPATH * 2];
 static	char	findpattern[MAX_OSPATH];
 static	RDIR	*fdir = NULL;
 
@@ -1202,7 +1202,7 @@ void retro_get_system_av_info(struct retro_system_av_info *info)
    info->geometry.base_height  = scr_height;
    info->geometry.max_width    = 960;
    info->geometry.max_height   = 544;
-   info->geometry.aspect_ratio = scr_width / scr_height;
+   info->geometry.aspect_ratio = (scr_width * 1.0f) / (scr_height * 1.0f);
 }
 
 void retro_set_environment(retro_environment_t cb)
@@ -1466,6 +1466,7 @@ void retro_cheat_reset(void)
 
 void retro_cheat_set(unsigned index, bool enabled, const char *code)
 {
+	printf("retro_cheat_set called\n");
    (void)index;
    (void)enabled;
    (void)code;
@@ -1577,8 +1578,6 @@ cvar_t *gl_picmip;
 cvar_t *gl_mode;
 cvar_t *gl_driver;
 extern cvar_t *gl_shadows;
-extern int scr_width;
-extern int scr_height;
 
 extern void M_ForceMenuOff( void );
 
