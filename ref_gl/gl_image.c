@@ -78,6 +78,9 @@ void GL_TexEnv( GLenum mode )
 
 void GL_Bind (int texnum)
 {
+#ifdef DEBUG
+	printf("GL_Bind(%d)\n", texnum);
+#endif
 	extern	image_t	*draw_chars;
 
 	if (gl_nobind->value && draw_chars)		// performance evaluation option
@@ -297,6 +300,9 @@ qboolean	scrap_dirty;
 // returns a texture number and the position inside it
 int Scrap_AllocBlock (int w, int h, int *x, int *y)
 {
+#ifdef DEBUG
+	printf("Scrap_AllocBlock\n");
+#endif
 	int		i, j;
 	int		best, best2;
 	int		texnum;
@@ -1044,6 +1050,9 @@ qboolean uploaded_paletted;
 
 qboolean GL_Upload32 (uint32_t *data, int width, int height,  qboolean mipmap)
 {
+#ifdef DEBUG
+	printf("GL_Upload32\n");
+#endif
 	int			samples;
 	uint32_t	scaled[1024*1024];
 	int			scaled_width, scaled_height;
@@ -1144,6 +1153,9 @@ done:
 
 qboolean GL_Upload8 (byte *data, int width, int height,  qboolean mipmap, qboolean is_sky )
 {
+#ifdef DEBUG
+	printf("GL_Upload8\n");
+#endif
 	uint32_t	trans[512*256];
 	int			i, s;
 	int			p;
@@ -1195,7 +1207,10 @@ image_t *GL_LoadPic (char *name, byte *pic, int width, int height, imagetype_t t
 {
 	image_t		*image;
 	int			i;
-
+#ifdef DEBUG
+	printf("GL_LoadPic(%s)\n", name);
+#endif
+	
 	// find a free image_t
 	for (i=0, image=gltextures ; i<numgltextures ; i++,image++)
 	{
@@ -1209,6 +1224,10 @@ image_t *GL_LoadPic (char *name, byte *pic, int width, int height, imagetype_t t
 		numgltextures++;
 	}
 	image = &gltextures[i];
+
+#ifdef DEBUG
+	printf("GL_LoadPic: image is 0x%08X, %d\n", image, i);
+#endif
 
 	if (strlen(name) >= sizeof(image->name))
 		ri.Sys_Error (ERR_DROP, "Draw_LoadPic: \"%s\" is too long", name);
@@ -1226,6 +1245,9 @@ image_t *GL_LoadPic (char *name, byte *pic, int width, int height, imagetype_t t
 	if (image->type == it_pic && bits == 8
 		&& image->width < 64 && image->height < 64)
 	{
+#ifdef DEBUG
+		printf("GL_LoadPic: scrap\n");
+#endif
 		int		x, y;
 		int		i, j, k;
 		int		texnum;
@@ -1240,7 +1262,7 @@ image_t *GL_LoadPic (char *name, byte *pic, int width, int height, imagetype_t t
 		for (i=0 ; i<image->height ; i++)
 			for (j=0 ; j<image->width ; j++, k++)
 				scrap_texels[texnum][(y+i)*BLOCK_WIDTH + x + j] = pic[k];
-		image->texnum = TEXNUM_SCRAPS + texnum;
+		qglGenTextures(1, &image->texnum);
 		image->scrap = true;
 		image->has_alpha = true;
 		image->sl = (x+0.01)/(float)BLOCK_WIDTH;
@@ -1250,10 +1272,14 @@ image_t *GL_LoadPic (char *name, byte *pic, int width, int height, imagetype_t t
 	}
 	else
 	{
+#ifdef DEBUG
+		printf("GL_LoadPic: not a scrap\n");
+#endif
 nonscrap:
 		image->scrap = false;
-		image->texnum = TEXNUM_IMAGES + (image - gltextures);
+		qglGenTextures(1, &image->texnum);
 		GL_Bind(image->texnum);
+		printf("GL_LoadPic: Uploading texture #%d\n", image->texnum);
 		if (bits == 8)
 			image->has_alpha = GL_Upload8 (pic, width, height, (image->type != it_pic && image->type != it_sky), image->type == it_sky );
 		else

@@ -34,6 +34,20 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "../client/qmenu.h"
 #include "../ref_gl/gl_local.h"
 
+#if defined(HAVE_PSGL)
+#define RARCH_GL_FRAMEBUFFER GL_FRAMEBUFFER_OES
+#define RARCH_GL_FRAMEBUFFER_COMPLETE GL_FRAMEBUFFER_COMPLETE_OES
+#define RARCH_GL_COLOR_ATTACHMENT0 GL_COLOR_ATTACHMENT0_EXT
+#elif defined(OSX_PPC)
+#define RARCH_GL_FRAMEBUFFER GL_FRAMEBUFFER_EXT
+#define RARCH_GL_FRAMEBUFFER_COMPLETE GL_FRAMEBUFFER_COMPLETE_EXT
+#define RARCH_GL_COLOR_ATTACHMENT0 GL_COLOR_ATTACHMENT0_EXT
+#else
+#define RARCH_GL_FRAMEBUFFER GL_FRAMEBUFFER
+#define RARCH_GL_FRAMEBUFFER_COMPLETE GL_FRAMEBUFFER_COMPLETE
+#define RARCH_GL_COLOR_ATTACHMENT0 GL_COLOR_ATTACHMENT0
+#endif
+
 static bool did_flip = false;
 boolean gl_set = false;
 
@@ -86,6 +100,7 @@ void ( APIENTRY * qglStencilOp )(GLenum fail, GLenum zfail, GLenum zpass);
 void ( APIENTRY * qglScalef )(GLfloat x, GLfloat y, GLfloat z);
 void ( APIENTRY * qglDepthFunc )(GLenum func);
 void ( APIENTRY * qglTexEnvi )(GLenum target, GLenum pname, GLint param);
+void ( APIENTRY * qglGenTextures )(GLsizei n, GLuint *textures);
 
 char g_rom_dir[1024], g_pak_path[1024], g_save_dir[1024];
 
@@ -189,6 +204,7 @@ static bool initialize_gl()
 	qglScalef = hw_render.get_proc_address ("glScalef");
 	qglDepthFunc = hw_render.get_proc_address ("glDepthFunc");
 	qglTexEnvi = hw_render.get_proc_address ("glTexEnvi");
+	qglGenTextures = hw_render.get_proc_address ("glGenTextures");
 	
 	return true;
 }
@@ -1259,20 +1275,20 @@ int	ttime, oldtime, newtime;
 
 bool retro_load_game(const struct retro_game_info *info)
 {
-	enum retro_pixel_format fmt = RETRO_PIXEL_FORMAT_RGB565;
+	enum retro_pixel_format fmt = RETRO_PIXEL_FORMAT_XRGB8888;
 	if (!environ_cb(RETRO_ENVIRONMENT_SET_PIXEL_FORMAT, &fmt))
 	{
 		if (log_cb)
-			log_cb(RETRO_LOG_INFO, "RGB565 is not supported.\n");
+			log_cb(RETRO_LOG_INFO, "XRGB8888 is not supported.\n");
 		return false;
 	}
 
 	hw_render.context_type    = RETRO_HW_CONTEXT_OPENGL;
-	hw_render.cache_context = false; 
 	hw_render.context_reset   = context_reset;
 	hw_render.context_destroy = context_destroy;
 	hw_render.bottom_left_origin = true;
 	hw_render.depth = true;
+	hw_render.stencil = true;
 
 	if (!environ_cb(RETRO_ENVIRONMENT_SET_HW_RENDER, &hw_render))
 	{
@@ -1351,12 +1367,6 @@ bool retro_load_game(const struct retro_game_info *info)
 		extract_directory(g_rom_dir, g_rom_dir, sizeof(g_rom_dir));
 	}
 	
-	const char *argv[32];
-	const char *empty_string = "";
-	
-	argv[0] = empty_string;
-	Qcommon_Init(1, argv);
-	
 	oldtime = Sys_Milliseconds ();
 
 	return true;
@@ -1371,8 +1381,21 @@ static void audio_process(void)
 	CDAudio_Update();
 }
 
+bool first_boot = true;
+
 void retro_run(void)
 {
+	qglBindFramebuffer(RARCH_GL_FRAMEBUFFER, hw_render.get_current_framebuffer());
+	
+	if (first_boot) {
+		const char *argv[32];
+		const char *empty_string = "";
+	
+		argv[0] = empty_string;
+		Qcommon_Init(1, argv);
+		first_boot = false;
+	}
+	
 	if (rumble_tick != 0) {
 		if (cpu_features_get_time_usec() - rumble_tick > 500000) IN_StopRumble(); // 0.5 sec
 	}
@@ -1382,15 +1405,13 @@ void retro_run(void)
 		ttime = newtime - oldtime;
 	} while (ttime < 1);
 	
-	qglBindFramebuffer(GL_FRAMEBUFFER, hw_render.get_current_framebuffer());
 	Qcommon_Frame (ttime);
 	oldtime = newtime;
 
 	if (shutdown_core)
 		return;
 
-	if (!did_flip)
-		video_cb(NULL, scr_width, scr_height, scr_width << 1); /* dupe */
+	video_cb(RETRO_HW_FRAME_BUFFER_VALID, scr_width, scr_height, 0);
   
 	audio_process();
 	audio_callback();
@@ -1447,6 +1468,7 @@ void retro_cheat_set(unsigned index, bool enabled, const char *code)
 {
    (void)index;
    (void)enabled;
+   (void)code;
 }
 
 
@@ -1598,7 +1620,9 @@ void VID_Printf (int print_level, char *fmt, ...)
         va_start (argptr,fmt);
         vsprintf (msg,fmt,argptr);
         va_end (argptr);
-
+#ifdef DEBUG
+	printf(msg);
+#endif
         if (print_level == PRINT_ALL)
                 Com_Printf ("%s", msg);
         else
@@ -1613,7 +1637,9 @@ void VID_Error (int err_level, char *fmt, ...)
         va_start (argptr,fmt);
         vsprintf (msg,fmt,argptr);
         va_end (argptr);
-
+#ifdef DEBUG
+	printf(msg);
+#endif
         Com_Error (err_level, "%s", msg);
 }
 

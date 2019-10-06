@@ -94,6 +94,7 @@ extern  void ( APIENTRY * qglStencilOp )(GLenum fail, GLenum zfail, GLenum zpass
 extern  void ( APIENTRY * qglScalef )(GLfloat x, GLfloat y, GLfloat z);
 extern  void ( APIENTRY * qglDepthFunc )(GLenum func);
 extern  void ( APIENTRY * qglTexEnvi )(GLenum target, GLenum pname, GLint param);
+extern  void ( APIENTRY * qglGenTextures )(GLsizei n, GLuint *textures);
 
 extern float *gVertexBuffer;
 extern float *gColorBuffer;

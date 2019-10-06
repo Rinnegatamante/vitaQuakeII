@@ -1115,10 +1115,21 @@ qboolean R_Init( void *hinstance, void *hWnd )
 	ri.Con_Printf (PRINT_ALL, "GL_SetDefaultState\n");
 	
 	GL_SetDefaultState();
-
+	
+	ri.Con_Printf (PRINT_ALL, "GL_InitImages\n");
+	
 	GL_InitImages ();
+	
+	ri.Con_Printf (PRINT_ALL, "Mod_Init\n");
+	
 	Mod_Init ();
+	
+	ri.Con_Printf (PRINT_ALL, "R_InitParticleTexture\n");
+	
 	R_InitParticleTexture ();
+	
+	ri.Con_Printf (PRINT_ALL, "Draw_InitLocal\n");
+	
 	Draw_InitLocal ();
 
 }
