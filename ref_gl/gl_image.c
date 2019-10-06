@@ -38,9 +38,164 @@ cvar_t		*intensity;
 
 unsigned	d_8to24table[256];
 
-qboolean GL_Upload8 (byte *data, int width, int height,  qboolean mipmap, qboolean is_sky );
-qboolean GL_Upload32 (uint32_t *data, int width, int height,  qboolean mipmap);
+/*
+===============
+GL_Upload32
 
+Returns has_alpha
+===============
+*/
+int		upload_width, upload_height;
+qboolean uploaded_paletted;
+uint32_t	trans[512*256];
+uint32_t	scaled[1024*1024];
+
+qboolean GL_Upload32 (uint32_t *data, int width, int height,  qboolean mipmap)
+{
+#ifdef DEBUG
+	printf("GL_Upload32\n");
+#endif
+	int			samples;
+	
+	int			scaled_width, scaled_height;
+	int			i, c;
+	byte		*scan;
+	int comp;
+
+	uploaded_paletted = false;
+
+	for (scaled_width = 1 ; scaled_width < width ; scaled_width<<=1)
+		;
+	if (gl_round_down->value && scaled_width > width && mipmap)
+		scaled_width >>= 1;
+	for (scaled_height = 1 ; scaled_height < height ; scaled_height<<=1)
+		;
+	if (gl_round_down->value && scaled_height > height && mipmap)
+		scaled_height >>= 1;
+
+	// let people sample down the world textures for speed
+	if (mipmap)
+	{
+		scaled_width >>= (int)gl_picmip->value;
+		scaled_height >>= (int)gl_picmip->value;
+	}
+
+	// don't ever bother with >1024 textures
+	if (scaled_width > 1024)
+		scaled_width = 1024;
+	if (scaled_height > 1024)
+		scaled_height = 1024;
+
+	if (scaled_width < 1)
+		scaled_width = 1;
+	if (scaled_height < 1)
+		scaled_height = 1;
+	
+	upload_width = scaled_width;
+	upload_height = scaled_height;
+
+	if (scaled_width * scaled_height > sizeof(scaled)/4)
+		ri.Sys_Error (ERR_DROP, "GL_Upload32: too big");
+
+	// scan the texture for any non-255 alpha
+	c = width*height;
+	scan = ((byte *)data) + 3;
+	samples = gl_solid_format;
+	for (i=0 ; i<c ; i++, scan += 4)
+	{
+		if ( *scan != 255 )
+		{
+			samples = gl_alpha_format;
+			break;
+		}
+	}
+
+	if (samples == gl_solid_format)
+	    comp = gl_tex_solid_format;
+	else if (samples == gl_alpha_format)
+	    comp = gl_tex_alpha_format;
+	else {
+	    ri.Con_Printf (PRINT_ALL,
+			   "Unknown number of texture components %i\n",
+			   samples);
+	    comp = samples;
+	}
+
+	if (scaled_width == width && scaled_height == height)
+	{
+		if (!mipmap)
+		{
+			qglTexImage2D (GL_TEXTURE_2D, 0, comp, scaled_width, scaled_height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
+			goto done;
+		}
+		memcpy (scaled, data, width*height*4);
+	}
+	else
+		GL_ResampleTexture (data, width, height, scaled, scaled_width, scaled_height);
+
+	GL_LightScaleTexture (scaled, scaled_width, scaled_height, !mipmap );
+
+	qglTexImage2D( GL_TEXTURE_2D, 0, comp, scaled_width, scaled_height, 0, GL_RGBA, GL_UNSIGNED_BYTE, scaled );
+
+done:
+	if (mipmap)
+	{
+		qglGenerateMipmap(GL_TEXTURE_2D);
+		qglTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, gl_filter_min);
+		qglTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, gl_filter_max);
+	}
+	else
+	{
+		qglTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, gl_filter_max);
+		qglTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, gl_filter_max);
+	}
+
+	return (samples == gl_alpha_format);
+}
+
+qboolean GL_Upload8 (byte *data, int width, int height,  qboolean mipmap, qboolean is_sky )
+{
+#ifdef DEBUG
+	printf("GL_Upload8\n");
+#endif
+	
+	int			i, s;
+	int			p;
+
+	s = width*height;
+
+	if (s > sizeof(trans)/4)
+		ri.Sys_Error (ERR_DROP, "GL_Upload8: too large");
+	
+	for (i=0 ; i<s ; i++)
+	{
+		p = data[i];
+		trans[i] = d_8to24table[p];
+
+		if (p == 255)
+		{	// transparent, so scan around for another color
+			// to avoid alpha fringes
+			// FIXME: do a full flood fill so mips work...
+			if (i > width && data[i-width] != 255)
+				p = data[i-width];
+			else if (i < s-width && data[i+width] != 255)
+				p = data[i+width];
+			else if (i > 0 && data[i-1] != 255)
+				p = data[i-1];
+			else if (i < s-1 && data[i+1] != 255)
+				p = data[i+1];
+			else
+				p = 0;
+			// copy rgb components
+			((byte *)&trans[i])[0] = ((byte *)&d_8to24table[p])[0];
+			((byte *)&trans[i])[1] = ((byte *)&d_8to24table[p])[1];
+			((byte *)&trans[i])[2] = ((byte *)&d_8to24table[p])[2];
+		}
+	}
+
+	return GL_Upload32 (trans, width, height, mipmap);
+
+}
 
 int		gl_solid_format = 3;
 int		gl_alpha_format = 4;
@@ -1039,164 +1194,6 @@ void GL_MipMap (byte *in, int width, int height)
 }
 
 /*
-===============
-GL_Upload32
-
-Returns has_alpha
-===============
-*/
-int		upload_width, upload_height;
-qboolean uploaded_paletted;
-
-qboolean GL_Upload32 (uint32_t *data, int width, int height,  qboolean mipmap)
-{
-#ifdef DEBUG
-	printf("GL_Upload32\n");
-#endif
-	int			samples;
-	uint32_t	scaled[1024*1024];
-	int			scaled_width, scaled_height;
-	int			i, c;
-	byte		*scan;
-	int comp;
-
-	uploaded_paletted = false;
-
-	for (scaled_width = 1 ; scaled_width < width ; scaled_width<<=1)
-		;
-	if (gl_round_down->value && scaled_width > width && mipmap)
-		scaled_width >>= 1;
-	for (scaled_height = 1 ; scaled_height < height ; scaled_height<<=1)
-		;
-	if (gl_round_down->value && scaled_height > height && mipmap)
-		scaled_height >>= 1;
-
-	// let people sample down the world textures for speed
-	if (mipmap)
-	{
-		scaled_width >>= (int)gl_picmip->value;
-		scaled_height >>= (int)gl_picmip->value;
-	}
-
-	// don't ever bother with >1024 textures
-	if (scaled_width > 1024)
-		scaled_width = 1024;
-	if (scaled_height > 1024)
-		scaled_height = 1024;
-
-	if (scaled_width < 1)
-		scaled_width = 1;
-	if (scaled_height < 1)
-		scaled_height = 1;
-	
-	upload_width = scaled_width;
-	upload_height = scaled_height;
-
-	if (scaled_width * scaled_height > sizeof(scaled)/4)
-		ri.Sys_Error (ERR_DROP, "GL_Upload32: too big");
-
-	// scan the texture for any non-255 alpha
-	c = width*height;
-	scan = ((byte *)data) + 3;
-	samples = gl_solid_format;
-	for (i=0 ; i<c ; i++, scan += 4)
-	{
-		if ( *scan != 255 )
-		{
-			samples = gl_alpha_format;
-			break;
-		}
-	}
-
-	if (samples == gl_solid_format)
-	    comp = gl_tex_solid_format;
-	else if (samples == gl_alpha_format)
-	    comp = gl_tex_alpha_format;
-	else {
-	    ri.Con_Printf (PRINT_ALL,
-			   "Unknown number of texture components %i\n",
-			   samples);
-	    comp = samples;
-	}
-
-	if (scaled_width == width && scaled_height == height)
-	{
-		if (!mipmap)
-		{
-			qglTexImage2D (GL_TEXTURE_2D, 0, comp, scaled_width, scaled_height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
-			goto done;
-		}
-		memcpy (scaled, data, width*height*4);
-	}
-	else
-		GL_ResampleTexture (data, width, height, scaled, scaled_width, scaled_height);
-
-	GL_LightScaleTexture (scaled, scaled_width, scaled_height, !mipmap );
-
-	qglTexImage2D( GL_TEXTURE_2D, 0, comp, scaled_width, scaled_height, 0, GL_RGBA, GL_UNSIGNED_BYTE, scaled );
-
-done:
-	if (mipmap)
-	{
-		qglGenerateMipmap(GL_TEXTURE_2D);
-		qglTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, gl_filter_min);
-		qglTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, gl_filter_max);
-	}
-	else
-	{
-		qglTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, gl_filter_max);
-		qglTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, gl_filter_max);
-	}
-
-	return (samples == gl_alpha_format);
-}
-
-qboolean GL_Upload8 (byte *data, int width, int height,  qboolean mipmap, qboolean is_sky )
-{
-#ifdef DEBUG
-	printf("GL_Upload8\n");
-#endif
-	uint32_t	trans[512*256];
-	int			i, s;
-	int			p;
-
-	s = width*height;
-
-	if (s > sizeof(trans)/4)
-		ri.Sys_Error (ERR_DROP, "GL_Upload8: too large");
-	
-	for (i=0 ; i<s ; i++)
-	{
-		p = data[i];
-		trans[i] = d_8to24table[p];
-
-		if (p == 255)
-		{	// transparent, so scan around for another color
-			// to avoid alpha fringes
-			// FIXME: do a full flood fill so mips work...
-			if (i > width && data[i-width] != 255)
-				p = data[i-width];
-			else if (i < s-width && data[i+width] != 255)
-				p = data[i+width];
-			else if (i > 0 && data[i-1] != 255)
-				p = data[i-1];
-			else if (i < s-1 && data[i+1] != 255)
-				p = data[i+1];
-			else
-				p = 0;
-			// copy rgb components
-			((byte *)&trans[i])[0] = ((byte *)&d_8to24table[p])[0];
-			((byte *)&trans[i])[1] = ((byte *)&d_8to24table[p])[1];
-			((byte *)&trans[i])[2] = ((byte *)&d_8to24table[p])[2];
-		}
-	}
-
-	return GL_Upload32 (trans, width, height, mipmap);
-
-}
-
-
-/*
 ================
 GL_LoadPic
 
@@ -1262,7 +1259,9 @@ image_t *GL_LoadPic (char *name, byte *pic, int width, int height, imagetype_t t
 		for (i=0 ; i<image->height ; i++)
 			for (j=0 ; j<image->width ; j++, k++)
 				scrap_texels[texnum][(y+i)*BLOCK_WIDTH + x + j] = pic[k];
-		qglGenTextures(1, &image->texnum);
+		GLuint tex;
+		qglGenTextures(1, &tex);
+		image->texnum = tex;
 		image->scrap = true;
 		image->has_alpha = true;
 		image->sl = (x+0.01)/(float)BLOCK_WIDTH;
@@ -1277,13 +1276,19 @@ image_t *GL_LoadPic (char *name, byte *pic, int width, int height, imagetype_t t
 #endif
 nonscrap:
 		image->scrap = false;
-		qglGenTextures(1, &image->texnum);
+		GLuint tex;
+		qglGenTextures(1, &tex);
+		image->texnum = tex;
 		GL_Bind(image->texnum);
 		printf("GL_LoadPic: Uploading texture #%d\n", image->texnum);
-		if (bits == 8)
-			image->has_alpha = GL_Upload8 (pic, width, height, (image->type != it_pic && image->type != it_sky), image->type == it_sky );
-		else
-			image->has_alpha = GL_Upload32 ((uint32_t *)pic, width, height, (image->type != it_pic && image->type != it_sky) );
+		if (bits == 8) {
+			printf("GL_LoadPic: %d bits, %dx%d\n", bits, width, height);
+			qboolean a = GL_Upload8 (pic, width, height, (image->type != it_pic) && (image->type != it_sky), image->type == it_sky );
+			image->has_alpha = a;
+		} else {
+			printf("GL_LoadPic: %d bits, %dx%d\n", bits, width, height);
+			image->has_alpha = GL_Upload32 (pic, width, height, (image->type != it_pic) && (image->type != it_sky) );
+		}
 		image->upload_width = upload_width;		// after power of 2 and scales
 		image->upload_height = upload_height;
 		image->paletted = uploaded_paletted;
