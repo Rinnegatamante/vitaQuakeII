@@ -258,7 +258,7 @@ GAME = 		game/m_tank.o \
 
 OBJECTS := $(CLIENT) $(QCOMMON) $(SERVER) $(GAME) $(SYSTEM) $(REFGL)
 
-CFLAGS   += -Wall -D__LIBRETRO__ $(fpic) -DREF_HARD_LINKED -DRELEASE -DGAME_HARD_LINKED -fsigned-char -DOSTYPE=\"$(OSTYPE)\" -DARCH=\"$(ARCH)\" -I$(CORE_DIR)/libretro-common/include
+CFLAGS   += -Wall -D__LIBRETRO__ $(fpic) -DREF_HARD_LINKED -DRELEASE -DGAME_HARD_LINKED -DOSTYPE=\"$(OSTYPE)\" -DARCH=\"$(ARCH)\" -I$(CORE_DIR)/libretro-common/include -std=c99
 CXXFLAGS += -Wall -D__LIBRETRO__ $(fpic) -fpermissive
 
 all: $(TARGET)

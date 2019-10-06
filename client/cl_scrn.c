@@ -610,16 +610,16 @@ SCR_TimeRefresh_f
 */
 int entitycmpfnc( const entity_t *a, const entity_t *b )
 {
-	/*
-	** all other models are sorted by model then skin
-	*/
-	if ( a->model == b->model )
+	/* all other models are sorted by model then skin */
+	if (a->model == b->model)
 	{
-		return ( ( int ) a->skin - ( int ) b->skin );
+		return (a->skin == b->skin) ? 0 :
+			(a->skin > b->skin) ? 1 : -1;
 	}
 	else
 	{
-		return ( ( int ) a->model - ( int ) b->model );
+ 		return (a->model == b->model) ? 0 :
+			(a->model > b->model) ? 1 : -1; 
 	}
 }
 

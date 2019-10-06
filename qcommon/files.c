@@ -784,6 +784,8 @@ void FS_InitFilesystem (void)
 	//
 	fs_basedir = Cvar_Get ("basedir", g_rom_dir, CVAR_NOSET);
 	
+	printf("Using %s as basedir\n", fs_basedir->string);
+	
 	//
 	// start up with baseq2 by default
 	//

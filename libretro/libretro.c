@@ -412,6 +412,62 @@ void NET_Sleep(int msec)
 {
 }
 
+#define	LOOPBACK	0x7f000001
+
+#define	MAX_LOOPBACK	4
+
+typedef struct
+{
+	byte	data[MAX_MSGLEN];
+	int		datalen;
+} loopmsg_t;
+
+typedef struct
+{
+	loopmsg_t	msgs[MAX_LOOPBACK];
+	int			get, send;
+} loopback_t;
+
+loopback_t	loopbacks[2];
+
+qboolean	NET_GetLoopPacket (netsrc_t sock, netadr_t *net_from, sizebuf_t *net_message)
+{
+	int		i;
+	loopback_t	*loop;
+
+	loop = &loopbacks[sock];
+
+	if (loop->send - loop->get > MAX_LOOPBACK)
+		loop->get = loop->send - MAX_LOOPBACK;
+
+	if (loop->get >= loop->send)
+		return false;
+
+	i = loop->get & (MAX_LOOPBACK-1);
+	loop->get++;
+
+	memcpy (net_message->data, loop->msgs[i].data, loop->msgs[i].datalen);
+	net_message->cursize = loop->msgs[i].datalen;
+	*net_from = net_local_adr;
+	return true;
+
+}
+
+
+void NET_SendLoopPacket (netsrc_t sock, int length, void *data, netadr_t to)
+{
+	int		i;
+	loopback_t	*loop;
+
+	loop = &loopbacks[sock^1];
+
+	i = loop->send & (MAX_LOOPBACK-1);
+	loop->send++;
+
+	memcpy (loop->msgs[i].data, data, length);
+	loop->msgs[i].datalen = length;
+}
+
 qboolean	NET_CompareBaseAdr (netadr_t a, netadr_t b)
 {
 	if (a.type != b.type)
@@ -447,11 +503,18 @@ char	*NET_AdrToString (netadr_t a)
 
 qboolean	NET_StringToAdr (char *s, netadr_t *a)
 {
-	return false;
+	memset (a, 0, sizeof(*a));
+	a->type = NA_LOOPBACK;
+	return true;
 }
 
 void NET_SendPacket (netsrc_t sock, int length, void *data, netadr_t to)
 {
+	if ( to.type == NA_LOOPBACK )
+	{
+		NET_SendLoopPacket (sock, length, data, to);
+		return;
+	}
 }
 
 void	NET_Config (qboolean multiplayer)
@@ -465,6 +528,9 @@ qboolean	NET_IsLocalAddress (netadr_t adr)
 
 qboolean	NET_GetPacket (netsrc_t sock, netadr_t *net_from, sizebuf_t *net_message)
 {
+	if (NET_GetLoopPacket (sock, net_from, net_message))
+		return true;
+	
 	return false;
 }
 
@@ -539,6 +605,16 @@ void LOG_FILE(const char *format, ...){
 		fwrite(msg, 1, strlen(msg), log);
 		fclose(log);
 	}
+	#endif
+	#ifdef DEBUG
+	__gnuc_va_list arg;
+	int done;
+	va_start(arg, format);
+	char msg[512];
+	done = vsprintf(msg, format, arg);
+	va_end(arg);
+	int i;
+	printf("LOG2FILE: %s\n", msg);
 	#endif
 }
 
@@ -1386,7 +1462,7 @@ bool first_boot = true;
 void retro_run(void)
 {
 	qglBindFramebuffer(RARCH_GL_FRAMEBUFFER, hw_render.get_current_framebuffer());
-	
+	qglEnable(GL_TEXTURE_2D);
 	if (first_boot) {
 		const char *argv[32];
 		const char *empty_string = "";

@@ -233,9 +233,6 @@ void GL_TexEnv( GLenum mode )
 
 void GL_Bind (int texnum)
 {
-#ifdef DEBUG
-	printf("GL_Bind(%d)\n", texnum);
-#endif
 	extern	image_t	*draw_chars;
 
 	if (gl_nobind->value && draw_chars)		// performance evaluation option
@@ -1259,9 +1256,7 @@ image_t *GL_LoadPic (char *name, byte *pic, int width, int height, imagetype_t t
 		for (i=0 ; i<image->height ; i++)
 			for (j=0 ; j<image->width ; j++, k++)
 				scrap_texels[texnum][(y+i)*BLOCK_WIDTH + x + j] = pic[k];
-		GLuint tex;
-		qglGenTextures(1, &tex);
-		image->texnum = tex;
+		image->texnum = TEXNUM_SCRAPS + texnum;
 		image->scrap = true;
 		image->has_alpha = true;
 		image->sl = (x+0.01)/(float)BLOCK_WIDTH;
@@ -1276,9 +1271,7 @@ image_t *GL_LoadPic (char *name, byte *pic, int width, int height, imagetype_t t
 #endif
 nonscrap:
 		image->scrap = false;
-		GLuint tex;
-		qglGenTextures(1, &tex);
-		image->texnum = tex;
+		image->texnum = TEXNUM_IMAGES + (image - gltextures);
 		GL_Bind(image->texnum);
 		printf("GL_LoadPic: Uploading texture #%d\n", image->texnum);
 		if (bits == 8) {

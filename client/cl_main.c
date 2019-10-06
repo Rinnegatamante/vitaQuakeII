@@ -428,7 +428,7 @@ void CL_SendConnectPacket (void)
 
 	if (!NET_StringToAdr (cls.servername, &adr))
 	{
-		Com_Printf ("Bad server address\n");
+		Com_Printf ("SendConnectPacket: Bad server address (%s)\n", cls.servername);
 		cls.connect_time = 0;
 		return;
 	}
@@ -474,7 +474,7 @@ void CL_CheckForResend (void)
 
 	if (!NET_StringToAdr (cls.servername, &adr))
 	{
-		Com_Printf ("Bad server address\n");
+		Com_Printf ("CheckForResend: Bad server address (%s)\n", cls.servername);
 		cls.state = ca_disconnected;
 		return;
 	}
