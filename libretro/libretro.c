@@ -1451,10 +1451,6 @@ bool retro_load_game(const struct retro_game_info *info)
 
 static void audio_process(void)
 {
-   // update audio
-	S_Update (cl.refdef.vieworg, cl.v_forward, cl.v_right, cl.v_up);
-
-	CDAudio_Update();
 }
 
 bool first_boot = true;
