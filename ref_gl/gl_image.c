@@ -197,11 +197,11 @@ qboolean GL_Upload8 (byte *data, int width, int height,  qboolean mipmap, qboole
 
 }
 
-int		gl_solid_format = 3;
-int		gl_alpha_format = 4;
+int		gl_solid_format = GL_RGB;
+int		gl_alpha_format = GL_RGBA;
 
-int		gl_tex_solid_format = 3;
-int		gl_tex_alpha_format = 4;
+int		gl_tex_solid_format = GL_RGB;
+int		gl_tex_alpha_format = GL_RGBA;
 
 int		gl_filter_min = GL_LINEAR;
 int		gl_filter_max = GL_LINEAR;
