@@ -26,6 +26,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "../libretro-common/include/retro_dirent.h"
 #include "../libretro-common/include/features/features_cpu.h"
 #include "../libretro-common/include/file/file_path.h"
+#include "../libretro-common/include/glsym/glsym.h"
 
 #include "libretro_core_options.h"
 
@@ -121,7 +122,7 @@ static int analog_deadzone = (int)(0.15f * ANALOG_RANGE);
 
 #define GP_MAXBINDS 32
 
-static bool context_needs_reinit = false;
+static bool context_needs_reinit = true;
 
 void GL_DrawPolygon(GLenum prim, int num)
 {
@@ -1506,15 +1507,8 @@ int SNDDMA_GetDMAPos(void)
 {
 	if(!sound_initialized)
 		return 0;
-#ifdef PSP2
-	SceRtcTick tick;
-	sceRtcGetCurrentTick(&tick);
-	const unsigned int deltaTick  = tick.tick - initial_tick.tick;
-	const float deltaSecond = deltaTick * tickRate;
-	dma.samplepos = deltaSecond * SAMPLE_RATE * 2;
-#else
+	
 	dma.samplepos = audio_buffer_ptr;
-#endif
 	return dma.samplepos;
 }
 
