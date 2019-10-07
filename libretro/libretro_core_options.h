@@ -89,6 +89,59 @@ struct retro_core_option_definition option_defs_us[] = {
 /* RETRO_LANGUAGE_GERMAN */
 
 /* RETRO_LANGUAGE_ITALIAN */
+struct retro_core_option_definition option_defs_it[] = {
+   {
+      "vitaquakeii_resolution",
+      "Risoluzione interna (riavvio)",
+      "Configura la risoluzione. Richiede un riavvio.",
+      {
+         { "480x272",   NULL },
+         { "640x368",   NULL },
+         { "720x408",   NULL },
+         { "960x544",   NULL },
+		 { "1280x720",   NULL },
+		 { "1920x1080",   NULL },
+		 { "2560x1440",   NULL },
+		 { "3840x2160",   NULL },
+         { NULL, NULL },
+      },
+      "960x544"
+   },
+   {
+      "vitaquakeii_rumble",
+      "Vibrazione",
+      "Abilita la vibrazione del joypad.",
+      {
+         { "disabled",  "Disabilitata" },
+         { "enabled",   "Abilitata" },
+         { NULL, NULL },
+      },
+      "disabled"
+   },
+   {
+      "vitaquakeii_specular",
+      "Modalità Speculare",
+      "Rende tutti i livelli di gioco speculari.",
+      {
+         { "disabled",  "Disattivata" },
+         { "enabled",   "Attivata" },
+         { NULL, NULL },
+      },
+      "disabled"
+   },
+   {
+      "vitaquakeii_invert_y_axis",
+      "Inverti Asse Y",
+      "Inverte l'asse Y dell'analogico destro.",
+      {
+         { "disabled",  "Disattivato" },
+         { "enabled",   "Attivato" },
+         { NULL, NULL },
+      },
+      "disabled"
+   },
+   { NULL, NULL, NULL, {{0}}, NULL },
+};
 
 /* RETRO_LANGUAGE_DUTCH */
 
@@ -128,7 +181,7 @@ struct retro_core_option_definition *option_defs_intl[RETRO_LANGUAGE_LAST] = {
    NULL,           /* RETRO_LANGUAGE_FRENCH */
    NULL,           /* RETRO_LANGUAGE_SPANISH */
    NULL,           /* RETRO_LANGUAGE_GERMAN */
-   NULL,           /* RETRO_LANGUAGE_ITALIAN */
+   option_defs_it, /* RETRO_LANGUAGE_ITALIAN */
    NULL,           /* RETRO_LANGUAGE_DUTCH */
    NULL,           /* RETRO_LANGUAGE_PORTUGUESE_BRAZIL */
    NULL,           /* RETRO_LANGUAGE_PORTUGUESE_PORTUGAL */
