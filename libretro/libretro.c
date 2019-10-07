@@ -54,6 +54,8 @@ boolean gl_set = false;
 unsigned	sys_frame_time;
 uint64_t rumble_tick;
 
+int framerate = 60;
+
 float *gVertexBuffer;
 float *gColorBuffer;
 float *gTexCoordBuffer;
@@ -125,8 +127,8 @@ static bool libretro_supports_bitmasks = false;
 
 static void audio_callback(void);
 
-#define SAMPLE_RATE   	44100
-#define BUFFER_SIZE 	8192
+#define SAMPLE_RATE   	48000
+#define BUFFER_SIZE 	4096
 #define MAX_PADS 1
 static unsigned quake_devices[1];
 
@@ -1271,7 +1273,7 @@ void retro_get_system_info(struct retro_system_info *info)
 
 void retro_get_system_av_info(struct retro_system_av_info *info)
 {
-   info->timing.fps            = 60;
+   info->timing.fps            = framerate;
    info->timing.sample_rate    = SAMPLE_RATE;
 
    info->geometry.base_width   = scr_width;
@@ -1554,23 +1556,10 @@ static unsigned audio_buffer_ptr;
 
 static void audio_callback(void)
 {
-	unsigned read_first, read_second;
-	float samples_per_frame = (2 * SAMPLE_RATE) / 60;
-	unsigned read_end = audio_buffer_ptr + samples_per_frame;
-
-	if (read_end > BUFFER_SIZE / 2)
-		read_end = BUFFER_SIZE / 2;
-
-	read_first  = read_end - audio_buffer_ptr;
-	read_second = samples_per_frame - read_first;
-
-	audio_batch_cb(audio_buffer + audio_buffer_ptr, read_first / (dma.samplebits / 8));
-	audio_buffer_ptr += read_first;
-	if (read_second >= 1) {
-		audio_batch_cb(audio_buffer, read_second / (dma.samplebits / 8));
-		audio_buffer_ptr = read_second;
-	}
+	audio_batch_cb(audio_buffer, BUFFER_SIZE / 4);
 }
+
+uint64_t initial_tick;
 
 qboolean SNDDMA_Init(void)
 {
@@ -1592,7 +1581,9 @@ qboolean SNDDMA_Init(void)
 	dma.buffer = audio_buffer;
 
 	sound_initialized = 1;
-
+	
+	initial_tick = cpu_features_get_time_usec();
+	
 	return true;
 }
 
@@ -1601,7 +1592,10 @@ int SNDDMA_GetDMAPos(void)
 	if(!sound_initialized)
 		return 0;
 	
-	dma.samplepos = audio_buffer_ptr;
+	
+	const float deltaSecond = (cpu_features_get_time_usec() - initial_tick) / 1000000.0f;
+	
+	dma.samplepos = deltaSecond * SAMPLE_RATE * 2;
 	return dma.samplepos;
 }
 
