@@ -28,7 +28,7 @@ typedef struct
 #include <jpeglib.h>
 
 image_t		gltextures[MAX_GLTEXTURES];
-int			numgltextures;
+int			numgltextures = 0;
 int			base_textureid;		// gltextures[i] = base_textureid+i
 
 static byte			 intensitytable[256];
@@ -427,81 +427,6 @@ void	GL_ImageList_f (void)
 			image->upload_width, image->upload_height, palstrings[image->paletted], image->name);
 	}
 	ri.Con_Printf (PRINT_ALL, "Total texel count (not counting mipmaps): %i\n", texels);
-}
-
-
-/*
-=============================================================================
-
-  scrap allocation
-
-  Allocate all the little status bar obejcts into a single texture
-  to crutch up inefficient hardware / drivers
-
-=============================================================================
-*/
-
-#define	MAX_SCRAPS		1
-#define	BLOCK_WIDTH		256
-#define	BLOCK_HEIGHT	256
-
-int			scrap_allocated[MAX_SCRAPS][BLOCK_WIDTH];
-byte		scrap_texels[MAX_SCRAPS][BLOCK_WIDTH*BLOCK_HEIGHT];
-qboolean	scrap_dirty;
-
-// returns a texture number and the position inside it
-int Scrap_AllocBlock (int w, int h, int *x, int *y)
-{
-#ifdef DEBUG
-	printf("Scrap_AllocBlock\n");
-#endif
-	int		i, j;
-	int		best, best2;
-	int		texnum;
-
-	for (texnum=0 ; texnum<MAX_SCRAPS ; texnum++)
-	{
-		best = BLOCK_HEIGHT;
-
-		for (i=0 ; i<BLOCK_WIDTH-w ; i++)
-		{
-			best2 = 0;
-
-			for (j=0 ; j<w ; j++)
-			{
-				if (scrap_allocated[texnum][i+j] >= best)
-					break;
-				if (scrap_allocated[texnum][i+j] > best2)
-					best2 = scrap_allocated[texnum][i+j];
-			}
-			if (j == w)
-			{	// this is a valid spot
-				*x = i;
-				*y = best = best2;
-			}
-		}
-
-		if (best + h > BLOCK_HEIGHT)
-			continue;
-
-		for (i=0 ; i<w ; i++)
-			scrap_allocated[texnum][*x + i] = best + h;
-
-		return texnum;
-	}
-
-	return -1;
-//	Sys_Error ("Scrap_AllocBlock: full");
-}
-
-int	scrap_uploads;
-
-void Scrap_Upload (void)
-{
-	scrap_uploads++;
-	GL_Bind(TEXNUM_SCRAPS);
-	GL_Upload8 (scrap_texels[0], BLOCK_WIDTH, BLOCK_HEIGHT, false, false );
-	scrap_dirty = false;
 }
 
 /*
@@ -1201,9 +1126,6 @@ image_t *GL_LoadPic (char *name, byte *pic, int width, int height, imagetype_t t
 {
 	image_t		*image;
 	int			i;
-#ifdef DEBUG
-	printf("GL_LoadPic(%s)\n", name);
-#endif
 	
 	// find a free image_t
 	for (i=0, image=gltextures ; i<numgltextures ; i++,image++)
@@ -1218,11 +1140,7 @@ image_t *GL_LoadPic (char *name, byte *pic, int width, int height, imagetype_t t
 		numgltextures++;
 	}
 	image = &gltextures[i];
-
-#ifdef DEBUG
-	printf("GL_LoadPic: image is 0x%08X, %d\n", image, i);
-#endif
-
+	
 	if (strlen(name) >= sizeof(image->name))
 		ri.Sys_Error (ERR_DROP, "Draw_LoadPic: \"%s\" is too long", name);
 	strcpy (image->name, name);
@@ -1236,51 +1154,13 @@ image_t *GL_LoadPic (char *name, byte *pic, int width, int height, imagetype_t t
 		R_FloodFillSkin(pic, width, height);
 
 	// load little pics into the scrap
-	if (image->type == it_pic && bits == 8
-		&& image->width < 64 && image->height < 64)
 	{
-#ifdef DEBUG
-		printf("GL_LoadPic: scrap\n");
-#endif
-		int		x, y;
-		int		i, j, k;
-		int		texnum;
-
-		texnum = Scrap_AllocBlock (image->width, image->height, &x, &y);
-		if (texnum == -1)
-			goto nonscrap;
-		scrap_dirty = true;
-
-		// copy the texels into the scrap block
-		k = 0;
-		for (i=0 ; i<image->height ; i++)
-			for (j=0 ; j<image->width ; j++, k++)
-				scrap_texels[texnum][(y+i)*BLOCK_WIDTH + x + j] = pic[k];
-		image->texnum = TEXNUM_SCRAPS + texnum;
-		image->scrap = true;
-		image->has_alpha = true;
-		image->sl = (x+0.01)/(float)BLOCK_WIDTH;
-		image->sh = (x+image->width-0.01)/(float)BLOCK_WIDTH;
-		image->tl = (y+0.01)/(float)BLOCK_WIDTH;
-		image->th = (y+image->height-0.01)/(float)BLOCK_WIDTH;
-	}
-	else
-	{
-#ifdef DEBUG
-		printf("GL_LoadPic: not a scrap\n");
-#endif
-nonscrap:
-		image->scrap = false;
 		image->texnum = TEXNUM_IMAGES + (image - gltextures);
 		GL_Bind(image->texnum);
-		printf("GL_LoadPic: Uploading texture #%d\n", image->texnum);
 		if (bits == 8) {
-			printf("GL_LoadPic: %d bits, %dx%d\n", bits, width, height);
-			qboolean a = GL_Upload8 (pic, width, height, (image->type != it_pic) && (image->type != it_sky), image->type == it_sky );
-			image->has_alpha = a;
+			image->has_alpha = GL_Upload8 (pic, width, height, (image->type != it_pic) && (image->type != it_sky), image->type == it_sky );
 		} else {
-			printf("GL_LoadPic: %d bits, %dx%d\n", bits, width, height);
-			image->has_alpha = GL_Upload32 (pic, width, height, (image->type != it_pic) && (image->type != it_sky) );
+			image->has_alpha = GL_Upload32 (pic, width, height, (image->type != it_pic) && (image->type != it_sky) );	
 		}
 		image->upload_width = upload_width;		// after power of 2 and scales
 		image->upload_height = upload_height;
@@ -1331,7 +1211,7 @@ GL_FindImage
 Finds or loads the given image
 ===============
 */
-image_t	*GL_FindImage (char *name, imagetype_t type)
+image_t	*GL_FindImage (char *name, imagetype_t type, bool force)
 {
 	image_t	*image;
 	int		i, len;
@@ -1345,16 +1225,18 @@ image_t	*GL_FindImage (char *name, imagetype_t type)
 	if (len<5)
 		return NULL;	//	ri.Sys_Error (ERR_DROP, "GL_FindImage: bad name: %s", name);
 
+	if (!force) {
 	// look for it
-	for (i=0, image=gltextures ; i<numgltextures ; i++,image++)
-	{
-		if (!strcmp(name, image->name))
+		for (i=0, image=gltextures ; i<numgltextures ; i++,image++)
 		{
-			image->registration_sequence = registration_sequence;
-			return image;
+			if (!strcmp(name, image->name))
+			{
+				image->registration_sequence = registration_sequence;
+				return image;
+			}
 		}
 	}
-
+	
 	//
 	// load the pic from disk
 	//
@@ -1378,12 +1260,12 @@ image_t	*GL_FindImage (char *name, imagetype_t type)
 	{
 		strncpy (s, name, sizeof(s));
 		s[len-3]='t'; s[len-2]='g'; s[len-1]='a';
-		image = GL_FindImage(s,type);
+		image = GL_FindImage(s,type,false);
 		if (image) 
 			return image;
 		strncpy (s, name, sizeof(s));
 		s[len-3]='j'; s[len-2]='p'; s[len-1]='g';
-		image = GL_FindImage(s,type);
+		image = GL_FindImage(s,type,false);
 		if (image)
 			return image;
 		if (!strcmp(name+len-4, ".pcx")) {
@@ -1415,7 +1297,7 @@ R_RegisterSkin
 */
 struct image_s *R_RegisterSkin (char *name)
 {
-	return GL_FindImage (name, it_skin);
+	return GL_FindImage (name, it_skin,false);
 }
 
 
@@ -1564,3 +1446,136 @@ void	GL_ShutdownImages (void)
 	}
 }
 
+void GL_ReloadPic (byte *pic, int bits, image_t *image)
+{
+	if (image->type == it_skin && bits == 8)
+		R_FloodFillSkin(pic, image->width, image->height);
+
+	{
+		GL_Bind(image->texnum);
+		if (bits == 8) {
+			GL_Upload8 (pic, image->width, image->height, (image->type != it_pic) && (image->type != it_sky), image->type == it_sky );
+		} else {
+			GL_Upload32 (pic, image->width, image->height, (image->type != it_pic) && (image->type != it_sky) );	
+		}
+	}
+}
+
+void GL_ReloadWal (image_t *image)
+{
+	miptex_t	*mt;
+	int			width, height, ofs;
+
+	ri.FS_LoadFile (image->name, (void **)&mt);
+	if (!mt)
+	{
+		return;
+	}
+
+	width = LittleLong (mt->width);
+	height = LittleLong (mt->height);
+	ofs = LittleLong (mt->offsets[0]);
+
+	printf("Reuploading %s\n", image->name);
+	GL_ReloadPic ((byte *)mt + ofs, 8, image);
+
+	ri.FS_FreeFile ((void *)mt);
+}
+
+void GL_ReuploadImage(image_t *image)
+{
+	int		i, len = strlen(image->name);
+	byte	*pic, *palette;
+	int		width, height;
+	char	s[128];
+	
+	//
+	// load the pic from disk
+	//
+	pic = NULL;
+	palette = NULL;
+	if (!strcmp((image->name)+len-4, ".tga"))
+	{
+		LoadTGA (image->name, &pic, &width, &height);
+		if (!pic)
+			return; // ri.Sys_Error (ERR_DROP, "GL_FindImage: can't load %s", name);
+		printf("Reuploading %s\n", image->name);
+		GL_ReloadPic (pic, 32, image);
+	}
+	else if (!strcmp((image->name)+len-4, ".jpg"))
+	{
+		LoadJPG(image->name, &pic, &width, &height);
+		if (!pic)
+			return; // ri.Sys_Error (ERR_DROP, "GL_FindImage: can't load %s", name);
+		printf("Reuploading %s\n", image->name);
+		GL_ReloadPic (pic, 32, image);
+	}
+	else if (!strcmp((image->name)+len-4, ".pcx") || !strcmp(image->name+len-4, ".wal"))
+	{
+		if (!strcmp((image->name)+len-4, ".pcx")) {
+			LoadPCX (image->name, &pic, &palette, &width, &height);
+			if (!pic)
+				return; // ri.Sys_Error (ERR_DROP, "GL_FindImage: can't load %s", name);
+			printf("Reuploading %s\n", image->name);
+			GL_ReloadPic (pic, 8, image);
+		} else if (!strcmp((image->name)+len-4, ".wal")) {
+			GL_ReloadWal (image);
+		}
+	}
+	else
+		return; //	ri.Sys_Error (ERR_DROP, "GL_FindImage: bad extension on: %s", name);
+	
+	if (pic)
+		free(pic);
+	if (palette)
+		free(palette);
+}
+
+extern byte	dottexture[8][8];
+
+void restore_textures()
+{
+	int		i;
+	image_t	*image;
+	int		x,y;
+	byte	data[8][8][4];
+	
+	for (i=0, image=gltextures ; i<numgltextures ; i++, image++)
+	{
+		if (image->texnum) {
+			if ((!strcmp(image->name, "***r_notexture***"))||(!strcmp(image->name, "***particle***"))) continue;
+			printf("Restoring texture %d (%s)\n", image->texnum, image->name);
+			GL_ReuploadImage(image);
+		}
+	}
+
+	//
+	// particle texture
+	//
+	for (x=0 ; x<8 ; x++)
+	{
+		for (y=0 ; y<8 ; y++)
+		{
+			data[y][x][0] = 255;
+			data[y][x][1] = 255;
+			data[y][x][2] = 255;
+			data[y][x][3] = dottexture[x][y]*255;
+		}
+	}
+	GL_ReloadPic(data, 32, r_particletexture);
+	
+	//
+	// also use this for bad textures, but without alpha
+	//
+	for (x=0 ; x<8 ; x++)
+	{
+		for (y=0 ; y<8 ; y++)
+		{
+			data[y][x][0] = dottexture[x&3][y&3]*255;
+			data[y][x][1] = 0; // dottexture[x&3][y&3]*255;
+			data[y][x][2] = 0; //dottexture[x&3][y&3]*255;
+			data[y][x][3] = 255;
+		}
+	}
+	GL_ReloadPic(data, 32, r_notexture);
+}

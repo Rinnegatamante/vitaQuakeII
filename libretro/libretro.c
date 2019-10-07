@@ -251,12 +251,16 @@ static void context_destroy()
 	context_needs_reinit = true;
 }
 
+extern void restore_textures();
+bool first_reset = true;
+
 static void context_reset() { 
 	if (!context_needs_reinit)
 		return;
 
 	initialize_gl();
-
+	if (!first_reset) restore_textures();
+	first_reset = false;
 	context_needs_reinit = false;
 }
 

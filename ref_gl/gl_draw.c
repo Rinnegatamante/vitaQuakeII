@@ -29,10 +29,6 @@ typedef struct
 
 image_t		*draw_chars;
 
-extern	qboolean	scrap_dirty;
-void Scrap_Upload (void);
-
-
 /*
 ===============
 Draw_InitLocal
@@ -41,7 +37,7 @@ Draw_InitLocal
 void Draw_InitLocal (void)
 {
 	// load console characters (don't bilerp characters)
-	draw_chars = GL_FindImage ("pics/conchars.pcx", it_pic);
+	draw_chars = GL_FindImage ("pics/conchars.pcx", it_pic, false);
 	GL_Bind( draw_chars->texnum );
 	qglTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 	qglTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
@@ -124,10 +120,10 @@ image_t	*Draw_FindPic (char *name)
 	if (name[0] != '/' && name[0] != '\\')
 	{
 		Com_sprintf (fullname, sizeof(fullname), "pics/%s.pcx", name);
-		gl = GL_FindImage (fullname, it_pic);
+		gl = GL_FindImage (fullname, it_pic, false);
 	}
 	else
-		gl = GL_FindImage (name+1, it_pic);
+		gl = GL_FindImage (name+1, it_pic, false);
 
 	return gl;
 }
@@ -167,9 +163,6 @@ void Draw_StretchPic (int x, int y, int w, int h, char *pic)
 		return;
 	}
 
-	if (scrap_dirty)
-		Scrap_Upload ();
-
 	if ( ( ( gl_config.renderer == GL_RENDERER_MCD ) || ( gl_config.renderer & GL_RENDERER_RENDITION ) ) && !gl->has_alpha)
 		qglDisable(GL_ALPHA_TEST);
 
@@ -196,8 +189,6 @@ void Draw_Pic (int x, int y, char *pic)
 		ri.Con_Printf (PRINT_ALL, "Can't find pic: %s\n", pic);
 		return;
 	}
-	if (scrap_dirty)
-		Scrap_Upload ();
 
 	if ( ( ( gl_config.renderer == GL_RENDERER_MCD ) || ( gl_config.renderer & GL_RENDERER_RENDITION ) ) && !gl->has_alpha)
 		qglDisable(GL_ALPHA_TEST);
