@@ -55,6 +55,28 @@ struct retro_core_option_definition option_defs_us[] = {
       },
       "disabled"
    },
+   {
+      "vitaquakeii_specular",
+      "Specular Mode",
+      "Makes every level be specular.",
+      {
+         { "disabled",  "Disabled" },
+         { "enabled",   "Enabled" },
+         { NULL, NULL },
+      },
+      "disabled"
+   },
+   {
+      "vitaquakeii_invert_y_axis",
+      "Invert Y Axis",
+      "Invert the gamepad right analog stick's Y axis.",
+      {
+         { "disabled",  "Disabled" },
+         { "enabled",   "Enabled" },
+         { NULL, NULL },
+      },
+      "disabled"
+   },
    { NULL, NULL, NULL, {{0}}, NULL },
 };
 

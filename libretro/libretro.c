@@ -1203,6 +1203,8 @@ void	Sys_Init (void)
 
 extern void IN_StopRumble();
 
+static int invert_y_axis = 1;
+
 //=============================================================================
 bool initial_resolution_set = false;
 static void update_variables(bool startup)
@@ -1229,7 +1231,43 @@ static void update_variables(bool startup)
 			log_cb(RETRO_LOG_INFO, "Got size: %u x %u.\n", scr_width, scr_height);
 
 		initial_resolution_set = true;
-   }
+	}
+   
+	var.key = "vitaquakeii_invert_y_axis";
+	var.value = NULL;
+
+	if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
+	{
+		if (strcmp(var.value, "disabled") == 0)
+			invert_y_axis = 1;
+		else
+			invert_y_axis = -1;
+	}
+   
+	/* We need Qcommon_Init to be executed to be able to set Cvars */
+	if (!startup) {
+		var.key = "vitaquakeii_rumble";
+		var.value = NULL;
+	
+		if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
+		{
+			if (strcmp(var.value, "disabled") == 0)
+				Cvar_SetValue( "pstv_rumble", 0 );
+			else
+				Cvar_SetValue( "pstv_rumble", 1 );
+		}
+	
+		var.key = "vitaquakeii_specular";
+		var.value = NULL;
+
+		if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
+		{
+			if (strcmp(var.value, "disabled") == 0)
+				Cvar_SetValue( "gl_xflip", 0 );
+			else
+				Cvar_SetValue( "gl_xflip", 1 );
+		}
+	}
 
 }
 
@@ -1529,12 +1567,17 @@ void retro_run(void)
 	
 		argv[0] = empty_string;
 		Qcommon_Init(1, argv);
+		update_variables(false);
 		first_boot = false;
 	}
 	
 	if (rumble_tick != 0) {
 		if (cpu_features_get_time_usec() - rumble_tick > 500000) IN_StopRumble(); // 0.5 sec
 	}
+	
+	bool updated = false;
+	if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE_UPDATE, &updated) && updated)
+		update_variables(false);
 	
 	do {
 		newtime = Sys_Milliseconds ();
@@ -2169,6 +2212,8 @@ void IN_Init (void)
 	int i;
 	for (i = 0; i < MAX_PADS; i++)
 		quake_devices[i] = RETRO_DEVICE_JOYPAD;
+	
+	rumble_tick = cpu_features_get_time_usec();
 }
 
 void IN_Shutdown (void)
@@ -2186,12 +2231,22 @@ void IN_Frame (void)
 void IN_StartRumble (void)
 {
 	if (!pstv_rumble->value) return;
+	
+	uint16_t strength_strong = 0xffff;
+	if (!rumble.set_rumble_state)
+		return;
 
+	rumble.set_rumble_state(0, RETRO_RUMBLE_STRONG, strength_strong);
+	rumble_tick = cpu_features_get_time_usec();
 }
 
 void IN_StopRumble (void)
 {
+	if (!rumble.set_rumble_state)
+		return;
 
+	rumble.set_rumble_state(0, RETRO_RUMBLE_STRONG, 0);
+	rumble_tick = 0;
 }
 
 void IN_Move (usercmd_t *cmd)
@@ -2233,7 +2288,10 @@ void IN_Move (usercmd_t *cmd)
             lsx = lsx - analog_deadzone;
          if (lsx < -analog_deadzone)
             lsx = lsx + analog_deadzone;
-         cmd->sidemove += cl_sidespeed->value * lsx / (ANALOG_RANGE - analog_deadzone);
+         if (gl_xflip->value)
+            cmd->sidemove -= cl_sidespeed->value * lsx / (ANALOG_RANGE - analog_deadzone);
+         else
+            cmd->sidemove += cl_sidespeed->value * lsx / (ANALOG_RANGE - analog_deadzone);
       }
 
       if (lsy > analog_deadzone || lsy < -analog_deadzone) {
@@ -2247,7 +2305,7 @@ void IN_Move (usercmd_t *cmd)
       // Right stick Look
       rsx = input_cb(0, RETRO_DEVICE_ANALOG, RETRO_DEVICE_INDEX_ANALOG_RIGHT,
                RETRO_DEVICE_ID_ANALOG_X);
-      rsy = input_cb(0, RETRO_DEVICE_ANALOG, RETRO_DEVICE_INDEX_ANALOG_RIGHT,
+      rsy = invert_y_axis * input_cb(0, RETRO_DEVICE_ANALOG, RETRO_DEVICE_INDEX_ANALOG_RIGHT,
                RETRO_DEVICE_ID_ANALOG_Y);
 
       if (rsx > analog_deadzone || rsx < -analog_deadzone) {
@@ -2256,7 +2314,10 @@ void IN_Move (usercmd_t *cmd)
          if (rsx < -analog_deadzone)
             rsx = rsx + analog_deadzone;
          // For now we are sharing the sensitivity with the mouse setting
-         cl.viewangles[YAW] -= sensitivity->value * rsx / (ANALOG_RANGE - analog_deadzone);
+         if (gl_xflip->value)
+            cl.viewangles[YAW] += sensitivity->value * rsx / (ANALOG_RANGE - analog_deadzone);
+         else
+            cl.viewangles[YAW] -= sensitivity->value * rsx / (ANALOG_RANGE - analog_deadzone);
       }
 
       if (rsy > analog_deadzone || rsy < -analog_deadzone) {
