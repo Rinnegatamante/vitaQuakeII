@@ -103,6 +103,7 @@ void ( APIENTRY * qglScalef )(GLfloat x, GLfloat y, GLfloat z);
 void ( APIENTRY * qglDepthFunc )(GLenum func);
 void ( APIENTRY * qglTexEnvi )(GLenum target, GLenum pname, GLint param);
 void ( APIENTRY * qglGenTextures )(GLsizei n, GLuint *textures);
+void ( APIENTRY * qglAlphaFunc )(GLenum func,  GLclampf ref);
 
 char g_rom_dir[1024], g_pak_path[1024], g_save_dir[1024];
 
@@ -207,6 +208,7 @@ static bool initialize_gl()
 	qglDepthFunc = hw_render.get_proc_address ("glDepthFunc");
 	qglTexEnvi = hw_render.get_proc_address ("glTexEnvi");
 	qglGenTextures = hw_render.get_proc_address ("glGenTextures");
+	qglAlphaFunc = hw_render.get_proc_address ("glAlphaFunc");
 	
 	return true;
 }
