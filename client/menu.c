@@ -1529,7 +1529,7 @@ void Options_MenuInit( void )
 	s_options_console_action.generic.callback = ConsoleFunc;
 
 	ControlsSetMenuItemValues();
-
+#ifdef PSP2
 	Menu_AddItem( &s_options_menu, ( void * ) &s_options_sfxvolume_slider );
 	/*#ifndef _3DS
 	Menu_AddItem( &s_options_menu, ( void * ) &s_options_cdvolume_box );
@@ -1555,6 +1555,7 @@ void Options_MenuInit( void )
 	Menu_AddItem( &s_options_menu, ( void * ) &s_options_crosshair_box );
 	Menu_AddItem( &s_options_menu, ( void * ) &s_options_rumble_box );
 	Menu_AddItem( &s_options_menu, ( void * ) &s_options_specular_box );
+#endif
 	Menu_AddItem( &s_options_menu, ( void * ) &s_options_customize_options_action );
 	Menu_AddItem( &s_options_menu, ( void * ) &s_options_defaults_action );
 	Menu_AddItem( &s_options_menu, ( void * ) &s_options_console_action );

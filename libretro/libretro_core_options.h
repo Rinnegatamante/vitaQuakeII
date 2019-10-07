@@ -45,6 +45,17 @@ struct retro_core_option_definition option_defs_us[] = {
       "960x544"
    },
    {
+      "vitaquakeii_shadows",
+      "Dynamic Shadows",
+      "Enables dynamic shadows rendering.",
+      {
+         { "disabled",  "Disabled" },
+         { "enabled",   "Enabled" },
+         { NULL, NULL },
+      },
+      "disabled"
+   },
+   {
       "vitaquakeii_rumble",
       "Rumble",
       "Enables joypad rumble.",
@@ -53,7 +64,7 @@ struct retro_core_option_definition option_defs_us[] = {
          { "enabled",   "Enabled" },
          { NULL, NULL },
       },
-      "disabled"
+      "enabled"
    },
    {
       "vitaquakeii_specular",
@@ -67,9 +78,31 @@ struct retro_core_option_definition option_defs_us[] = {
       "disabled"
    },
    {
+      "vitaquakeii_xhair",
+      "Show Crosshair",
+      "Enables in game crosshair.",
+      {
+         { "disabled",  "Disabled" },
+         { "enabled",   "Enabled" },
+         { NULL, NULL },
+      },
+      "enabled"
+   },
+   {
       "vitaquakeii_invert_y_axis",
       "Invert Y Axis",
       "Invert the gamepad right analog stick's Y axis.",
+      {
+         { "disabled",  "Disabled" },
+         { "enabled",   "Enabled" },
+         { NULL, NULL },
+      },
+      "enabled"
+   },
+   {
+      "vitaquakeii_fps",
+      "Show FPS",
+      "Shows framerate on top right screen.",
       {
          { "disabled",  "Disabled" },
          { "enabled",   "Enabled" },
@@ -108,6 +141,17 @@ struct retro_core_option_definition option_defs_it[] = {
       "960x544"
    },
    {
+      "vitaquakeii_shadows",
+      "Ombre Dinamiche",
+      "Abilita il rendering delle ombre dinamiche.",
+      {
+         { "disabled",  "Disattivato" },
+         { "enabled",   "Attivato" },
+         { NULL, NULL },
+      },
+      "disabled"
+   },
+   {
       "vitaquakeii_rumble",
       "Vibrazione",
       "Abilita la vibrazione del joypad.",
@@ -116,7 +160,7 @@ struct retro_core_option_definition option_defs_it[] = {
          { "enabled",   "Abilitata" },
          { NULL, NULL },
       },
-      "disabled"
+      "enabled"
    },
    {
       "vitaquakeii_specular",
@@ -130,9 +174,31 @@ struct retro_core_option_definition option_defs_it[] = {
       "disabled"
    },
    {
+      "vitaquakeii_xhair",
+      "Mostra Mirino",
+      "Abilita il mirino in gioco.",
+      {
+         { "disabled",  "Disattivato" },
+         { "enabled",   "Attivato" },
+         { NULL, NULL },
+      },
+      "enabled"
+   },
+   {
       "vitaquakeii_invert_y_axis",
       "Inverti Asse Y",
       "Inverte l'asse Y dell'analogico destro.",
+      {
+         { "disabled",  "Disattivato" },
+         { "enabled",   "Attivato" },
+         { NULL, NULL },
+      },
+      "enabled"
+   },
+   {
+      "vitaquakeii_fps",
+      "Mostra FPS",
+      "Mostra il framerate nell'angolo in alto a destra dello schermo.",
       {
          { "disabled",  "Disattivato" },
          { "enabled",   "Attivato" },

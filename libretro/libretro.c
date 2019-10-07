@@ -1267,6 +1267,47 @@ static void update_variables(bool startup)
 			else
 				Cvar_SetValue( "gl_xflip", 1 );
 		}
+		
+		var.key = "vitaquakeii_xhair";
+		var.value = NULL;
+
+		if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
+		{
+			if (strcmp(var.value, "disabled") == 0)
+				Cvar_SetValue( "crosshair", 0 );
+			else
+				Cvar_SetValue( "crosshair", 1 );
+		}
+		
+		var.key = "vitaquakeii_fps";
+		var.value = NULL;
+
+		if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
+		{
+			if (strcmp(var.value, "disabled") == 0)
+				Cvar_SetValue( "cl_drawfps", 0 );
+			else
+				Cvar_SetValue( "cl_drawfps", 1 );
+		}
+		
+		var.key = "vitaquakeii_shadows";
+		var.value = NULL;
+
+		if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
+		{
+			if (strcmp(var.value, "disabled") == 0)
+				Cvar_SetValue( "gl_shadows", 0 );
+			else
+				Cvar_SetValue( "gl_shadows", 1 );
+		}
+		
+		var.key = "vitaquakeii_textures";
+		var.value = NULL;
+
+		if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
+		{
+			Cvar_SetValue( "gl_picmip", (int)var.value - '0' );
+		}
 	}
 
 }
@@ -2084,13 +2125,7 @@ void    VID_MenuInit (void)
 	s_shadows_slider.itemnames = yesno_names;
 
     Menu_AddItem( &s_opengl_menu, ( void * ) &s_ref_list );
-	Menu_AddItem( &s_opengl_menu, ( void * ) &s_mode_list );
-	Menu_AddItem( &s_opengl_menu, ( void * ) &s_screensize_slider );
-    Menu_AddItem( &s_opengl_menu, ( void * ) &s_brightness_slider );
-    Menu_AddItem( &s_opengl_menu, ( void * ) &s_tq_slider );
-    Menu_AddItem( &s_opengl_menu, ( void * ) &s_shadows_slider );
-
-	Menu_AddItem( &s_opengl_menu, ( void * ) &s_defaults_action );
+	
     Menu_AddItem( &s_opengl_menu, ( void * ) &s_cancel_action );
 	
 
