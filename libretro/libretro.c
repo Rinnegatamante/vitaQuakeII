@@ -1276,8 +1276,8 @@ void retro_get_system_av_info(struct retro_system_av_info *info)
 
    info->geometry.base_width   = scr_width;
    info->geometry.base_height  = scr_height;
-   info->geometry.max_width    = 960;
-   info->geometry.max_height   = 544;
+   info->geometry.max_width    = 3840;
+   info->geometry.max_height   = 2160;
    info->geometry.aspect_ratio = (scr_width * 1.0f) / (scr_height * 1.0f);
 }
 
@@ -1485,8 +1485,6 @@ void retro_run(void)
 
 	video_cb(RETRO_HW_FRAME_BUFFER_VALID, scr_width, scr_height, 0);
   
-	audio_process();
-	audio_callback();
 }
 
 void retro_unload_game(void)
@@ -1579,7 +1577,7 @@ qboolean SNDDMA_Init(void)
 	sound_initialized = 0;
 
     //Force Quake to use our settings
-    Cvar_SetValue( "s_khz", 48 );
+    Cvar_SetValue( "s_khz", SAMPLE_RATE );
 	Cvar_SetValue( "s_loadas8bit", false );
 
     audio_buffer = malloc(BUFFER_SIZE);
@@ -1626,7 +1624,8 @@ Send sound to device if buffer isn't really the dma buffer
 */
 void SNDDMA_Submit(void)
 {
-
+	audio_process();
+	audio_callback();
 }
 
 void SNDDMA_BeginPainting(void)
@@ -1732,10 +1731,14 @@ typedef struct vidmode_s
 
 vidmode_t vid_modes[] =
 {
-    { "Mode 0: 480x272",   480, 272,   0 },
-	{ "Mode 1: 640x368",   640, 368,   1 },
-	{ "Mode 2: 720x408",   720, 408,   2 },
-	{ "Mode 3: 960x544",   960, 544,   3 }
+    { "Mode 0: 480x272",     480, 272,   0 },
+	{ "Mode 1: 640x368",     640, 368,   1 },
+	{ "Mode 2: 720x408",     720, 408,   2 },
+	{ "Mode 3: 960x544",     960, 544,   3 },
+	{ "Mode 4: 1280x720",   1280, 720,   4 },
+	{ "Mode 5: 1920x1080",  1920,1080,   5 },
+	{ "Mode 6: 2560x1440",  2560,1440,   6 },
+	{ "Mode 7: 3840x2160",  3840,2160,   7 }
 };
 #define VID_NUM_MODES ( sizeof( vid_modes ) / sizeof( vid_modes[0] ) )
 
@@ -2062,7 +2065,7 @@ const char *VID_MenuKey( int k)
 
 int GLimp_SetMode( int *pwidth, int *pheight, int mode, qboolean fullscreen )
 {
-	int width, height;
+	/*int width, height;
 
 	ri.Con_Printf( PRINT_ALL, "Initializing OpenGL display\n");
 	ri.Con_Printf (PRINT_ALL, "...setting mode %d:", mode );
@@ -2072,15 +2075,15 @@ int GLimp_SetMode( int *pwidth, int *pheight, int mode, qboolean fullscreen )
 		ri.Con_Printf( PRINT_ALL, " invalid mode\n" );
 		return rserr_invalid_mode;
 	}
-
-	ri.Con_Printf( PRINT_ALL, " %d %d\n", width, height );
+*/
+	ri.Con_Printf( PRINT_ALL, " %d %d\n", scr_width, scr_height );
 
 	// destroy the existing window
 	GLimp_Shutdown ();
 
-	*pwidth = width;
-	*pheight = height;
-	ri.Vid_NewWindow (width, height);
+	*pwidth = scr_width;
+	*pheight = scr_height;
+	ri.Vid_NewWindow (scr_width, scr_height);
 
 	if (!gl_set) GLimp_InitGL();
 
