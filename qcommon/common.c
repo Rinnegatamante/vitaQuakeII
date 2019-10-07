@@ -1557,7 +1557,7 @@ void Qcommon_Frame (int msec)
 			}
 		}
 	}
-
+#ifndef __LIBRETRO__
 	if (fixedtime->value)
 		msec = fixedtime->value;
 	else if (timescale->value)
@@ -1566,7 +1566,7 @@ void Qcommon_Frame (int msec)
 		if (msec < 1)
 			msec = 1;
 	}
-
+#endif
 	if (showtrace->value)
 	{
 		extern	int c_traces, c_brush_traces;

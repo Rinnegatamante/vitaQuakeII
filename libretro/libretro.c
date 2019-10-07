@@ -1496,8 +1496,6 @@ void retro_set_video_refresh(retro_video_refresh_t cb)
    video_cb = cb;
 }
 
-int	ttime, oldtime, newtime;
-
 bool retro_load_game(const struct retro_game_info *info)
 {
 	enum retro_pixel_format fmt = RETRO_PIXEL_FORMAT_XRGB8888;
@@ -1591,8 +1589,6 @@ bool retro_load_game(const struct retro_game_info *info)
 	{
 		extract_directory(g_rom_dir, g_rom_dir, sizeof(g_rom_dir));
 	}
-	
-	oldtime = Sys_Milliseconds ();
 
 	return true;
 	
@@ -1626,13 +1622,7 @@ void retro_run(void)
 	if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE_UPDATE, &updated) && updated)
 		update_variables(false);
 	
-	do {
-		newtime = Sys_Milliseconds ();
-		ttime = newtime - oldtime;
-	} while (ttime < 1);
-	
-	Qcommon_Frame (ttime);
-	oldtime = newtime;
+	Qcommon_Frame (16);
 
 	if (shutdown_core)
 		return;
@@ -1707,7 +1697,22 @@ static unsigned audio_buffer_ptr;
 
 static void audio_callback(void)
 {
-	audio_batch_cb(audio_buffer, BUFFER_SIZE / 4);
+	unsigned read_first, read_second;
+	float samples_per_frame = (2 * SAMPLE_RATE) / 60;
+	unsigned read_end = audio_buffer_ptr + samples_per_frame;
+
+	if (read_end > BUFFER_SIZE / 2)
+		read_end = BUFFER_SIZE / 2;
+
+	read_first  = read_end - audio_buffer_ptr;
+	read_second = samples_per_frame - read_first;
+
+	audio_batch_cb(audio_buffer + audio_buffer_ptr, read_first / (dma.samplebits / 8));
+	audio_buffer_ptr += read_first;
+	if (read_second >= 1) {
+		audio_batch_cb(audio_buffer, read_second / (dma.samplebits / 8));
+		audio_buffer_ptr = read_second;
+	}
 }
 
 uint64_t initial_tick;
@@ -1744,10 +1749,7 @@ int SNDDMA_GetDMAPos(void)
 		return 0;
 	
 	
-	const float deltaSecond = (cpu_features_get_time_usec() - initial_tick) / 1000000.0f;
-	
-	dma.samplepos = deltaSecond * SAMPLE_RATE * 2;
-	return dma.samplepos;
+	return dma.samplepos = audio_buffer_ptr;
 }
 
 void SNDDMA_Shutdown(void)
