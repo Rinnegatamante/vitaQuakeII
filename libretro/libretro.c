@@ -664,6 +664,22 @@ void utf2ascii(char* dst, uint16_t* src){
 
 void Sys_DefaultConfig(void)
 {
+	Cbuf_AddText("unbindall\n");
+	
+	Cbuf_AddText ("bind UPARROW \"invuse\"\n");
+	Cbuf_AddText ("bind DOWNARROW \"inven\"\n");
+	Cbuf_AddText ("bind LEFTARROW \"invprev\"\n");
+	Cbuf_AddText ("bind RIGHTARROW \"invnext\"\n");
+
+	Cbuf_AddText ("bind AUX1 \"+moveup\"\n");
+	Cbuf_AddText ("bind AUX2 \"+movedown\"\n");
+	Cbuf_AddText ("bind AUX3 \"+attack\"\n");
+	Cbuf_AddText ("bind AUX4 \"weapnext\"\n");
+	Cbuf_AddText ("bind AUX5 \"+speed\"\n");
+	Cbuf_AddText ("bind AUX7 \"+attack\"\n");
+
+	Cbuf_AddText ("bind SELECT \"help\"\n");
+	
 	Cbuf_AddText ("lookstrafe \"1.000000\"\n");
 	Cbuf_AddText ("lookspring \"0.000000\"\n");
 	Cbuf_AddText ("vid_gamma \"0.700000\"\n");
@@ -723,16 +739,61 @@ void Sys_SendKeyEvents (void)
 				}
 			}
 
-			for (i=RETRO_DEVICE_ID_JOYPAD_B; 
-				i <= RETRO_DEVICE_ID_JOYPAD_R3; ++i)
+			if (ret & (1 << RETRO_DEVICE_ID_JOYPAD_UP))
+				Sys_SetKeys(K_UPARROW, 1);
+			else
+				Sys_SetKeys(K_UPARROW, 0);
+			if (ret & (1 << RETRO_DEVICE_ID_JOYPAD_DOWN))
+				Sys_SetKeys(K_DOWNARROW, 1);
+			else
+				Sys_SetKeys(K_DOWNARROW, 0);
+			if (ret & (1 << RETRO_DEVICE_ID_JOYPAD_LEFT))
+				Sys_SetKeys(K_LEFTARROW, 1);
+			else
+				Sys_SetKeys(K_LEFTARROW, 0);
+			if (ret & (1 << RETRO_DEVICE_ID_JOYPAD_RIGHT))
+				Sys_SetKeys(K_RIGHTARROW, 1);
+			else
+				Sys_SetKeys(K_RIGHTARROW, 0);
+			if (ret & (1 << RETRO_DEVICE_ID_JOYPAD_START))
+				Sys_SetKeys(K_ESCAPE, 1);
+			else
+				Sys_SetKeys(K_ESCAPE, 0);
+			if (ret & (1 << RETRO_DEVICE_ID_JOYPAD_SELECT))
+				Sys_SetKeys(K_ENTER, 1);
+			else
+				Sys_SetKeys(K_ENTER, 0);
+			if (ret & (1 << RETRO_DEVICE_ID_JOYPAD_Y))
+				Sys_SetKeys(K_AUX3, 1);
+			else
+				Sys_SetKeys(K_AUX3, 0);
+			if (ret & (1 << RETRO_DEVICE_ID_JOYPAD_X))
+				Sys_SetKeys(K_AUX4, 1);
+			else
+				Sys_SetKeys(K_AUX4, 0);
+			if (ret & (1 << RETRO_DEVICE_ID_JOYPAD_B))
 			{
-				if (ret & (1 << i))
-					Sys_SetKeys(K_JOY1 + i, 1);
-				else
-					Sys_SetKeys(K_JOY1 + i, 0);
+				Sys_SetKeys(K_AUX1, 1);
 			}
+			else
+			{
+				Sys_SetKeys(K_AUX1, 0);
+			}
+			if (ret & (1 << RETRO_DEVICE_ID_JOYPAD_A))
+				Sys_SetKeys(K_AUX2, 1);
+			else
+				Sys_SetKeys(K_AUX2, 0);
+			if (ret & (1 << RETRO_DEVICE_ID_JOYPAD_L))
+				Sys_SetKeys(K_AUX5, 1);
+			else
+				Sys_SetKeys(K_AUX5, 0);
+			if (ret & (1 << RETRO_DEVICE_ID_JOYPAD_R))
+				Sys_SetKeys(K_AUX7, 1);
+			else
+				Sys_SetKeys(K_AUX7, 0);
 		}
 		break;
+		/*
 		case RETRO_DEVICE_KEYBOARD:
 			if (input_cb(port, RETRO_DEVICE_MOUSE, 0, RETRO_DEVICE_ID_MOUSE_LEFT))
 				Sys_SetKeys(K_MOUSE1, 1);
@@ -791,6 +852,7 @@ void Sys_SendKeyEvents (void)
 					Sys_SetKeys(K_RIGHTARROW, 0);
 			}
 			break;
+		*/
 		case RETRO_DEVICE_NONE:
 			break;
 		}
@@ -1394,7 +1456,7 @@ bool retro_load_game(const struct retro_game_info *info)
 	for (i=0; path_lower[i]; ++i)
 		path_lower[i] = tolower(path_lower[i]);
 	
-	environ_cb(RETRO_ENVIRONMENT_SET_KEYBOARD_CALLBACK, &cb);
+//	environ_cb(RETRO_ENVIRONMENT_SET_KEYBOARD_CALLBACK, &cb);
 	
 	update_variables(true);
 
@@ -1538,7 +1600,6 @@ void retro_cheat_reset(void)
 
 void retro_cheat_set(unsigned index, bool enabled, const char *code)
 {
-	printf("retro_cheat_set called\n");
    (void)index;
    (void)enabled;
    (void)code;
@@ -2139,7 +2200,7 @@ void IN_Move (usercmd_t *cmd)
    static int cur_my;
    int mx, my, lsx, lsy, rsx, rsy;
 
-   if (quake_devices[0] == RETRO_DEVICE_KEYBOARD) {
+   /*if (quake_devices[0] == RETRO_DEVICE_KEYBOARD) {
       mx = input_cb(0, RETRO_DEVICE_MOUSE, 0, RETRO_DEVICE_ID_MOUSE_X);
       my = input_cb(0, RETRO_DEVICE_MOUSE, 0, RETRO_DEVICE_ID_MOUSE_Y);
 
@@ -2160,7 +2221,7 @@ void IN_Move (usercmd_t *cmd)
          cur_mx = mx;
          cur_my = my;
       }
-   } else if (quake_devices[0] != RETRO_DEVICE_NONE && quake_devices[0] != RETRO_DEVICE_KEYBOARD) {
+   } else */if (quake_devices[0] != RETRO_DEVICE_NONE && quake_devices[0] != RETRO_DEVICE_KEYBOARD) {
       // Left stick move
       lsx = input_cb(0, RETRO_DEVICE_ANALOG, RETRO_DEVICE_INDEX_ANALOG_LEFT,
                RETRO_DEVICE_ID_ANALOG_X);
