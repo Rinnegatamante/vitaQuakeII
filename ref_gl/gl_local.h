@@ -78,14 +78,11 @@ typedef struct image_s
 	struct msurface_s	*texturechain;	// for sort-by-texture world drawing
 	int		texnum;						// gl texture binding
 	float	sl, tl, sh, th;				// 0,0 - 1,1 unless part of the scrap
-	qboolean	scrap;
 	qboolean	has_alpha;
-	qboolean	has_mipmap;
 	qboolean paletted;
 } image_t;
 
 #define	TEXNUM_LIGHTMAPS	1024
-#define	TEXNUM_SCRAPS		1152
 #define	TEXNUM_IMAGES		1153
 
 #define		MAX_GLTEXTURES	1024

@@ -156,8 +156,8 @@ struct retro_core_option_definition option_defs_it[] = {
       "Vibrazione",
       "Abilita la vibrazione del joypad.",
       {
-         { "disabled",  "Disabilitata" },
-         { "enabled",   "Abilitata" },
+         { "disabled",  "Disattivata" },
+         { "enabled",   "Attivata" },
          { NULL, NULL },
       },
       "enabled"

@@ -203,7 +203,7 @@ int		gl_alpha_format = GL_RGBA;
 int		gl_tex_solid_format = GL_RGB;
 int		gl_tex_alpha_format = GL_RGBA;
 
-int		gl_filter_min = GL_LINEAR;
+int		gl_filter_min = GL_LINEAR_MIPMAP_NEAREST;
 int		gl_filter_max = GL_LINEAR;
 
 void GL_SetTexturePalette( unsigned palette[256] )
