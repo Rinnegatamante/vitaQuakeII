@@ -168,7 +168,7 @@ dflags		these flags are used to control how T_Damage works
 	DAMAGE_NO_PROTECTION	kills godmode, armor, everything
 ============
 */
-static int CheckPowerArmor (edict_t *ent, vec3_t point, vec3_t normal, int damage, int dflags)
+int CheckPowerArmor (edict_t *ent, vec3_t point, vec3_t normal, int damage, int dflags)
 {
 	gclient_t	*client;
 	int			save;
@@ -252,7 +252,7 @@ static int CheckPowerArmor (edict_t *ent, vec3_t point, vec3_t normal, int damag
 	return save;
 }
 
-static int CheckArmor (edict_t *ent, vec3_t point, vec3_t normal, int damage, int te_sparks, int dflags)
+int CheckArmor (edict_t *ent, vec3_t point, vec3_t normal, int damage, int te_sparks, int dflags)
 {
 	gclient_t	*client;
 	int			save;
