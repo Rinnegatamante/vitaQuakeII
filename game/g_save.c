@@ -630,7 +630,6 @@ void WriteLevel (char *filename)
 	int		i;
 	edict_t	*ent;
 	FILE	*f;
-	void	*base;
 
 	f = fopen (filename, "wb");
 	if (!f)
@@ -639,10 +638,6 @@ void WriteLevel (char *filename)
 	// write out edict size for checking
 	i = sizeof(edict_t);
 	fwrite (&i, sizeof(i), 1, f);
-
-	// write out a function pointer for checking
-	base = (void *)InitGame;
-	fwrite (&base, sizeof(base), 1, f);
 
 	// write out level_locals_t
 	WriteLevelLocals (f);
@@ -706,18 +701,6 @@ void ReadLevel (char *filename)
 		fclose (f);
 		gi.error ("ReadLevel: mismatched edict size");
 	}
-
-	// check function pointer base address
-	fread (&base, sizeof(base), 1, f);
-#ifdef _WIN32
-	if (base != (void *)InitGame)
-	{
-		fclose (f);
-		gi.error ("ReadLevel: function pointers have moved");
-	}
-#else
-	gi.dprintf("Function offsets %d\n", ((byte *)base) - ((byte *)InitGame));
-#endif
 
 	// load the level locals
 	ReadLevelLocals (f);
