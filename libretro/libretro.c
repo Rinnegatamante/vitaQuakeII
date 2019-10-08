@@ -105,6 +105,12 @@ void ( APIENTRY * qglTexEnvi )(GLenum target, GLenum pname, GLint param);
 void ( APIENTRY * qglGenTextures )(GLsizei n, GLuint *textures);
 void ( APIENTRY * qglAlphaFunc )(GLenum func,  GLclampf ref);
 
+typedef struct api_entry{
+	void *ptr;
+} api_entry;
+
+api_entry funcs[45];
+
 char g_rom_dir[1024], g_pak_path[1024], g_save_dir[1024];
 
 static struct retro_hw_render_callback hw_render;
@@ -164,51 +170,58 @@ void vglVertexAttribPointerMapped(int id, void* ptr)
 
 static bool initialize_gl()
 {
-	qglTexImage2D = hw_render.get_proc_address ("glTexImage2D");
-	qglTexSubImage2D = hw_render.get_proc_address ("glTexSubImage2D");
-	qglTexParameteri = hw_render.get_proc_address ("glTexParameteri");
-	qglBindFramebuffer = hw_render.get_proc_address ("glBindFramebuffer");
-	qglGenerateMipmap = hw_render.get_proc_address ("glGenerateMipmap");
-	qglBlendFunc = hw_render.get_proc_address ("glBlendFunc");
-	qglTexSubImage2D = hw_render.get_proc_address ("glTexSubImage2D");
-	qglDepthMask = hw_render.get_proc_address ("glDepthMask");
-	qglPushMatrix = hw_render.get_proc_address ("glPushMatrix");
-	qglRotatef = hw_render.get_proc_address ("glRotatef");
-	qglTranslatef = hw_render.get_proc_address ("glTranslatef");
-	qglDepthRange = hw_render.get_proc_address ("glDepthRange");
-	qglClear = hw_render.get_proc_address ("glClear");
-	qglCullFace = hw_render.get_proc_address ("glCullFace");
-	qglClearColor = hw_render.get_proc_address ("glClearColor");
-	qglEnable = hw_render.get_proc_address ("glEnable");
-	qglDisable = hw_render.get_proc_address ("glDisable");
-	qglEnableClientState = hw_render.get_proc_address ("glEnableClientState");
-	qglDisableClientState = hw_render.get_proc_address ("glDisableClientState");
-	qglPopMatrix = hw_render.get_proc_address ("glPopMatrix");
-	qglGetFloatv = hw_render.get_proc_address ("glGetFloatv");
-	qglOrtho = hw_render.get_proc_address ("glOrtho");
-	qglFrustum = hw_render.get_proc_address ("glFrustum");
-	qglLoadMatrixf = hw_render.get_proc_address ("glLoadMatrixf");
-	qglLoadIdentity = hw_render.get_proc_address ("glLoadIdentity");
-	qglMatrixMode = hw_render.get_proc_address ("glMatrixMode");
-	qglBindTexture = hw_render.get_proc_address ("glBindTexture");
-	qglReadPixels = hw_render.get_proc_address ("glReadPixels");
-	qglPolygonMode = hw_render.get_proc_address ("glPolygonMode");
-	qglVertexPointer = hw_render.get_proc_address ("glVertexPointer");
-	qglTexCoordPointer = hw_render.get_proc_address ("glTexCoordPointer");
-	qglColorPointer = hw_render.get_proc_address ("glColorPointer");
-	qglDrawElements = hw_render.get_proc_address ("glDrawElements");
-	qglViewport = hw_render.get_proc_address ("glViewport");
-	qglDeleteTextures = hw_render.get_proc_address ("glDeleteTextures");
-	qglClearStencil = hw_render.get_proc_address ("glClearStencil");
-	qglColor4f = hw_render.get_proc_address ("glColor4f");
-	qglScissor = hw_render.get_proc_address ("glScissor");
-	qglStencilFunc = hw_render.get_proc_address ("glStencilFunc");
-	qglStencilOp = hw_render.get_proc_address ("glStencilOp");
-	qglScalef = hw_render.get_proc_address ("glScalef");
-	qglDepthFunc = hw_render.get_proc_address ("glDepthFunc");
-	qglTexEnvi = hw_render.get_proc_address ("glTexEnvi");
-	qglGenTextures = hw_render.get_proc_address ("glGenTextures");
-	qglAlphaFunc = hw_render.get_proc_address ("glAlphaFunc");
+	funcs[0].ptr = qglTexImage2D = hw_render.get_proc_address ("glTexImage2D");
+	funcs[1].ptr = qglTexSubImage2D = hw_render.get_proc_address ("glTexSubImage2D");
+	funcs[2].ptr = qglTexParameteri = hw_render.get_proc_address ("glTexParameteri");
+	funcs[3].ptr = qglBindFramebuffer = hw_render.get_proc_address ("glBindFramebuffer");
+	funcs[4].ptr = qglGenerateMipmap = hw_render.get_proc_address ("glGenerateMipmap");
+	funcs[5].ptr = qglBlendFunc = hw_render.get_proc_address ("glBlendFunc");
+	funcs[6].ptr = qglTexSubImage2D = hw_render.get_proc_address ("glTexSubImage2D");
+	funcs[7].ptr = qglDepthMask = hw_render.get_proc_address ("glDepthMask");
+	funcs[8].ptr = qglPushMatrix = hw_render.get_proc_address ("glPushMatrix");
+	funcs[9].ptr = qglRotatef = hw_render.get_proc_address ("glRotatef");
+	funcs[10].ptr = qglTranslatef = hw_render.get_proc_address ("glTranslatef");
+	funcs[11].ptr = qglDepthRange = hw_render.get_proc_address ("glDepthRange");
+	funcs[12].ptr = qglClear = hw_render.get_proc_address ("glClear");
+	funcs[13].ptr = qglCullFace = hw_render.get_proc_address ("glCullFace");
+	funcs[14].ptr = qglClearColor = hw_render.get_proc_address ("glClearColor");
+	funcs[15].ptr = qglEnable = hw_render.get_proc_address ("glEnable");
+	funcs[16].ptr = qglDisable = hw_render.get_proc_address ("glDisable");
+	funcs[17].ptr = qglEnableClientState = hw_render.get_proc_address ("glEnableClientState");
+	funcs[18].ptr = qglDisableClientState = hw_render.get_proc_address ("glDisableClientState");
+	funcs[19].ptr = qglPopMatrix = hw_render.get_proc_address ("glPopMatrix");
+	funcs[20].ptr = qglGetFloatv = hw_render.get_proc_address ("glGetFloatv");
+	funcs[21].ptr = qglOrtho = hw_render.get_proc_address ("glOrtho");
+	funcs[22].ptr = qglFrustum = hw_render.get_proc_address ("glFrustum");
+	funcs[23].ptr = qglLoadMatrixf = hw_render.get_proc_address ("glLoadMatrixf");
+	funcs[24].ptr = qglLoadIdentity = hw_render.get_proc_address ("glLoadIdentity");
+	funcs[25].ptr = qglMatrixMode = hw_render.get_proc_address ("glMatrixMode");
+	funcs[26].ptr = qglBindTexture = hw_render.get_proc_address ("glBindTexture");
+	funcs[27].ptr = qglReadPixels = hw_render.get_proc_address ("glReadPixels");
+	funcs[28].ptr = qglPolygonMode = hw_render.get_proc_address ("glPolygonMode");
+	funcs[29].ptr = qglVertexPointer = hw_render.get_proc_address ("glVertexPointer");
+	funcs[30].ptr = qglTexCoordPointer = hw_render.get_proc_address ("glTexCoordPointer");
+	funcs[31].ptr = qglColorPointer = hw_render.get_proc_address ("glColorPointer");
+	funcs[32].ptr = qglDrawElements = hw_render.get_proc_address ("glDrawElements");
+	funcs[33].ptr = qglViewport = hw_render.get_proc_address ("glViewport");
+	funcs[34].ptr = qglDeleteTextures = hw_render.get_proc_address ("glDeleteTextures");
+	funcs[35].ptr = qglClearStencil = hw_render.get_proc_address ("glClearStencil");
+	funcs[36].ptr = qglColor4f = hw_render.get_proc_address ("glColor4f");
+	funcs[37].ptr = qglScissor = hw_render.get_proc_address ("glScissor");
+	funcs[38].ptr = qglStencilFunc = hw_render.get_proc_address ("glStencilFunc");
+	funcs[39].ptr = qglStencilOp = hw_render.get_proc_address ("glStencilOp");
+	funcs[40].ptr = qglScalef = hw_render.get_proc_address ("glScalef");
+	funcs[41].ptr = qglDepthFunc = hw_render.get_proc_address ("glDepthFunc");
+	funcs[42].ptr = qglTexEnvi = hw_render.get_proc_address ("glTexEnvi");
+	funcs[43].ptr = qglGenTextures = hw_render.get_proc_address ("glGenTextures");
+	funcs[44].ptr = qglAlphaFunc = hw_render.get_proc_address ("glAlphaFunc");
+	
+	if (log_cb) {
+		int i;
+		for (i = 0; i < 45; i++) {
+			if (!funcs[i].ptr) log_cb(RETRO_LOG_ERROR, "vitaQuakeII: cannot get GL function #%d symbol.\n");
+		}
+	}
 	
 	return true;
 }
@@ -261,7 +274,9 @@ static void context_reset() {
 		return;
 
 	initialize_gl();
-	if (!first_reset) restore_textures();
+	if (!first_reset) {
+		restore_textures();
+	}
 	first_reset = false;
 	context_needs_reinit = false;
 }
@@ -1698,7 +1713,7 @@ static unsigned audio_buffer_ptr;
 static void audio_callback(void)
 {
 	unsigned read_first, read_second;
-	float samples_per_frame = (2 * SAMPLE_RATE) / 60;
+	float samples_per_frame = (2 * SAMPLE_RATE) / framerate;
 	unsigned read_end = audio_buffer_ptr + samples_per_frame;
 
 	if (read_end > BUFFER_SIZE / 2)
