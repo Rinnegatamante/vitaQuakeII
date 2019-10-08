@@ -135,7 +135,7 @@ static bool libretro_supports_bitmasks = false;
 
 static void audio_callback(void);
 
-#define SAMPLE_RATE   	44100
+#define SAMPLE_RATE   	48000
 #define BUFFER_SIZE 	4096
 #define MAX_PADS 1
 static unsigned quake_devices[1];
@@ -1323,12 +1323,19 @@ static void update_variables(bool startup)
 				Cvar_SetValue( "gl_shadows", 1 );
 		}
 		
-		var.key = "vitaquakeii_textures";
+		var.key = "vitaquakeii_hand";
 		var.value = NULL;
 
 		if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
 		{
-			Cvar_SetValue( "gl_picmip", (int)var.value - '0' );
+			if (strcmp(var.value, "right") == 0)
+				Cvar_SetValue( "hand", 0 );
+			else if (strcmp(var.value, "left") == 0)
+				Cvar_SetValue( "hand", 1 );
+			else if (strcmp(var.value, "center") == 0)
+				Cvar_SetValue( "hand", 2 );
+			else
+				Cvar_SetValue( "hand", 3 );
 		}
 	}
 

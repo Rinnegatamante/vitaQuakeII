@@ -110,6 +110,19 @@ struct retro_core_option_definition option_defs_us[] = {
       },
       "disabled"
    },
+   {
+      "vitaquakeii_hand",
+      "Weapon Position",
+      "Change positioning for the held weapon.",
+      {
+         { "right",  "Right" },
+         { "left",   "Left" },
+		 { "center", "Center" },
+		 { "hidden", "Hidden" },
+         { NULL, NULL },
+      },
+      "right"
+   },
    { NULL, NULL, NULL, {{0}}, NULL },
 };
 
@@ -205,6 +218,19 @@ struct retro_core_option_definition option_defs_it[] = {
          { NULL, NULL },
       },
       "disabled"
+   },
+   {
+      "vitaquakeii_hand",
+      "Posizione dell'Arma",
+      "Cambia la posizione dell'arma in uso.",
+      {
+         { "right",  "Destra" },
+         { "left",   "Sinistra" },
+		 { "center", "Centro" },
+		 { "hidden", "Nascosta" },
+         { NULL, NULL },
+      },
+      "right"
    },
    { NULL, NULL, NULL, {{0}}, NULL },
 };
