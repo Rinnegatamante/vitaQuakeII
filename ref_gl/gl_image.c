@@ -231,9 +231,10 @@ void GL_TexEnv( GLenum mode )
 	}
 }
 
+extern	image_t	*draw_chars;
+
 void GL_Bind (int texnum)
 {
-	extern	image_t	*draw_chars;
 
 	if (gl_nobind->value && draw_chars)		// performance evaluation option
 		texnum = draw_chars->texnum;
@@ -1578,4 +1579,6 @@ void restore_textures()
 		}
 	}
 	GL_ReloadPic(data, 32, r_notexture);
+	
+	GL_ReuploadImage(draw_chars);
 }

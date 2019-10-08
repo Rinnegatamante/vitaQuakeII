@@ -240,6 +240,7 @@ void GLimp_BeginFrame( float camera_separation )
 	gColorBuffer = gColorBufferPtr;
 	gTexCoordBuffer = gTexCoordBufferPtr;
 	qglEnableClientState(GL_VERTEX_ARRAY);
+	qglAlphaFunc(GL_GREATER,  0.666);
 }
 
 void GLimp_EndFrame (void)
