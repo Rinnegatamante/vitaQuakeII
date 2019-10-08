@@ -135,7 +135,7 @@ static bool libretro_supports_bitmasks = false;
 
 static void audio_callback(void);
 
-#define SAMPLE_RATE   	48000
+#define SAMPLE_RATE   	44100
 #define BUFFER_SIZE 	4096
 #define MAX_PADS 1
 static unsigned quake_devices[1];
@@ -1644,6 +1644,9 @@ void retro_run(void)
 		return;
 
 	video_cb(RETRO_HW_FRAME_BUFFER_VALID, scr_width, scr_height, 0);
+	
+	audio_process();
+	audio_callback();
   
 }
 
@@ -1706,9 +1709,9 @@ void retro_cheat_set(unsigned index, bool enabled, const char *code)
 #include "../client/snd_loc.h"
 
 static volatile int sound_initialized = 0;
-static byte *audio_buffer;
 static int stop_audio = false;
 
+static int16_t audio_buffer[BUFFER_SIZE];
 static unsigned audio_buffer_ptr;
 
 static void audio_callback(void)
@@ -1717,8 +1720,8 @@ static void audio_callback(void)
 	float samples_per_frame = (2 * SAMPLE_RATE) / framerate;
 	unsigned read_end = audio_buffer_ptr + samples_per_frame;
 
-	if (read_end > BUFFER_SIZE / 2)
-		read_end = BUFFER_SIZE / 2;
+	if (read_end > BUFFER_SIZE)
+		read_end = BUFFER_SIZE;
 
 	read_first  = read_end - audio_buffer_ptr;
 	read_second = samples_per_frame - read_first;
@@ -1740,14 +1743,12 @@ qboolean SNDDMA_Init(void)
     //Force Quake to use our settings
     Cvar_SetValue( "s_khz", SAMPLE_RATE );
 	Cvar_SetValue( "s_loadas8bit", false );
-
-    audio_buffer = malloc(BUFFER_SIZE);
 	
 	/* Fill the audio DMA information block */
 	dma.samplebits = 16;
 	dma.speed = SAMPLE_RATE;
 	dma.channels = 2;
-	dma.samples = BUFFER_SIZE / 2;
+	dma.samples = BUFFER_SIZE;
 	dma.samplepos = 0;
 	dma.submission_chunk = 1;
 	dma.buffer = audio_buffer;
@@ -1787,8 +1788,6 @@ Send sound to device if buffer isn't really the dma buffer
 */
 void SNDDMA_Submit(void)
 {
-	audio_process();
-	audio_callback();
 }
 
 void SNDDMA_BeginPainting(void)
@@ -2313,7 +2312,7 @@ void IN_Move (usercmd_t *cmd)
    static int cur_mx;
    static int cur_my;
    int mx, my, lsx, lsy, rsx, rsy;
-   float aspeed, speed;
+   float speed;
    
    if ( (in_speed.state & 1) ^ (int)cl_run->value)
        speed = 2;
