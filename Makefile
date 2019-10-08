@@ -114,7 +114,7 @@ else
    SHARED := -shared -static-libgcc -static-libstdc++ -s -Wl,--version-script=$(CORE_DIR)/link.T -Wl,--no-undefined
 endif
 
-LDFLAGS += $(LIBM) -ljpeg
+LDFLAGS += $(LIBM)
 
 ifeq ($(DEBUG), 1)
    CFLAGS += -O0 -g -DDEBUG
@@ -256,7 +256,10 @@ GAME = 		game/m_tank.o \
 			game/m_soldier.o \
 			game/m_supertank.o
 
-OBJECTS := $(CLIENT) $(QCOMMON) $(SERVER) $(GAME) $(SYSTEM) $(REFGL)
+SOURCES	:= jpeg-8c
+CFILES := $(foreach dir,$(SOURCES), $(wildcard $(dir)/*.c))
+
+OBJECTS := $(CLIENT) $(QCOMMON) $(SERVER) $(GAME) $(SYSTEM) $(REFGL) $(CFILES:.c=.o)
 
 CFLAGS   += -Wall -D__LIBRETRO__ $(fpic) -DREF_HARD_LINKED -DRELEASE -DGAME_HARD_LINKED -DOSTYPE=\"$(OSTYPE)\" -DARCH=\"$(ARCH)\" -I$(CORE_DIR)/libretro-common/include -std=c99
 CXXFLAGS += -Wall -D__LIBRETRO__ $(fpic) -fpermissive
