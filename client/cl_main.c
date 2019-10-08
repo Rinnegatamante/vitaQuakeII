@@ -1708,8 +1708,8 @@ void CL_Frame (int msec)
 	{
 		if (cls.state == ca_connected && extratime < 100)
 			return;			// don't flood packets out while connecting
-		if (extratime < 1000/cl_maxfps->value)
-			return;			// framerate is too high
+		//if (extratime < 1000/cl_maxfps->value)
+		//	return;			// framerate is too high
 	}
 
 	// let the mouse activate or deactivate
