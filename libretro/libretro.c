@@ -2313,7 +2313,13 @@ void IN_Move (usercmd_t *cmd)
    static int cur_mx;
    static int cur_my;
    int mx, my, lsx, lsy, rsx, rsy;
-
+   float aspeed, speed;
+   
+   if ( (in_speed.state & 1) ^ (int)cl_run->value)
+       speed = 2;
+   else
+       speed = 1;
+   
    /*if (quake_devices[0] == RETRO_DEVICE_KEYBOARD) {
       mx = input_cb(0, RETRO_DEVICE_MOUSE, 0, RETRO_DEVICE_ID_MOUSE_X);
       my = input_cb(0, RETRO_DEVICE_MOUSE, 0, RETRO_DEVICE_ID_MOUSE_Y);
@@ -2348,9 +2354,9 @@ void IN_Move (usercmd_t *cmd)
          if (lsx < -analog_deadzone)
             lsx = lsx + analog_deadzone;
          if (gl_xflip->value)
-            cmd->sidemove -= cl_sidespeed->value * lsx / (ANALOG_RANGE - analog_deadzone);
+            cmd->sidemove -= speed * cl_sidespeed->value * lsx / (ANALOG_RANGE - analog_deadzone);
          else
-            cmd->sidemove += cl_sidespeed->value * lsx / (ANALOG_RANGE - analog_deadzone);
+            cmd->sidemove += speed * cl_sidespeed->value * lsx / (ANALOG_RANGE - analog_deadzone);
       }
 
       if (lsy > analog_deadzone || lsy < -analog_deadzone) {
@@ -2358,7 +2364,7 @@ void IN_Move (usercmd_t *cmd)
             lsy = lsy - analog_deadzone;
          if (lsy < -analog_deadzone)
             lsy = lsy + analog_deadzone;
-         cmd->forwardmove -= cl_forwardspeed->value * lsy / (ANALOG_RANGE - analog_deadzone);
+         cmd->forwardmove -= speed * cl_forwardspeed->value * lsy / (ANALOG_RANGE - analog_deadzone);
       }
 
       // Right stick Look
