@@ -102,14 +102,15 @@ void ( APIENTRY * qglStencilOp )(GLenum fail, GLenum zfail, GLenum zpass);
 void ( APIENTRY * qglScalef )(GLfloat x, GLfloat y, GLfloat z);
 void ( APIENTRY * qglDepthFunc )(GLenum func);
 void ( APIENTRY * qglTexEnvi )(GLenum target, GLenum pname, GLint param);
-void ( APIENTRY * qglGenTextures )(GLsizei n, GLuint *textures);
 void ( APIENTRY * qglAlphaFunc )(GLenum func,  GLclampf ref);
+
+#define GL_FUNCS_NUM 44
 
 typedef struct api_entry{
 	void *ptr;
 } api_entry;
 
-api_entry funcs[45];
+api_entry funcs[GL_FUNCS_NUM];
 
 char g_rom_dir[1024], g_pak_path[1024], g_save_dir[1024];
 
@@ -213,13 +214,12 @@ static bool initialize_gl()
 	funcs[40].ptr = qglScalef = hw_render.get_proc_address ("glScalef");
 	funcs[41].ptr = qglDepthFunc = hw_render.get_proc_address ("glDepthFunc");
 	funcs[42].ptr = qglTexEnvi = hw_render.get_proc_address ("glTexEnvi");
-	funcs[43].ptr = qglGenTextures = hw_render.get_proc_address ("glGenTextures");
-	funcs[44].ptr = qglAlphaFunc = hw_render.get_proc_address ("glAlphaFunc");
+	funcs[43].ptr = qglAlphaFunc = hw_render.get_proc_address ("glAlphaFunc");
 	
 	if (log_cb) {
 		int i;
-		for (i = 0; i < 45; i++) {
-			if (!funcs[i].ptr) log_cb(RETRO_LOG_ERROR, "vitaQuakeII: cannot get GL function #%d symbol.\n");
+		for (i = 0; i < GL_FUNCS_NUM; i++) {
+			if (!funcs[i].ptr) log_cb(RETRO_LOG_ERROR, "vitaQuakeII: cannot get GL function #%d symbol.\n", i);
 		}
 	}
 	
