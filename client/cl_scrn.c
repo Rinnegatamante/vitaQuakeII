@@ -256,7 +256,8 @@ void SCR_DrawCenterString (void)
 	int		j;
 	int		x, y;
 	int		remaining;
-
+	float	scale = SCR_GetMenuScale();
+	
 // the finale prints the characters one at a time
 	remaining = 9999;
 
@@ -264,9 +265,9 @@ void SCR_DrawCenterString (void)
 	start = scr_centerstring;
 
 	if (scr_center_lines <= 4)
-		y = viddef.height*0.35;
+		y = (viddef.height*0.35) / scale;
 	else
-		y = 48;
+		y = 48 / scale;
 
 	do	
 	{
@@ -274,11 +275,11 @@ void SCR_DrawCenterString (void)
 		for (l=0 ; l<40 ; l++)
 			if (start[l] == '\n' || !start[l])
 				break;
-		x = (viddef.width - l*8)/2;
+		x = (viddef.width / scale - l*8)/2;
 		SCR_AddDirtyPoint (x, y);
 		for (j=0 ; j<l ; j++, x+=8)
 		{
-			re.DrawChar (x, y, start[j]);	
+			re.DrawChar (x * scale, y * scale, start[j], scale);	
 			if (!remaining--)
 				return;
 		}
@@ -443,11 +444,13 @@ SCR_DrawNet
 */
 void SCR_DrawNet (void)
 {
+	float scale = SCR_GetMenuScale();
+	
 	if (cls.netchan.outgoing_sequence - cls.netchan.incoming_acknowledged 
 		< CMD_BACKUP-1)
 		return;
 
-	re.DrawPic (scr_vrect.x+64, scr_vrect.y, "net");
+	re.DrawPic (scr_vrect.x + 64 * scale, scr_vrect.y, "net", scale);
 }
 
 /*
@@ -458,7 +461,8 @@ SCR_DrawPause
 void SCR_DrawPause (void)
 {
 	int		w, h;
-
+	float scale = SCR_GetMenuScale();
+	
 	if (!scr_showpause->value)		// turn off for screenshots
 		return;
 
@@ -466,7 +470,7 @@ void SCR_DrawPause (void)
 		return;
 
 	re.DrawGetPicSize (&w, &h, "pause");
-	re.DrawPic ((viddef.width-w)/2, viddef.height/2 + 8, "pause");
+	re.DrawPic ((viddef.width-w * scale)/2, viddef.height/2 + 8 * scale, "pause", scale);
 }
 
 /*
@@ -477,13 +481,14 @@ SCR_DrawLoading
 void SCR_DrawLoading (void)
 {
 	int		w, h;
-		
+	float scale = SCR_GetMenuScale();
+	
 	if (!scr_draw_loading)
 		return;
 
 	scr_draw_loading = false;
 	re.DrawGetPicSize (&w, &h, "loading");
-	re.DrawPic ((viddef.width-w)/2, (viddef.height-h)/2, "loading");
+	re.DrawPic ((viddef.width-w * scale)/2, (viddef.height-h * scale)/2, "loading", scale);
 }
 
 //=============================================================================
@@ -836,6 +841,8 @@ void DrawHUDString (char *string, int x, int y, int centerwidth, int xor)
 	int		width;
 	int		i;
 
+	float scale = SCR_GetMenuScale();
+
 	margin = x;
 
 	while (*string)
@@ -847,19 +854,19 @@ void DrawHUDString (char *string, int x, int y, int centerwidth, int xor)
 		line[width] = 0;
 
 		if (centerwidth)
-			x = margin + (centerwidth - width*8)/2;
+			x = margin + (centerwidth - width*8)*scale/2;
 		else
 			x = margin;
 		for (i=0 ; i<width ; i++)
 		{
-			re.DrawChar (x, y, line[i]^xor);
-			x += 8;
+			re.DrawChar (x, y, line[i]^xor, scale);
+			x += 8 * scale;
 		}
 		if (*string)
 		{
 			string++;	// skip the \n
 			x = margin;
-			y += 8;
+			y += 8 * scale;
 		}
 	}
 }
@@ -875,6 +882,8 @@ void SCR_DrawField (int x, int y, int color, int width, int value)
 	char	num[16], *ptr;
 	int		l;
 	int		frame;
+	
+	float scale = SCR_GetMenuScale();
 
 	if (width < 1)
 		return;
@@ -884,13 +893,13 @@ void SCR_DrawField (int x, int y, int color, int width, int value)
 		width = 5;
 
 	SCR_AddDirtyPoint (x, y);
-	SCR_AddDirtyPoint (x+width*CHAR_WIDTH+2, y+23);
+	SCR_AddDirtyPoint (x+(width*CHAR_WIDTH+2)*scale, y+24*scale);
 
 	Com_sprintf (num, sizeof(num), "%i", value);
 	l = strlen(num);
 	if (l > width)
 		l = width;
-	x += 2 + CHAR_WIDTH*(width - l);
+	x += (2 + CHAR_WIDTH*(width - l)) * scale;
 
 	ptr = num;
 	while (*ptr && l)
@@ -900,8 +909,8 @@ void SCR_DrawField (int x, int y, int color, int width, int value)
 		else
 			frame = *ptr -'0';
 
-		re.DrawPic (x,y,sb_nums[color][frame]);
-		x += CHAR_WIDTH;
+		re.DrawPic (x,y,sb_nums[color][frame], scale);
+		x += CHAR_WIDTH * scale;
 		ptr++;
 		l--;
 	}
@@ -949,6 +958,8 @@ void SCR_ExecuteLayoutString (char *s)
 	int		width;
 	int		index;
 	clientinfo_t	*ci;
+	
+	float scale = SCR_GetMenuScale();
 
 	if (cls.state != ca_active || !cl.refresh_prepped)
 		return;
@@ -966,38 +977,38 @@ void SCR_ExecuteLayoutString (char *s)
 		if (!strcmp(token, "xl"))
 		{
 			token = COM_Parse (&s);
-			x = atoi(token);
+			x = scale*atoi(token);
 			continue;
 		}
 		if (!strcmp(token, "xr"))
 		{
 			token = COM_Parse (&s);
-			x = viddef.width + atoi(token);
+			x = viddef.width + scale*atoi(token);
 			continue;
 		}
 		if (!strcmp(token, "xv"))
 		{
 			token = COM_Parse (&s);
-			x = viddef.width/2 - 160 + atoi(token);
+			x = viddef.width/2 - scale*160 + scale*(int)strtol(token, (char **)NULL, 10);
 			continue;
 		}
 
 		if (!strcmp(token, "yt"))
 		{
 			token = COM_Parse (&s);
-			y = atoi(token);
+			y = scale*atoi(token);
 			continue;
 		}
 		if (!strcmp(token, "yb"))
 		{
 			token = COM_Parse (&s);
-			y = viddef.height + atoi(token);
+			y = viddef.height + scale*(int)strtol(token, (char **)NULL, 10);
 			continue;
 		}
 		if (!strcmp(token, "yv"))
 		{
 			token = COM_Parse (&s);
-			y = viddef.height/2 - 120 + atoi(token);
+			y = viddef.height/2 - scale*120 + scale*(int)strtol(token, (char **)NULL, 10);
 			continue;
 		}
 
@@ -1010,8 +1021,8 @@ void SCR_ExecuteLayoutString (char *s)
 			if (cl.configstrings[CS_IMAGES+value])
 			{
 				SCR_AddDirtyPoint (x, y);
-				SCR_AddDirtyPoint (x+23, y+23);
-				re.DrawPic (x, y, cl.configstrings[CS_IMAGES+value]);
+				SCR_AddDirtyPoint (x+23*scale, y+23*scale);
+				re.DrawPic (x, y, cl.configstrings[CS_IMAGES+value],scale);
 			}
 			continue;
 		}
@@ -1021,11 +1032,11 @@ void SCR_ExecuteLayoutString (char *s)
 			int		score, ping, time;
 
 			token = COM_Parse (&s);
-			x = viddef.width/2 - 160 + atoi(token);
+			x = viddef.width/2 - scale*160 + scale*(int)strtol(token, (char **)NULL, 10);
 			token = COM_Parse (&s);
-			y = viddef.height/2 - 120 + atoi(token);
+			y = viddef.height/2 - scale*120 + scale*(int)strtol(token, (char **)NULL, 10);
 			SCR_AddDirtyPoint (x, y);
-			SCR_AddDirtyPoint (x+159, y+31);
+			SCR_AddDirtyPoint (x+159*scale, y+31*scale);
 
 			token = COM_Parse (&s);
 			value = atoi(token);
@@ -1042,15 +1053,15 @@ void SCR_ExecuteLayoutString (char *s)
 			token = COM_Parse (&s);
 			time = atoi(token);
 
-			DrawAltString (x+32, y, ci->name);
-			DrawString (x+32, y+8,  "Score: ");
-			DrawAltString (x+32+7*8, y+8,  va("%i", score));
-			DrawString (x+32, y+16, va("Ping:  %i", ping));
-			DrawString (x+32, y+24, va("Time:  %i", time));
+			DrawAltString (x+32*scale, y, ci->name);
+			DrawString (x+32*scale, y+8*scale,  "Score: ");
+			DrawAltString (x+(32+7*8)*scale, y+8*scale,  va("%i", score));
+			DrawString (x+32*scale, y+16*scale, va("Ping:  %i", ping));
+			DrawString (x+32*scale, y+24*scale, va("Time:  %i", time));
 
 			if (!ci->icon)
 				ci = &cl.baseclientinfo;
-			re.DrawPic (x, y, ci->iconname);
+			re.DrawPic (x, y, ci->iconname, scale);
 			continue;
 		}
 
@@ -1060,11 +1071,11 @@ void SCR_ExecuteLayoutString (char *s)
 			char	block[80];
 
 			token = COM_Parse (&s);
-			x = viddef.width/2 - 160 + atoi(token);
+			x = viddef.width/2 - scale*160 + scale*(int)strtol(token, (char **)NULL, 10);
 			token = COM_Parse (&s);
-			y = viddef.height/2 - 120 + atoi(token);
+			y = viddef.height/2 - scale*120 + scale*(int)strtol(token, (char **)NULL, 10);
 			SCR_AddDirtyPoint (x, y);
-			SCR_AddDirtyPoint (x+159, y+31);
+			SCR_AddDirtyPoint (x+159*scale, y+31*scale);
 
 			token = COM_Parse (&s);
 			value = atoi(token);
@@ -1093,8 +1104,8 @@ void SCR_ExecuteLayoutString (char *s)
 		{	// draw a pic from a name
 			token = COM_Parse (&s);
 			SCR_AddDirtyPoint (x, y);
-			SCR_AddDirtyPoint (x+23, y+23);
-			re.DrawPic (x, y, token);
+			SCR_AddDirtyPoint (x+23*scale, y+23*scale);
+			re.DrawPic (x, y, token, scale);
 			continue;
 		}
 
@@ -1103,7 +1114,7 @@ void SCR_ExecuteLayoutString (char *s)
 			token = COM_Parse (&s);
 			width = atoi(token);
 			token = COM_Parse (&s);
-			value = cl.frame.playerstate.stats[atoi(token)];
+			value = cl.frame.playerstate.stats[(int)strtol(token, (char **)NULL, 10)];
 			SCR_DrawField (x, y, 0, width, value);
 			continue;
 		}
@@ -1122,7 +1133,7 @@ void SCR_ExecuteLayoutString (char *s)
 				color = 1;
 
 			if (cl.frame.playerstate.stats[STAT_FLASHES] & 1)
-				re.DrawPic (x, y, "field_3");
+				re.DrawPic (x, y, "field_3", scale);
 
 			SCR_DrawField (x, y, color, width, value);
 			continue;
@@ -1142,7 +1153,7 @@ void SCR_ExecuteLayoutString (char *s)
 				continue;	// negative number = don't show
 
 			if (cl.frame.playerstate.stats[STAT_FLASHES] & 4)
-				re.DrawPic (x, y, "field_3");
+				re.DrawPic (x, y, "field_3", scale);
 
 			SCR_DrawField (x, y, color, width, value);
 			continue;
@@ -1160,7 +1171,7 @@ void SCR_ExecuteLayoutString (char *s)
 			color = 0;	// green
 
 			if (cl.frame.playerstate.stats[STAT_FLASHES] & 2)
-				re.DrawPic (x, y, "field_3");
+				re.DrawPic (x, y, "field_3", scale);
 
 			SCR_DrawField (x, y, color, width, value);
 			continue;
@@ -1270,7 +1281,8 @@ char	temp[32]; // temporary char where we store our fps string
 void SCR_DrawFps(void)
 {
 	int calc;
-
+	float scale = SCR_GetMenuScale();
+	
 	if ((cl.time + 1000) < fpscounter)
 		fpscounter = cl.time + 1000;
 
@@ -1280,7 +1292,7 @@ void SCR_DrawFps(void)
 		fpscounter = cl.time + 1000;
 	}
 
-	DrawString(viddef.width - 64, 0 , temp);
+	DrawString(viddef.width - 64 * scale, 0 , temp);
 }
 
 /*
@@ -1296,6 +1308,7 @@ void SCR_UpdateScreen (void)
 	int numframes;
 	int i;
 	float separation[2] = { 0, 0 };
+	float scale = SCR_GetMenuScale();
 
 	// if the screen is disabled (loading plaque is up, or vid mode changing)
 	// do nothing at all
@@ -1345,7 +1358,7 @@ void SCR_UpdateScreen (void)
 			re.CinematicSetPalette(NULL);
 			scr_draw_loading = false;
 			re.DrawGetPicSize (&w, &h, "loading");
-			re.DrawPic ((viddef.width-w)/2, (viddef.height-h)/2, "loading");
+			re.DrawPic ((viddef.width-w * scale)/2, (viddef.height-h * scale)/2, "loading", scale);
 //			re.EndFrame();
 //			return;
 		} 

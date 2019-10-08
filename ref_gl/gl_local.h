@@ -283,9 +283,9 @@ void R_MarkLights (dlight_t *light, int bit, mnode_t *node);
 void COM_StripExtension (char *in, char *out);
 
 void	Draw_GetPicSize (int *w, int *h, char *name);
-void	Draw_Pic (int x, int y, char *name);
+void	Draw_Pic (int x, int y, char *name, float factor);
 void	Draw_StretchPic (int x, int y, int w, int h, char *name);
-void	Draw_Char (int x, int y, int c);
+void	Draw_Char (int x, int y, int c, float factor);
 void	Draw_TileClear (int x, int y, int w, int h, char *name);
 void	Draw_Fill (int x, int y, int w, int h, int c);
 void	Draw_FadeScreen (void);

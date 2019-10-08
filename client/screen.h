@@ -60,3 +60,4 @@ void SCR_RunCinematic (void);
 void SCR_StopCinematic (void);
 void SCR_FinishCinematic (void);
 
+float SCR_GetMenuScale(void);

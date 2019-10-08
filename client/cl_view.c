@@ -430,7 +430,7 @@ void SCR_DrawCrosshair (void)
 		return;
 
 	re.DrawPic (scr_vrect.x + ((scr_vrect.width - crosshair_width)>>1)
-	, scr_vrect.y + ((scr_vrect.height - crosshair_height)>>1), crosshair_pic);
+	, scr_vrect.y + ((scr_vrect.height - crosshair_height)>>1), crosshair_pic, 1.0f);
 }
 
 /*

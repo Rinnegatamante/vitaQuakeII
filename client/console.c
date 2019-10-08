@@ -34,20 +34,22 @@ extern	int		key_linepos;
 
 void DrawString (int x, int y, char *s)
 {
+	float scale = SCR_GetMenuScale();
 	while (*s)
 	{
-		re.DrawChar (x, y, *s);
-		x+=8;
+		re.DrawChar (x, y, *s, scale);
+		x+=8*scale;
 		s++;
 	}
 }
 
 void DrawAltString (int x, int y, char *s)
 {
+	float scale = SCR_GetMenuScale();
 	while (*s)
 	{
-		re.DrawChar (x, y, *s ^ 0x80);
-		x+=8;
+		re.DrawChar (x, y, *s ^ 0x80, scale);
+		x+=8*scale;
 		s++;
 	}
 }
@@ -460,6 +462,7 @@ void Con_DrawInput (void)
 	int		y;
 	int		i;
 	char	*text;
+	float scale = SCR_GetMenuScale();
 
 	if (cls.key_dest == key_menu)
 		return;
@@ -483,7 +486,7 @@ void Con_DrawInput (void)
 	y = con.vislines-16;
 
 	for (i=0 ; i<con.linewidth ; i++)
-		re.DrawChar ( (i+1)<<3, con.vislines - 22, text[i]);
+		re.DrawChar ( ((i+1)<<3)*scale, con.vislines - 22 * scale, text[i], scale);
 
 // remove cursor
 	key_lines[edit_line][key_linepos] = 0;
@@ -505,7 +508,8 @@ void Con_DrawNotify (void)
 	int		time;
 	char	*s;
 	int		skip;
-
+	float scale = SCR_GetMenuScale();
+	
 	v = 0;
 	for (i= con.current-NUM_CON_TIMES+1 ; i<=con.current ; i++)
 	{
@@ -520,7 +524,7 @@ void Con_DrawNotify (void)
 		text = con.text + (i % con.totallines)*con.linewidth;
 		
 		for (x = 0 ; x < con.linewidth ; x++)
-			re.DrawChar ( (x+1)<<3, v, text[x]);
+			re.DrawChar ( scale*((x+1)<<3), v*scale, text[x], scale);
 
 		v += 8;
 	}
@@ -545,10 +549,10 @@ void Con_DrawNotify (void)
 		x = 0;
 		while(s[x])
 		{
-			re.DrawChar ( (x+skip)<<3, v, s[x]);
+			re.DrawChar ( scale*((x+skip)<<3), v*scale, s[x], scale);
 			x++;
 		}
-		re.DrawChar ( (x+skip)<<3, v, 10+((cls.realtime>>8)&1));
+		re.DrawChar ( scale*((x+skip)<<3), scale*v, 10+((cls.realtime>>8)&1), scale);
 		v += 8;
 	}
 	
@@ -575,6 +579,7 @@ void Con_DrawConsole (float frac)
 	int				lines;
 	char			version[64];
 	char			dlbar[1024];
+	float scale = SCR_GetMenuScale();
 
 	lines = viddef.height * frac;
 	if (lines <= 0)
@@ -588,29 +593,26 @@ void Con_DrawConsole (float frac)
 	SCR_AddDirtyPoint (0,0);
 	SCR_AddDirtyPoint (viddef.width-1,lines-1);
 
-	Com_sprintf (version, sizeof(version), "v%4.2f", VERSION);
+	Com_sprintf (version, sizeof(version), "vitaQuakeII v%4.2f", VERSION);
+	
+	int verLen = strlen(version);
+	
 	for (x=0 ; x<5 ; x++)
-		re.DrawChar (viddef.width-44+x*8, lines-12, 128 + version[x] );
+		re.DrawChar (viddef.width-((verLen*8+5) * scale) + x * 8 * scale, lines - 35 * scale, 128 + version[x], scale);
 
 // draw the text
 	con.vislines = lines;
 	
-#if 0
-	rows = (lines-8)>>3;		// rows of text to draw
-
-	y = lines - 24;
-#else
 	rows = (lines-22)>>3;		// rows of text to draw
 
-	y = lines - 30;
-#endif
+	y = (lines - 30 * scale) / scale;
 
 // draw from the bottom up
 	if (con.display != con.current)
 	{
 	// draw arrows to show the buffer is backscrolled
 		for (x=0 ; x<con.linewidth ; x+=4)
-			re.DrawChar ( (x+1)<<3, y, '^');
+			re.DrawChar ( scale*((x+1)<<3), scale*y, '^', scale);
 	
 		y -= 8;
 		rows--;
@@ -627,7 +629,7 @@ void Con_DrawConsole (float frac)
 		text = con.text + (row % con.totallines)*con.linewidth;
 
 		for (x=0 ; x<con.linewidth ; x++)
-			re.DrawChar ( (x+1)<<3, y, text[x]);
+			re.DrawChar ( scale*((x+1)<<3), scale*y, text[x], scale);
 	}
 
 //ZOID
@@ -671,7 +673,7 @@ void Con_DrawConsole (float frac)
 		// draw it
 		y = con.vislines-12;
 		for (i = 0; i < strlen(dlbar); i++)
-			re.DrawChar ( (i+1)<<3, y, dlbar[i]);
+			re.DrawChar ( scale*((i+1)<<3), y*scale, dlbar[i], scale);
 	}
 //ZOID
 

@@ -81,7 +81,7 @@ It can be clipped to the top of the screen to allow the console to be
 smoothly scrolled off.
 ================
 */
-void Draw_Char (int x, int y, int num)
+void Draw_Char (int x, int y, int num, float factor)
 {
 	int				row, col;
 	float			frow, fcol, size;
@@ -103,7 +103,7 @@ void Draw_Char (int x, int y, int num)
 
 	GL_Bind (draw_chars->texnum);
 	
-	DrawQuad(x, y, 8, 8, fcol, frow, size, size);
+	DrawQuad(x, y, 8 * factor, 8 * factor, fcol, frow, size, size);
 
 }
 
@@ -179,7 +179,7 @@ void Draw_StretchPic (int x, int y, int w, int h, char *pic)
 Draw_Pic
 =============
 */
-void Draw_Pic (int x, int y, char *pic)
+void Draw_Pic (int x, int y, char *pic, float factor)
 {
 	image_t *gl;
 
@@ -194,7 +194,7 @@ void Draw_Pic (int x, int y, char *pic)
 		qglDisable(GL_ALPHA_TEST);
 
 	GL_Bind (gl->texnum);
-	DrawPic(x, y, gl->width, gl->height, gl->sl, gl->tl, gl->sh, gl->th);
+	DrawPic(x, y, gl->width * factor, gl->height * factor, gl->sl, gl->tl, gl->sh, gl->th);
 
 	if ( ( ( gl_config.renderer == GL_RENDERER_MCD ) || ( gl_config.renderer & GL_RENDERER_RENDITION ) )  && !gl->has_alpha)
 		qglEnable(GL_ALPHA_TEST);
