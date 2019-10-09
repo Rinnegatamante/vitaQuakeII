@@ -1286,6 +1286,15 @@ static void update_variables(bool startup)
          case 144:
             framerate_ms = 7;
             break;
+         case 155:
+         case 160:
+         case 165:
+            framerate_ms = 6;
+            break;
+         case 180:
+         case 200:
+            framerate_ms = 5;
+            break;
          case 240:
          case 244:
             framerate_ms = 4;
