@@ -24,7 +24,11 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #ifndef __QGL_H__
 #define __QGL_H__
 
+#ifdef __LIBRETRO__
+#include <glsym/rglgen_private_headers.h>
+#else
 #include <GL/gl.h>
+#endif
 
 qboolean QGL_Init( const char *dllname );
 void     QGL_Shutdown( void );
