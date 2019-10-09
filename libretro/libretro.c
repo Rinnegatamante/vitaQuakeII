@@ -1543,7 +1543,7 @@ void retro_set_environment(retro_environment_t cb)
    };
 
    static const struct retro_controller_info ports[] = {
-      { port_1, 3 },
+      { port_1, 4 },
       { 0 },
    };
 
