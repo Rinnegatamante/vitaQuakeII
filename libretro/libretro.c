@@ -60,7 +60,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #endif
 
 static bool did_flip = false;
-boolean gl_set = false;
+qboolean gl_set = false;
 
 unsigned	sys_frame_time;
 uint64_t rumble_tick;
