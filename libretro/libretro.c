@@ -54,7 +54,9 @@ boolean gl_set = false;
 unsigned	sys_frame_time;
 uint64_t rumble_tick;
 
-int framerate = 60;
+/* TODO/FIXME - should become float for better accuracy */
+int      framerate    = 60;
+unsigned framerate_ms = 16;
 
 float *gVertexBuffer;
 float *gColorBuffer;
@@ -1233,6 +1235,64 @@ static void update_variables(bool startup)
 {
 	struct retro_variable var;
 
+   var.key = "vitaquakeii_framerate";
+   var.value = NULL;
+
+   if (startup)
+   {
+      if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var))
+      {
+         if (!strcmp(var.value, "auto"))
+         {
+            float target_framerate = 0.0f;
+            if (!environ_cb(RETRO_ENVIRONMENT_GET_TARGET_REFRESH_RATE,
+                     &target_framerate))
+               target_framerate = 60.0f;
+            framerate = (unsigned)target_framerate;
+         }
+         else
+            framerate = atoi(var.value);
+      }
+      else
+      {
+         framerate    = 60;
+         framerate_ms = 16;
+      }
+
+      switch (framerate)
+      {
+         case 50:
+            framerate_ms = 20;
+            break;
+         case 60:
+            framerate_ms = 16;
+            break;
+         case 72:
+            framerate_ms = 14;
+            break;
+         case 75:
+            framerate_ms = 13;
+            break;
+         case 90:
+            framerate_ms = 11;
+            break;
+         case 100:
+            framerate_ms = 10;
+            break;
+         case 119:
+         case 120:
+            framerate_ms = 8;
+            break;
+         case 144:
+            framerate_ms = 7;
+            break;
+         case 240:
+         case 244:
+            framerate_ms = 4;
+            break;
+      }
+   }
+
 	var.key = "vitaquakeii_resolution";
 	var.value = NULL;
 
@@ -1644,8 +1704,9 @@ void retro_run(void)
 	bool updated = false;
 	if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE_UPDATE, &updated) && updated)
 		update_variables(false);
-	
-	Qcommon_Frame (16);
+
+   /* TODO/FIXME - argument should be changed into float for better accuracy of fixed timestep */
+	Qcommon_Frame (framerate_ms);
 
 	if (shutdown_core)
 		return;

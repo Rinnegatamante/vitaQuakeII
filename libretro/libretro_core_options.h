@@ -28,6 +28,27 @@ extern "C" {
 
 struct retro_core_option_definition option_defs_us[] = {
    {
+      "vitaquakeii_framerate",
+      "Framerate (restart)",
+      "Modify framerate. Requires a restart.",
+      {
+         { "auto",            "Auto"},
+         { "50",              "50fps"},
+         { "60",              "60fps"},
+         { "72",              "72fps"},
+         { "75",              "75fps"},
+         { "90",              "90fps"},
+         { "100",              "100fps"},
+         { "119",              "119fps"},
+         { "120",              "120fps"},
+         { "144",              "144fps"},
+         { "240",              "240fps"},
+         { "244",              "244fps"},
+         { NULL, NULL },
+      },
+      "auto"
+   },
+   {
       "vitaquakeii_resolution",
       "Internal resolution (restart)",
       "Configure the resolution. Requires a restart.",
