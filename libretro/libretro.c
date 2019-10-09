@@ -19,8 +19,19 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 */
 
+#if defined(__APPLE__)
+#include <compat/apple_compat.h>
+#if MAC_OS_X_VERSION_10_7
+#include <OpenGL/gl3.h>
+#include <OpenGL/gl3ext.h>
+#else
+#include <OpenGL/gl.h>
+#include <OpenGL/glext.h>
+#endif
+#else
 #include <GL/gl.h>
 #include <GL/glext.h>
+#endif
 
 #include "../libretro-common/include/libretro.h"
 #include "../libretro-common/include/retro_dirent.h"
