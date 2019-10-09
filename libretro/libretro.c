@@ -19,25 +19,13 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 */
 
-#if defined(__APPLE__)
-#include <compat/apple_compat.h>
-#if MAC_OS_X_VERSION_10_7
-#include <OpenGL/gl3.h>
-#include <OpenGL/gl3ext.h>
-#else
-#include <OpenGL/gl.h>
-#include <OpenGL/glext.h>
-#endif
-#else
-#include <GL/gl.h>
-#include <GL/glext.h>
-#endif
+#include <glsym/rglgen_private_headers.h>
 
-#include "../libretro-common/include/libretro.h"
-#include "../libretro-common/include/retro_dirent.h"
-#include "../libretro-common/include/features/features_cpu.h"
-#include "../libretro-common/include/file/file_path.h"
-#include "../libretro-common/include/glsym/glsym.h"
+#include <libretro.h>
+#include <retro_dirent.h>
+#include <features/features_cpu.h>
+#include <file/file_path.h>
+#include <glsym/glsym.h>
 
 #include "libretro_core_options.h"
 
@@ -261,7 +249,7 @@ void GLimp_EndFrame (void)
 	did_flip = true;
 }
 
-boolean GLimp_InitGL (void)
+qboolean GLimp_InitGL (void)
 {
     int i;
 	indices = (uint16_t*)malloc(sizeof(uint16_t*)*MAX_INDICES);
