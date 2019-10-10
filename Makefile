@@ -128,8 +128,14 @@ include Makefile.common
 
 OBJECTS := $(SOURCES_C:.c=.o)
 
-CFLAGS   += -Wall -D__LIBRETRO__ $(fpic) -DREF_HARD_LINKED -DRELEASE -DGAME_HARD_LINKED -DOSTYPE=\"$(OSTYPE)\" -DARCH=\"$(ARCH)\" -I$(CORE_DIR)/libretro-common/include -std=c99
+CFLAGS   += -Wall -D__LIBRETRO__ $(fpic) -DREF_HARD_LINKED -DRELEASE -DGAME_HARD_LINKED -DOSTYPE=\"$(OSTYPE)\" -DARCH=\"$(ARCH)\"
 CXXFLAGS += -Wall -D__LIBRETRO__ $(fpic) -fpermissive
+
+ifeq ($(platform), unix)
+CFLAGS += -std=gnu99
+else
+CFLAGS += -std=c99
+endif
 CFLAGS     += $(INCFLAGS)
 CXXFLAGS   += $(INCFLAGS)
 
