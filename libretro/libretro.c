@@ -1408,7 +1408,7 @@ static void update_variables(bool startup)
 		var.key = "vitaquakeii_shadows";
 		var.value = NULL;
 
-		if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
+		if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value && !is_soft_render)
 		{
 			if (strcmp(var.value, "disabled") == 0)
 				Cvar_SetValue( "gl_shadows", 0 );
@@ -1641,7 +1641,7 @@ bool retro_load_game(const struct retro_game_info *info)
 	hw_render.depth              = true;
 	hw_render.stencil            = true;
 
-	if (!environ_cb(RETRO_ENVIRONMENT_SET_HW_RENDER, &hw_render))
+	//if (!environ_cb(RETRO_ENVIRONMENT_SET_HW_RENDER, &hw_render))
 	{
 		if (log_cb)
 			log_cb(RETRO_LOG_ERROR, "vitaQuakeII: libretro frontend doesn't have OpenGL support, falling back to software renderer.\n");
@@ -1654,7 +1654,6 @@ bool retro_load_game(const struct retro_game_info *info)
 			return false;
 		}
 		is_soft_render = true;
-		return false;
 	}
 	
 
@@ -1729,7 +1728,7 @@ void retro_run(void)
 {
 	bool updated = false;
 
-	if (is_soft_render) {
+	if (!is_soft_render) {
 		qglBindFramebuffer(RARCH_GL_FRAMEBUFFER, hw_render.get_current_framebuffer());
 		qglEnable(GL_TEXTURE_2D);
 	}
@@ -1759,7 +1758,7 @@ void retro_run(void)
 	if (shutdown_core)
 		return;
 
-	if (is_soft_render) video_cb(tex_buffer, scr_width, scr_height, scr_width);
+	if (is_soft_render) video_cb(tex_buffer, scr_width, scr_height, scr_width << 1);
 	else video_cb(RETRO_HW_FRAME_BUFFER_VALID, scr_width, scr_height, 0);
 	
 	audio_process();
@@ -2124,12 +2123,8 @@ void    VID_Init (void)
    ri.Vid_GetModeInfo = VID_GetModeInfo;
    ri.Vid_MenuInit = VID_MenuInit;
 
-#if 0
-   re = SWR_GetRefAPI(ri);
-   /* JASON this is called from the video DLL */
-#else
-   re = GetRefAPI(ri);
-#endif
+   if (is_soft_render) re = SWR_GetRefAPI(ri);
+   else re = GetRefAPI(ri);
 
    if (re.api_version != API_VERSION)
       Com_Error (ERR_FATAL, "Re has incompatible api_version");
