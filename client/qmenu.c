@@ -25,9 +25,11 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 extern int scr_width;
 
+extern bool is_soft_render;
+
 float SCR_GetMenuScale(void)
 {
-	return scr_width < 960 ? 1.0f : ((scr_width * 1.0f) / 960.0f);
+	return is_soft_render ? 1 : scr_width < 960 ? 1.0f : ((scr_width * 1.0f) / 960.0f);
 }
 
 static void	 Action_DoEnter( menuaction_s *a );

@@ -1363,7 +1363,6 @@ SWR_GetRefAPI
 */
 refexport_t SWR_GetRefAPI (refimport_t rimp)
 {
-   printf("Getting soft renderer references\n");
    refexport_t	re;
 
    ri = rimp;

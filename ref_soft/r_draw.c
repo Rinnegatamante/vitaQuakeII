@@ -71,7 +71,7 @@ It can be clipped to the top of the screen to allow the console to be
 smoothly scrolled off.
 ================
 */
-void SWR_Draw_Char (int x, int y, int num)
+void SWR_Draw_Char (int x, int y, int num, float scale)
 {
 	byte			*dest;
 	byte			*source;
@@ -246,13 +246,13 @@ void SWR_Draw_StretchRaw (int x, int y, int w, int h, int cols, int rows, byte *
 SWR_Draw_Pic
 =============
 */
-void SWR_Draw_Pic (int x, int y, char *name)
+void SWR_Draw_Pic (int x, int y, char *name, float scale)
 {
 	byte			*dest, *source;
 	int				v, u;
 	int				tbyte;
 	int				height;
-	image_t *pic = Draw_FindPic (name);
+	image_t *pic = SWR_Draw_FindPic (name);
 	if (!pic)
 	{
 		ri.Con_Printf (PRINT_ALL, "Can't find pic: %s\n", name);
