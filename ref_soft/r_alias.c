@@ -99,7 +99,6 @@ unsigned long R_AliasCheckFrameBBox( daliasframe_t *frame, float worldxf[3][4] )
 	vec3_t        mins, maxs;
 	vec3_t        transformed_min, transformed_max;
 	qboolean      zclipped = false, zfullyclipped = true;
-	float         minz = 9999.0F;
 
 	/*
 	** get the exact frame bounding box

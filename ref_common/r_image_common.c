@@ -1,6 +1,6 @@
 #include <stdio.h>
 #include <stdint.h>
-#include <jpeglib.h>
+#include "../jpeg-8c/jpeglib.h"
 
 #include "r_image_common.h"
 

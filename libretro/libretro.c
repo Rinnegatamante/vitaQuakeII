@@ -1641,7 +1641,7 @@ bool retro_load_game(const struct retro_game_info *info)
 	hw_render.depth              = true;
 	hw_render.stencil            = true;
 
-	//if (!environ_cb(RETRO_ENVIRONMENT_SET_HW_RENDER, &hw_render))
+	if (!environ_cb(RETRO_ENVIRONMENT_SET_HW_RENDER, &hw_render))
 	{
 		if (log_cb)
 			log_cb(RETRO_LOG_ERROR, "vitaQuakeII: libretro frontend doesn't have OpenGL support, falling back to software renderer.\n");
