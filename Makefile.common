@@ -78,7 +78,8 @@ REFSOFT = 	ref_soft/r_alias.c \
 				ref_soft/r_bsp.c \
 				ref_soft/r_draw.c \
 				ref_soft/r_edge.c \
-				ref_soft/r_image.c
+				ref_soft/r_image.c \
+				libretro/swimpl.c
 
 REFGL = 	ref_gl/gl_draw.c \
 			ref_gl/gl_image.c \
