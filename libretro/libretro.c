@@ -141,9 +141,9 @@ static void audio_callback(void);
 #define MAX_PADS 1
 static unsigned quake_devices[1];
 
-// System analog stick range is -0x8000 to 0x8000
+/* System analog stick range is -0x8000 to 0x8000 */
 #define ANALOG_RANGE 0x8000
-// Default deadzone: 15%
+/* Default deadzone: 15% */
 static int analog_deadzone = (int)(0.15f * ANALOG_RANGE);
 
 #define GP_MAXBINDS 32
@@ -157,17 +157,18 @@ void GL_DrawPolygon(GLenum prim, int num)
 
 void vglVertexAttribPointerMapped(int id, void* ptr)
 {
-	switch (id){
-	case 0: // Vertex
-		qglVertexPointer(3, GL_FLOAT, 0, ptr);
-		break;
-	case 1: // TexCoord
-		qglTexCoordPointer(2, GL_FLOAT, 0, ptr);
-		break;
-	case 2: // Color
-		qglColorPointer(4, GL_FLOAT, 0, ptr);
-		break;
-	}
+   switch (id)
+   {
+      case 0: /* Vertex */
+         qglVertexPointer(3, GL_FLOAT, 0, ptr);
+         break;
+      case 1: /* TexCoord */
+         qglTexCoordPointer(2, GL_FLOAT, 0, ptr);
+         break;
+      case 2: /* Color */
+         qglColorPointer(4, GL_FLOAT, 0, ptr);
+         break;
+   }
 }
 
 static bool initialize_gl()
@@ -229,6 +230,7 @@ static bool initialize_gl()
 
 int GLimp_Init( void *hinstance, void *wndproc )
 {
+   return 0;
 }
 
 void GLimp_AppActivate( qboolean active )
@@ -520,8 +522,9 @@ qboolean	NET_CompareBaseAdr (netadr_t a, netadr_t b)
 char	*NET_AdrToString (netadr_t a)
 {
 	static	char	s[64];
-	
-	//Com_sprintf (s, sizeof(s), "%i.%i.%i.%i:%i", a.ip[0], a.ip[1], a.ip[2], a.ip[3], ntohs(a.port));
+#if 0
+	Com_sprintf (s, sizeof(s), "%i.%i.%i.%i:%i", a.ip[0], a.ip[1], a.ip[2], a.ip[3], ntohs(a.port));
+#endif
 
 	return s;
 }
@@ -715,16 +718,19 @@ void Sys_SetKeys(uint32_t keys, uint32_t state){
 	Key_Event(keys, state, Sys_Milliseconds());
 }
 
+#if 0
 static void keyboard_cb(bool down, unsigned keycode, uint32_t character, uint16_t mod)
 {
-	// character-only events are discarded
-	if (keycode != RETROK_UNKNOWN) {
-		if (down)
-			Sys_SetKeys((uint32_t) keycode, 1);
-		else
-			Sys_SetKeys((uint32_t) keycode, 0);
-	}
+	/* character-only events are discarded */
+	if (keycode != RETROK_UNKNOWN)
+   {
+      if (down)
+         Sys_SetKeys((uint32_t) keycode, 1);
+      else
+         Sys_SetKeys((uint32_t) keycode, 0);
+   }
 }
+#endif
 
 void Sys_SendKeyEvents (void)
 {
@@ -900,12 +906,12 @@ char *Sys_GetClipboardData( void )
 
 void *Hunk_Begin (int maxsize)
 {
-	// reserve a huge chunk of memory, but don't commit any yet
+	/* reserve a huge chunk of memory, but don't commit any yet */
 	hunkmaxsize = maxsize;
-	cursize = 0;
-	membase = malloc(hunkmaxsize);
+	cursize     = 0;
+	membase     = malloc(hunkmaxsize);
 
-	if (membase == NULL)
+	if (!membase)
 		Sys_Error("unable to allocate %d bytes", hunkmaxsize);
 	else
 		memset (membase, 0, hunkmaxsize);
@@ -917,7 +923,7 @@ void *Hunk_Alloc (int size)
 {
 	byte *buf;
 
-	// round to cacheline
+	/* round to cacheline */
 	size = (size+31)&~31;
 
 	if (cursize + size > hunkmaxsize)
@@ -991,7 +997,8 @@ static	char	findpath[MAX_OSPATH * 2];
 static	char	findpattern[MAX_OSPATH];
 static	RDIR	*fdir = NULL;
 
-int glob_match(char *pattern, char *text);
+/* Forward declarations */
+static int glob_match(char *pattern, char *text);
 
 /* Like glob_match, but match PATTERN against any final segment of TEXT.  */
 static int glob_match_after_star(char *pattern, char *text)
@@ -1019,6 +1026,7 @@ static int glob_match_after_star(char *pattern, char *text)
 	}
 }
 
+#if 0
 /* Return nonzero if PATTERN has any special globbing chars in it.  */
 static int glob_pattern_p(char *pattern)
 {
@@ -1047,6 +1055,7 @@ static int glob_pattern_p(char *pattern)
 
 	return 0;
 }
+#endif
 
 /* Match the pattern PATTERN against the string TEXT;
    return 1 if it matches, 0 otherwise.
@@ -1061,8 +1070,7 @@ static int glob_pattern_p(char *pattern)
    To suppress the special syntactic significance of any of `[]*?!-\',
    and match the character exactly, precede it with a `\'.
 */
-
-int glob_match(char *pattern, char *text)
+static int glob_match(char *pattern, char *text)
 {
 	register char *p = pattern, *t = text;
 	register char c;
@@ -1149,16 +1157,17 @@ int glob_match(char *pattern, char *text)
 	return *t == '\0';
 }
 
+#if 0
 static qboolean CompareAttributes(char *path, char *name,
 	unsigned musthave, unsigned canthave )
 {
+   /* . and .. never match */
+   if (strcmp(name, ".") == 0 || strcmp(name, "..") == 0)
+      return false;
 
-// . and .. never match
-	if (strcmp(name, ".") == 0 || strcmp(name, "..") == 0)
-		return false;
-
-	return true;
+   return true;
 }
+#endif
 
 char *Sys_FindFirst (char *path, unsigned musthave, unsigned canhave)
 {
@@ -1182,16 +1191,24 @@ char *Sys_FindFirst (char *path, unsigned musthave, unsigned canhave)
 	fdir = retro_opendir(findbase);
 	if (fdir == NULL)
 		return NULL;
-	while ((retro_readdir(fdir)) > 0) {
-		if (!*findpattern || glob_match(findpattern, retro_dirent_get_name(fdir))) {
-			//if (*findpattern)
-			//	printf("%s matched %s\n", findpattern, d.d_name);
-			//if (CompareAttributes(findbase, d.d_name, musthave, canhave)) {
-				sprintf (findpath, "%s/%s", findbase, retro_dirent_get_name(fdir));
-				return findpath;
-			//}
-		}
-	}
+	while ((retro_readdir(fdir)) > 0)
+   {
+      if (!*findpattern || 
+            glob_match(findpattern, retro_dirent_get_name(fdir)))
+      {
+#if 0
+         if (*findpattern)
+            printf("%s matched %s\n", findpattern, d.d_name);
+         if (CompareAttributes(findbase, d.d_name, musthave, canhave))
+         {
+#endif
+            sprintf (findpath, "%s/%s", findbase, retro_dirent_get_name(fdir));
+            return findpath;
+#if 0
+         }
+#endif
+      }
+   }
 	return NULL;
 }
 
@@ -1199,16 +1216,22 @@ char *Sys_FindNext (unsigned musthave, unsigned canhave)
 {
 	if (fdir < 0)
 		return NULL;
-	while ((retro_readdir(fdir)) > 0) {
-		if (!*findpattern || glob_match(findpattern, retro_dirent_get_name(fdir))) {
-			//if (*findpattern)
-			//	printf("%s matched %s\n", findpattern, d.d_name);
-			//if (CompareAttributes(findbase, d.d_name, musthave, canhave)) {
-				sprintf (findpath, "%s/%s", findbase, retro_dirent_get_name(fdir));
-				return findpath;
-			//}
-		}
-	}
+	while ((retro_readdir(fdir)) > 0)
+   {
+      if (!*findpattern || glob_match(findpattern, retro_dirent_get_name(fdir)))
+      {
+#if 0
+         if (*findpattern)
+            printf("%s matched %s\n", findpattern, d.d_name);
+         if (CompareAttributes(findbase, d.d_name, musthave, canhave)) {
+#endif
+            sprintf (findpath, "%s/%s", findbase, retro_dirent_get_name(fdir));
+            return findpath;
+#if 0
+         }
+#endif
+      }
+   }
 	return NULL;
 }
 
@@ -1228,7 +1251,7 @@ extern void IN_StopRumble();
 
 static int invert_y_axis = 1;
 
-//=============================================================================
+/*============================================================================= */
 bool initial_resolution_set = false;
 static void update_variables(bool startup)
 {
@@ -1589,6 +1612,18 @@ void retro_set_video_refresh(retro_video_refresh_t cb)
 
 bool retro_load_game(const struct retro_game_info *info)
 {
+	int i;
+	char *path_lower;
+#if defined(_WIN32)
+	char slash = '\\';
+#else
+	char slash = '/';
+#endif
+	bool use_external_savedir = false;
+	const char *base_save_dir = NULL;
+#if 0
+	struct retro_keyboard_callback cb = { keyboard_cb };
+#endif
 	enum retro_pixel_format fmt = RETRO_PIXEL_FORMAT_XRGB8888;
 	if (!environ_cb(RETRO_ENVIRONMENT_SET_PIXEL_FORMAT, &fmt))
 	{
@@ -1611,16 +1646,6 @@ bool retro_load_game(const struct retro_game_info *info)
 		return false;
 	}
 	
-	int i;
-	char *path_lower;
-#if defined(_WIN32)
-	char slash = '\\';
-#else
-	char slash = '/';
-#endif
-	bool use_external_savedir = false;
-	const char *base_save_dir = NULL;
-	struct retro_keyboard_callback cb = { keyboard_cb };
 
 	if (!info)
 		return false;
@@ -1630,7 +1655,9 @@ bool retro_load_game(const struct retro_game_info *info)
 	for (i=0; path_lower[i]; ++i)
 		path_lower[i] = tolower(path_lower[i]);
 	
-//	environ_cb(RETRO_ENVIRONMENT_SET_KEYBOARD_CALLBACK, &cb);
+#if 0
+   environ_cb(RETRO_ENVIRONMENT_SET_KEYBOARD_CALLBACK, &cb);
+#endif
 	
 	update_variables(true);
 
@@ -1642,32 +1669,30 @@ bool retro_load_game(const struct retro_game_info *info)
 	{
 		if (strlen(base_save_dir) > 0)
 		{
-			// Get game 'name' (i.e. subdirectory)
+			/* Get game 'name' (i.e. subdirectory) */
 			char game_name[1024];
 			extract_basename(game_name, g_rom_dir, sizeof(game_name));
 			
-			// > Build final save path
+			/* > Build final save path */
 			snprintf(g_save_dir, sizeof(g_save_dir), "%s%c%s", base_save_dir, slash, game_name);
 			use_external_savedir = true;
 			
-			// > Create save directory, if required
+			/* > Create save directory, if required */
 			if (!path_is_directory(g_save_dir))
-			{
 				use_external_savedir = path_mkdir(g_save_dir);
-			}
 		}
 	}
 	
-	// > Error check
+	/* > Error check */
 	if (!use_external_savedir)
 	{
-		// > Use ROM directory fallback...
+		/* > Use ROM directory fallback... */
 		snprintf(g_save_dir, sizeof(g_save_dir), "%s", g_rom_dir);
 	}
 	else
 	{
-		// > Final check: is the save directory the same as the 'rom' directory?
-		//   (i.e. ensure logical behaviour if user has set a bizarre save path...)
+		/* > Final check: is the save directory the same as the 'rom' directory?
+		 *   (i.e. ensure logical behaviour if user has set a bizarre save path...) */
 		use_external_savedir = (strcmp(g_save_dir, g_rom_dir) != 0);
 	}
 	
@@ -1700,14 +1725,14 @@ void retro_run(void)
 		const char *empty_string = "";
 	
 		argv[0] = empty_string;
-		Qcommon_Init(1, argv);
+		Qcommon_Init(1, (char**)argv);
 		update_variables(false);
 		first_boot = false;
 	}
 	
-	if (rumble_tick != 0) {
-		if (cpu_features_get_time_usec() - rumble_tick > 500000) IN_StopRumble(); // 0.5 sec
-	}
+	if (rumble_tick != 0)
+		if (cpu_features_get_time_usec() - rumble_tick > 500000)
+         IN_StopRumble(); /* 0.5 sec */
 	
 	bool updated = false;
 	if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE_UPDATE, &updated) && updated)
@@ -1794,7 +1819,7 @@ static void audio_callback(void)
 {
 	unsigned read_first, read_second;
 	float samples_per_frame = (2 * SAMPLE_RATE) / framerate;
-	unsigned read_end = audio_buffer_ptr + samples_per_frame;
+	unsigned read_end       = audio_buffer_ptr + samples_per_frame;
 
 	if (read_end > BUFFER_SIZE)
 		read_end = BUFFER_SIZE;
@@ -1814,26 +1839,26 @@ uint64_t initial_tick;
 
 qboolean SNDDMA_Init(void)
 {
-	sound_initialized = 0;
+   sound_initialized = 0;
 
-    //Force Quake to use our settings
-    Cvar_SetValue( "s_khz", SAMPLE_RATE );
-	Cvar_SetValue( "s_loadas8bit", false );
-	
-	/* Fill the audio DMA information block */
-	dma.samplebits = 16;
-	dma.speed = SAMPLE_RATE;
-	dma.channels = 2;
-	dma.samples = BUFFER_SIZE;
-	dma.samplepos = 0;
-	dma.submission_chunk = 1;
-	dma.buffer = audio_buffer;
+   /* Force Quake to use our settings */
+   Cvar_SetValue( "s_khz", SAMPLE_RATE );
+   Cvar_SetValue( "s_loadas8bit", false );
 
-	sound_initialized = 1;
-	
-	initial_tick = cpu_features_get_time_usec();
-	
-	return true;
+   /* Fill the audio DMA information block */
+   dma.samplebits = 16;
+   dma.speed = SAMPLE_RATE;
+   dma.channels = 2;
+   dma.samples = BUFFER_SIZE;
+   dma.samplepos = 0;
+   dma.submission_chunk = 1;
+   dma.buffer = audio_buffer;
+
+   sound_initialized = 1;
+
+   initial_tick = cpu_features_get_time_usec();
+
+   return true;
 }
 
 int SNDDMA_GetDMAPos(void)
@@ -1881,8 +1906,10 @@ cvar_t *vid_fullscreen;
 cvar_t *vid_gamma;
 cvar_t *scr_viewsize;
 
+#if 0
 static cvar_t *sw_mode;
 static cvar_t *sw_stipplealpha;
+#endif
 cvar_t *gl_picmip;
 cvar_t *gl_mode;
 cvar_t *gl_driver;
@@ -1898,13 +1925,15 @@ static menulist_s       s_ref_list;
 static menuslider_s     s_tq_slider;
 static menuslider_s     s_screensize_slider;
 static menuslider_s     s_brightness_slider;
+#if 0
 static menulist_s       s_fs_box;
 static menulist_s       s_finish_box;
+#endif
 static menuaction_s     s_cancel_action;
 static menuaction_s     s_defaults_action;
 static menulist_s       s_shadows_slider;
 
-viddef_t    viddef;             // global video state
+viddef_t    viddef;             /* global video state */
 
 refexport_t re;
 
@@ -2031,67 +2060,67 @@ static void ResetDefaults( void *unused )
 
 static void ApplyChanges( void *unused )
 {
-    float gamma;
+   float gamma;
 
-    /*
+   /*
     ** invert sense so greater = brighter, and scale to a range of 0.5 to 1.3
     */
-    gamma = ( 0.8 - ( s_brightness_slider.curvalue/10.0 - 0.5 ) ) + 0.5;
+   gamma = ( 0.8 - ( s_brightness_slider.curvalue/10.0 - 0.5 ) ) + 0.5;
 
-    Cvar_SetValue( "vid_gamma", gamma );
-    //Cvar_SetValue( "gl_mode", s_mode_list.curvalue );
-	Cvar_SetValue( "gl_picmip", 3 - s_tq_slider.curvalue );
-	
-    Cvar_Set( "vid_ref", "gl" );
-	Cvar_Set( "gl_driver", "opengl32" );
+   Cvar_SetValue( "vid_gamma", gamma );
+   /*Cvar_SetValue( "gl_mode", s_mode_list.curvalue ); */
+   Cvar_SetValue( "gl_picmip", 3 - s_tq_slider.curvalue );
 
-    M_ForceMenuOff();
+   Cvar_Set( "vid_ref", "gl" );
+   Cvar_Set( "gl_driver", "opengl32" );
+
+   M_ForceMenuOff();
 }
 
 static void CancelChanges( void *unused )
 {
-    extern void M_PopMenu( void );
+   extern void M_PopMenu( void );
 
-    M_PopMenu();
+   M_PopMenu();
 }
 
 void    VID_Init (void)
 {
-    refimport_t ri;
-	
-    viddef.width = scr_width;
-    viddef.height = scr_height;
+   refimport_t ri;
 
-    ri.Cmd_AddCommand = Cmd_AddCommand;
-    ri.Cmd_RemoveCommand = Cmd_RemoveCommand;
-    ri.Cmd_Argc = Cmd_Argc;
-    ri.Cmd_Argv = Cmd_Argv;
-    ri.Cmd_ExecuteText = Cbuf_ExecuteText;
-    ri.Con_Printf = VID_Printf;
-    ri.Sys_Error = VID_Error;
-    ri.FS_LoadFile = FS_LoadFile;
-    ri.FS_FreeFile = FS_FreeFile;
-    ri.FS_Gamedir = FS_Gamedir;
-    ri.Vid_NewWindow = VID_NewWindow;
-    ri.Cvar_Get = Cvar_Get;
-    ri.Cvar_Set = Cvar_Set;
-    ri.Cvar_SetValue = Cvar_SetValue;
-    ri.Vid_GetModeInfo = VID_GetModeInfo;
-	ri.Vid_MenuInit = VID_MenuInit;
-	
-    //JASON this is called from the video DLL
-    re = GetRefAPI(ri);
+   viddef.width = scr_width;
+   viddef.height = scr_height;
 
-    if (re.api_version != API_VERSION)
-        Com_Error (ERR_FATAL, "Re has incompatible api_version");
-    
-        // call the init function
-    if (re.Init (NULL, NULL) == -1)
-        Com_Error (ERR_FATAL, "Couldn't start refresh");
+   ri.Cmd_AddCommand = Cmd_AddCommand;
+   ri.Cmd_RemoveCommand = Cmd_RemoveCommand;
+   ri.Cmd_Argc = Cmd_Argc;
+   ri.Cmd_Argv = Cmd_Argv;
+   ri.Cmd_ExecuteText = Cbuf_ExecuteText;
+   ri.Con_Printf = VID_Printf;
+   ri.Sys_Error = VID_Error;
+   ri.FS_LoadFile = FS_LoadFile;
+   ri.FS_FreeFile = FS_FreeFile;
+   ri.FS_Gamedir = FS_Gamedir;
+   ri.Vid_NewWindow = VID_NewWindow;
+   ri.Cvar_Get = Cvar_Get;
+   ri.Cvar_Set = Cvar_Set;
+   ri.Cvar_SetValue = Cvar_SetValue;
+   ri.Vid_GetModeInfo = VID_GetModeInfo;
+   ri.Vid_MenuInit = VID_MenuInit;
 
-    vid_ref = Cvar_Get ("vid_ref", "soft", CVAR_ARCHIVE);
-    vid_fullscreen = Cvar_Get ("vid_fullscreen", "0", CVAR_ARCHIVE);
-    vid_gamma = Cvar_Get( "vid_gamma", "1", CVAR_ARCHIVE );
+   /* JASON this is called from the video DLL */
+   re = GetRefAPI(ri);
+
+   if (re.api_version != API_VERSION)
+      Com_Error (ERR_FATAL, "Re has incompatible api_version");
+
+   /* call the init function */
+   if (re.Init (NULL, NULL) == -1)
+      Com_Error (ERR_FATAL, "Couldn't start refresh");
+
+   vid_ref = Cvar_Get ("vid_ref", "soft", CVAR_ARCHIVE);
+   vid_fullscreen = Cvar_Get ("vid_fullscreen", "0", CVAR_ARCHIVE);
+   vid_gamma = Cvar_Get( "vid_gamma", "1", CVAR_ARCHIVE );
 
 }
 
@@ -2107,130 +2136,128 @@ void    VID_CheckChanges (void)
 
 void    VID_MenuInit (void)
 {
+   static const char *resolutions[] = 
+   {
+      "480x272",
+      "640x368",
+      "720x408",
+      "960x544",
+      0
+   };
 
-	static const char *resolutions[] = 
-	{
-		"480x272",
-		"640x368",
-		"720x408",
-		"960x544",
-		0
-	};
-	
-	static const char *refs[] =
-	{
-		"openGL",
-		0
-	};
-	
-    static const char *yesno_names[] =
-    {
-        "no",
-        "yes",
-        0
-    };
-    int i;
+   static const char *refs[] =
+   {
+      "openGL",
+      0
+   };
 
-	if ( !gl_driver )
-		gl_driver = Cvar_Get( "gl_driver", "opengl32", 0 );
-	if ( !gl_picmip )
-		gl_picmip = Cvar_Get( "gl_picmip", "0", 0 );
-	if ( !gl_mode )
-		gl_mode = Cvar_Get( "gl_mode", "3", 0 );
-    if ( !scr_viewsize )
-        scr_viewsize = Cvar_Get ("viewsize", "100", CVAR_ARCHIVE);
-	
-    s_screensize_slider.curvalue = scr_viewsize->value/10;
+   static const char *yesno_names[] =
+   {
+      "no",
+      "yes",
+      0
+   };
 
-    s_shadows_slider.curvalue = gl_shadows->value;
-	
-	switch (viddef.width) {
-		case 960:
-			s_mode_list.curvalue = 3;
-			break;
-		case 720:
-			s_mode_list.curvalue = 2;
-			break;
-		case 640:
-			s_mode_list.curvalue = 1;
-			break;
-		default:
-			s_mode_list.curvalue = 0;
-			break;
-	}
-	Cvar_SetValue( "gl_mode", s_mode_list.curvalue );
-	
-    s_ref_list.curvalue = REF_OPENGL;
-    s_opengl_menu.x = viddef.width * 0.50;
-	s_opengl_menu.nitems = 0;
+   if ( !gl_driver )
+      gl_driver = Cvar_Get( "gl_driver", "opengl32", 0 );
+   if ( !gl_picmip )
+      gl_picmip = Cvar_Get( "gl_picmip", "0", 0 );
+   if ( !gl_mode )
+      gl_mode = Cvar_Get( "gl_mode", "3", 0 );
+   if ( !scr_viewsize )
+      scr_viewsize = Cvar_Get ("viewsize", "100", CVAR_ARCHIVE);
 
-	s_ref_list.generic.type = MTYPE_SPINCONTROL;
-	s_ref_list.generic.name = "driver";
-	s_ref_list.generic.x = 0;
-	s_ref_list.generic.y = 0;
-	s_ref_list.generic.callback = NullCallback;
-	s_ref_list.itemnames = refs;
+   s_screensize_slider.curvalue = scr_viewsize->value/10;
 
-    s_mode_list.generic.type = MTYPE_SPINCONTROL;
-    s_mode_list.generic.x        = 0;
-    s_mode_list.generic.y        = 10;
-    s_mode_list.generic.name = "video mode";
-	s_mode_list.generic.statusbar = "you need to restart vitaQuakeII to apply changes";
-	s_mode_list.generic.callback = ResCallback;
-    s_mode_list.itemnames = resolutions;
-	
-	s_screensize_slider.generic.type	= MTYPE_SLIDER;
-	s_screensize_slider.generic.x		= 0;
-	s_screensize_slider.generic.y		= 20;
-	s_screensize_slider.generic.name	= "screen size";
-	s_screensize_slider.minvalue = 3;
-	s_screensize_slider.maxvalue = 12;
-	s_screensize_slider.generic.callback = ScreenSizeCallback;
+   s_shadows_slider.curvalue = gl_shadows->value;
 
-    s_brightness_slider.generic.type = MTYPE_SLIDER;
-    s_brightness_slider.generic.x    = 0;
-    s_brightness_slider.generic.y    = 30;
-    s_brightness_slider.generic.name = "brightness";
-    s_brightness_slider.generic.callback = BrightnessCallback;
-    s_brightness_slider.minvalue = 5;
-    s_brightness_slider.maxvalue = 13;
-    s_brightness_slider.curvalue = ( 1.3 - vid_gamma->value + 0.5 ) * 10;
+   switch (viddef.width) {
+      case 960:
+         s_mode_list.curvalue = 3;
+         break;
+      case 720:
+         s_mode_list.curvalue = 2;
+         break;
+      case 640:
+         s_mode_list.curvalue = 1;
+         break;
+      default:
+         s_mode_list.curvalue = 0;
+         break;
+   }
+   Cvar_SetValue( "gl_mode", s_mode_list.curvalue );
 
-    s_cancel_action.generic.type = MTYPE_ACTION;
-    s_cancel_action.generic.name = "cancel";
-    s_cancel_action.generic.x    = 0;
-    s_cancel_action.generic.y    = 100;
-    s_cancel_action.generic.callback = CancelChanges;
+   s_ref_list.curvalue = REF_OPENGL;
+   s_opengl_menu.x = viddef.width * 0.50;
+   s_opengl_menu.nitems = 0;
 
-    s_tq_slider.generic.type	= MTYPE_SLIDER;
-	s_tq_slider.generic.x		= 0;
-	s_tq_slider.generic.y		= 60;
-	s_tq_slider.generic.name	= "texture quality";
-	s_tq_slider.minvalue = 0;
-	s_tq_slider.maxvalue = 3;
-	s_tq_slider.curvalue = 3-gl_picmip->value;
-	
-	s_defaults_action.generic.type = MTYPE_ACTION;
-	s_defaults_action.generic.name = "reset to default";
-	s_defaults_action.generic.x    = 0;
-	s_defaults_action.generic.y    = 90;
-	s_defaults_action.generic.callback = ResetDefaults;
+   s_ref_list.generic.type = MTYPE_SPINCONTROL;
+   s_ref_list.generic.name = "driver";
+   s_ref_list.generic.x = 0;
+   s_ref_list.generic.y = 0;
+   s_ref_list.generic.callback = NullCallback;
+   s_ref_list.itemnames = refs;
 
-    s_shadows_slider.generic.type = MTYPE_SPINCONTROL;
-    s_shadows_slider.generic.x        = 0;
-    s_shadows_slider.generic.y        = 70;
-    s_shadows_slider.generic.name = "render shadows";
-    s_shadows_slider.generic.callback = ShadowsCallback;
-	s_shadows_slider.itemnames = yesno_names;
+   s_mode_list.generic.type = MTYPE_SPINCONTROL;
+   s_mode_list.generic.x        = 0;
+   s_mode_list.generic.y        = 10;
+   s_mode_list.generic.name = "video mode";
+   s_mode_list.generic.statusbar = "you need to restart vitaQuakeII to apply changes";
+   s_mode_list.generic.callback = ResCallback;
+   s_mode_list.itemnames = resolutions;
 
-    Menu_AddItem( &s_opengl_menu, ( void * ) &s_ref_list );
-	
-    Menu_AddItem( &s_opengl_menu, ( void * ) &s_cancel_action );
-	
+   s_screensize_slider.generic.type	= MTYPE_SLIDER;
+   s_screensize_slider.generic.x		= 0;
+   s_screensize_slider.generic.y		= 20;
+   s_screensize_slider.generic.name	= "screen size";
+   s_screensize_slider.minvalue = 3;
+   s_screensize_slider.maxvalue = 12;
+   s_screensize_slider.generic.callback = ScreenSizeCallback;
 
-    Menu_Center( &s_opengl_menu );
+   s_brightness_slider.generic.type = MTYPE_SLIDER;
+   s_brightness_slider.generic.x    = 0;
+   s_brightness_slider.generic.y    = 30;
+   s_brightness_slider.generic.name = "brightness";
+   s_brightness_slider.generic.callback = BrightnessCallback;
+   s_brightness_slider.minvalue = 5;
+   s_brightness_slider.maxvalue = 13;
+   s_brightness_slider.curvalue = ( 1.3 - vid_gamma->value + 0.5 ) * 10;
 
-    s_opengl_menu.x -= 8;
+   s_cancel_action.generic.type = MTYPE_ACTION;
+   s_cancel_action.generic.name = "cancel";
+   s_cancel_action.generic.x    = 0;
+   s_cancel_action.generic.y    = 100;
+   s_cancel_action.generic.callback = CancelChanges;
+
+   s_tq_slider.generic.type	= MTYPE_SLIDER;
+   s_tq_slider.generic.x		= 0;
+   s_tq_slider.generic.y		= 60;
+   s_tq_slider.generic.name	= "texture quality";
+   s_tq_slider.minvalue = 0;
+   s_tq_slider.maxvalue = 3;
+   s_tq_slider.curvalue = 3-gl_picmip->value;
+
+   s_defaults_action.generic.type = MTYPE_ACTION;
+   s_defaults_action.generic.name = "reset to default";
+   s_defaults_action.generic.x    = 0;
+   s_defaults_action.generic.y    = 90;
+   s_defaults_action.generic.callback = ResetDefaults;
+
+   s_shadows_slider.generic.type = MTYPE_SPINCONTROL;
+   s_shadows_slider.generic.x        = 0;
+   s_shadows_slider.generic.y        = 70;
+   s_shadows_slider.generic.name = "render shadows";
+   s_shadows_slider.generic.callback = ShadowsCallback;
+   s_shadows_slider.itemnames = yesno_names;
+
+   Menu_AddItem( &s_opengl_menu, ( void * ) &s_ref_list );
+
+   Menu_AddItem( &s_opengl_menu, ( void * ) &s_cancel_action );
+
+
+   Menu_Center( &s_opengl_menu );
+
+   s_opengl_menu.x -= 8;
 }
 
 void    VID_MenuDraw (void)
@@ -2259,41 +2286,40 @@ void    VID_MenuDraw (void)
 
 const char *VID_MenuKey( int k)
 {
-    menuframework_s *m = s_current_menu;
-    static const char *sound = "misc/menu1.wav";
+   menuframework_s *m = s_current_menu;
+   static const char *sound = "misc/menu1.wav";
 
-    switch ( k )
-    {
-    case K_AUX4:
-        ApplyChanges( NULL );
-        return NULL;
-    case K_KP_UPARROW:
-    case K_UPARROW:
-        m->cursor--;
-        Menu_AdjustCursor( m, -1 );
-        break;
-    case K_KP_DOWNARROW:
-    case K_DOWNARROW:
-        m->cursor++;
-        Menu_AdjustCursor( m, 1 );
-        break;
-    case K_KP_LEFTARROW:
-    case K_LEFTARROW:
-        Menu_SlideItem( m, -1 );
-        break;
-    case K_KP_RIGHTARROW:
-    case K_RIGHTARROW:
-        Menu_SlideItem( m, 1 );
-        break;
-    case K_KP_ENTER:
-    case K_AUX1:
-        if ( !Menu_SelectItem( m ) )
+   switch ( k )
+   {
+      case K_AUX4:
+         ApplyChanges( NULL );
+         return NULL;
+      case K_KP_UPARROW:
+      case K_UPARROW:
+         m->cursor--;
+         Menu_AdjustCursor( m, -1 );
+         break;
+      case K_KP_DOWNARROW:
+      case K_DOWNARROW:
+         m->cursor++;
+         Menu_AdjustCursor( m, 1 );
+         break;
+      case K_KP_LEFTARROW:
+      case K_LEFTARROW:
+         Menu_SlideItem( m, -1 );
+         break;
+      case K_KP_RIGHTARROW:
+      case K_RIGHTARROW:
+         Menu_SlideItem( m, 1 );
+         break;
+      case K_KP_ENTER:
+      case K_AUX1:
+         if ( !Menu_SelectItem( m ) )
             ApplyChanges( NULL );
-        break;
-    }
+         break;
+   }
 
-    return sound;
-//  return NULL;
+   return sound;
 }
 
 int GLimp_SetMode( int *pwidth, int *pheight, int mode, qboolean fullscreen )
@@ -2311,7 +2337,7 @@ int GLimp_SetMode( int *pwidth, int *pheight, int mode, qboolean fullscreen )
 */
 	ri.Con_Printf( PRINT_ALL, " %d %d\n", scr_width, scr_height );
 
-	// destroy the existing window
+	/* destroy the existing window */
 	GLimp_Shutdown ();
 
 	*pwidth = scr_width;
@@ -2386,9 +2412,12 @@ void IN_StopRumble (void)
 
 void IN_Move (usercmd_t *cmd)
 {
+#if 0
    static int cur_mx;
    static int cur_my;
-   int mx, my, lsx, lsy, rsx, rsy;
+   int mx, my;
+#endif
+   int lsx, lsy, rsx, rsy;
    float speed;
    
    if ( (in_speed.state & 1) ^ (int)cl_run->value)
@@ -2417,8 +2446,9 @@ void IN_Move (usercmd_t *cmd)
          cur_mx = mx;
          cur_my = my;
       }
-   } else */if (quake_devices[0] != RETRO_DEVICE_NONE && quake_devices[0] != RETRO_DEVICE_KEYBOARD) {
-      // Left stick move
+   } else */if (quake_devices[0] != RETRO_DEVICE_NONE && quake_devices[0] != RETRO_DEVICE_KEYBOARD)
+   {
+      /* Left stick move */
       lsx = input_cb(0, RETRO_DEVICE_ANALOG, RETRO_DEVICE_INDEX_ANALOG_LEFT,
                RETRO_DEVICE_ID_ANALOG_X);
       lsy = input_cb(0, RETRO_DEVICE_ANALOG, RETRO_DEVICE_INDEX_ANALOG_LEFT,
@@ -2443,18 +2473,19 @@ void IN_Move (usercmd_t *cmd)
          cmd->forwardmove -= speed * cl_forwardspeed->value * lsy / (ANALOG_RANGE - analog_deadzone);
       }
 
-      // Right stick Look
+      /* Right stick Look */
       rsx = input_cb(0, RETRO_DEVICE_ANALOG, RETRO_DEVICE_INDEX_ANALOG_RIGHT,
                RETRO_DEVICE_ID_ANALOG_X);
       rsy = invert_y_axis * input_cb(0, RETRO_DEVICE_ANALOG, RETRO_DEVICE_INDEX_ANALOG_RIGHT,
                RETRO_DEVICE_ID_ANALOG_Y);
 
-      if (rsx > analog_deadzone || rsx < -analog_deadzone) {
+      if (rsx > analog_deadzone || rsx < -analog_deadzone)
+      {
          if (rsx > analog_deadzone)
             rsx = rsx - analog_deadzone;
          if (rsx < -analog_deadzone)
             rsx = rsx + analog_deadzone;
-         // For now we are sharing the sensitivity with the mouse setting
+         /* For now we are sharing the sensitivity with the mouse setting */
          if (gl_xflip->value)
             cl.viewangles[YAW] += sensitivity->value * rsx / (ANALOG_RANGE - analog_deadzone);
          else

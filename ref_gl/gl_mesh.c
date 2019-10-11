@@ -17,11 +17,11 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 */
-// gl_mesh.c: triangle model functions
+/* gl_mesh.c: triangle model functions */
 
 typedef struct
 {
-	unsigned		width, height;			// coordinates from main game
+	unsigned		width, height;			/* coordinates from main game */
 } viddef_t;
 
 #include "gl_local.h"
@@ -43,12 +43,14 @@ float	r_avertexnormals[NUMVERTEXNORMALS][3] = {
 typedef float vec4_t[4];
 
 static	vec4_t	s_lerped[MAX_VERTS];
-//static	vec3_t	lerped[MAX_VERTS];
+#if 0
+static	vec3_t	lerped[MAX_VERTS];
+#endif
 
 vec3_t	shadevector;
 float	shadelight[3];
 
-// precalculated dot products for quantized angles
+/* precalculated dot products for quantized angles */
 #define SHADEDOT_QUANT 16
 float	r_avertexnormal_dots[SHADEDOT_QUANT][256] =
 #include "anormtab.h"
@@ -60,7 +62,7 @@ void GL_LerpVerts( int nverts, dtrivertx_t *v, dtrivertx_t *ov, dtrivertx_t *ver
 {
 	int i;
 
-	//PMM -- added RF_SHELL_DOUBLE, RF_SHELL_HALF_DAM
+	/*PMM -- added RF_SHELL_DOUBLE, RF_SHELL_HALF_DAM */
 	if ( currententity->flags & ( RF_SHELL_RED | RF_SHELL_GREEN | RF_SHELL_BLUE | RF_SHELL_DOUBLE | RF_SHELL_HALF_DAM) )
 	{
 		for (i=0 ; i < nverts; i++, v++, ov++, lerp+=4 )
@@ -117,28 +119,30 @@ void GL_DrawAliasFrameLerp (dmdl_t *paliashdr, float backlerp)
 
 	order = (int *)((byte *)paliashdr + paliashdr->ofs_glcmds);
 
-//	qglTranslatef (frame->translate[0], frame->translate[1], frame->translate[2]);
-//	qglScalef (frame->scale[0], frame->scale[1], frame->scale[2]);
+#if 0
+   qglTranslatef (frame->translate[0], frame->translate[1], frame->translate[2]);
+   qglScalef (frame->scale[0], frame->scale[1], frame->scale[2]);
+#endif
 
 	if (currententity->flags & RF_TRANSLUCENT)
 		alpha = currententity->alpha;
 	else
 		alpha = 1.0;
 
-	// PMM - added double shell
+	/* PMM - added double shell */
 	if ( currententity->flags & ( RF_SHELL_RED | RF_SHELL_GREEN | RF_SHELL_BLUE | RF_SHELL_DOUBLE | RF_SHELL_HALF_DAM) ){
 		qglDisableClientState(GL_TEXTURE_COORD_ARRAY);
 	}
 
 	frontlerp = 1.0 - backlerp;
 
-	// move should be the delta back to the previous frame * backlerp
+	/* move should be the delta back to the previous frame * backlerp */
 	VectorSubtract (currententity->oldorigin, currententity->origin, delta);
 	AngleVectors (currententity->angles, vectors[0], vectors[1], vectors[2]);
 
-	move[0] = DotProduct (delta, vectors[0]);	// forward
-	move[1] = -DotProduct (delta, vectors[1]);	// left
-	move[2] = DotProduct (delta, vectors[2]);	// up
+	move[0] = DotProduct (delta, vectors[0]);	   /* forward */
+	move[1] = -DotProduct (delta, vectors[1]);	/* left */
+	move[2] = DotProduct (delta, vectors[2]);	   /* up */
 
 	VectorAdd (move, oldframe->translate, move);
 
@@ -163,10 +167,10 @@ void GL_DrawAliasFrameLerp (dmdl_t *paliashdr, float backlerp)
 	float* pPos;
 	while (1)
 	{
-		// get the vertex count and primitive type
+		/* get the vertex count and primitive type */
 		count = *order++;
 		if (!count)
-			break;		// done
+			break;		/* done */
 		if (count < 0)
 		{
 			count = -count;
@@ -210,13 +214,12 @@ void GL_DrawAliasFrameLerp (dmdl_t *paliashdr, float backlerp)
 		{
 			do
 			{
-				// texture coordinates come from the draw list
+				/* texture coordinates come from the draw list */
 				*gTexCoordBuffer++ = ((float *)order)[0];
 				*gTexCoordBuffer++ = ((float *)order)[1];
 				index_xyz = order[2];
 				order += 3;
-
-					// normals and vertexes come from the frame list
+            /* normals and vertexes come from the frame list */
 				l = shadedots[verts[index_xyz].lightnormalindex];
 				
 				*gVertexBuffer++ = s_lerped[index_xyz][0];
@@ -238,8 +241,10 @@ void GL_DrawAliasFrameLerp (dmdl_t *paliashdr, float backlerp)
 
 	}
 
-//	if ( currententity->flags & ( RF_SHELL_RED | RF_SHELL_GREEN | RF_SHELL_BLUE ) )
-	// PMM - added double damage shell
+#if 0
+   if ( currententity->flags & ( RF_SHELL_RED | RF_SHELL_GREEN | RF_SHELL_BLUE ) )
+#endif
+	/* PMM - added double damage shell */
 	if ( currententity->flags & ( RF_SHELL_RED | RF_SHELL_GREEN | RF_SHELL_BLUE | RF_SHELL_DOUBLE | RF_SHELL_HALF_DAM) ){
 		qglEnableClientState(GL_TEXTURE_COORD_ARRAY);
 	}
@@ -254,80 +259,77 @@ extern	vec3_t			lightspot;
 
 void GL_DrawAliasShadow (dmdl_t *paliashdr, int posenum)
 {
-	dtrivertx_t	*verts;
-	int		*order;
-	vec3_t	point;
-	float	height, lheight;
-	int		count;
-	daliasframe_t	*frame;
+   int prim;
+   float* pPos;
+   vec3_t	point;
+   int		count;
+   float lheight = currententity->origin[2] - lightspot[2];
+#if 0
+   daliasframe_t *frame = (daliasframe_t *)((byte *)paliashdr + paliashdr->ofs_frames 
+         + currententity->frame * paliashdr->framesize);
+   dtrivertx_t *verts = frame->verts;
+#endif
+   float height = 0;
+   int *order = (int *)((byte *)paliashdr + paliashdr->ofs_glcmds);
 
-	lheight = currententity->origin[2] - lightspot[2];
+   height = -lheight + 1.0;
 
-	frame = (daliasframe_t *)((byte *)paliashdr + paliashdr->ofs_frames 
-		+ currententity->frame * paliashdr->framesize);
-	verts = frame->verts;
+   qglEnable(GL_STENCIL_TEST);
+   qglStencilFunc(GL_EQUAL, 1, 2);
+   qglStencilOp(GL_KEEP, GL_KEEP, GL_INCR);
 
-	height = 0;
+   while (1)
+   {
+      int c;
+      /* get the vertex count and primitive type */
+      count = *order++;
+      if (!count)
+         break;		/* done */
+      if (count < 0)
+      {
+         count = -count;
+         prim = GL_TRIANGLE_FAN;
+      }
+      else
+         prim = GL_TRIANGLE_STRIP;
 
-	order = (int *)((byte *)paliashdr + paliashdr->ofs_glcmds);
+      c    = count;
+      pPos = gVertexBuffer;
+      do
+      {
+         /* normals and vertexes come from the frame list */
+         /*
+            point[0] = verts[order[2]].v[0] * frame->scale[0] + frame->translate[0];
+            point[1] = verts[order[2]].v[1] * frame->scale[1] + frame->translate[1];
+            point[2] = verts[order[2]].v[2] * frame->scale[2] + frame->translate[2];
+            */
 
-	height = -lheight + 1.0;
+         memcpy( point, s_lerped[order[2]], sizeof( point )  );
 
-	qglEnable(GL_STENCIL_TEST);
-	qglStencilFunc(GL_EQUAL, 1, 2);
-	qglStencilOp(GL_KEEP, GL_KEEP, GL_INCR);
-	
-	int prim;
-	float* pPos;
-	while (1)
-	{
-		// get the vertex count and primitive type
-		count = *order++;
-		if (!count)
-			break;		// done
-		if (count < 0)
-		{
-			count = -count;
-			prim = GL_TRIANGLE_FAN;
-		}
-		else
-			prim = GL_TRIANGLE_STRIP;
-		
-		int c = count;
-		pPos = gVertexBuffer;
-		do
-		{
-			// normals and vertexes come from the frame list
-/*
-			point[0] = verts[order[2]].v[0] * frame->scale[0] + frame->translate[0];
-			point[1] = verts[order[2]].v[1] * frame->scale[1] + frame->translate[1];
-			point[2] = verts[order[2]].v[2] * frame->scale[2] + frame->translate[2];
-*/
+         point[0] -= shadevector[0]*(point[2]+lheight);
+         point[1] -= shadevector[1]*(point[2]+lheight);
+         point[2] = height;
+#if 0
+         height -= 0.001;
+#endif
+         *gVertexBuffer++ = point[0];
+         *gVertexBuffer++ = point[1];
+         *gVertexBuffer++ = point[2];
 
-			memcpy( point, s_lerped[order[2]], sizeof( point )  );
+         order += 3;
 
-			point[0] -= shadevector[0]*(point[2]+lheight);
-			point[1] -= shadevector[1]*(point[2]+lheight);
-			point[2] = height;
-//			height -= 0.001;
-			*gVertexBuffer++ = point[0];
-			*gVertexBuffer++ = point[1];
-			*gVertexBuffer++ = point[2];
-			
-			order += 3;
+         /*			verts++; */
 
-//			verts++;
+      } while (--count);
 
-		} while (--count);
+      qglDisableClientState(GL_TEXTURE_COORD_ARRAY);
+      qglColor4f(0,0,0,0.5);
+      vglVertexAttribPointerMapped(0, pPos);
+      GL_DrawPolygon(prim, c);
+      qglEnableClientState(GL_TEXTURE_COORD_ARRAY);
+   }
 
-		qglDisableClientState(GL_TEXTURE_COORD_ARRAY);
-		qglColor4f(0,0,0,0.5);
-		vglVertexAttribPointerMapped(0, pPos);
-		GL_DrawPolygon(prim, c);
-		qglEnableClientState(GL_TEXTURE_COORD_ARRAY);
-	}
-	
-	qglDisable(GL_STENCIL_TEST);
+   qglDisable(GL_STENCIL_TEST);
 }
 
 /*
@@ -337,13 +339,11 @@ static qboolean R_CullAliasModel( vec3_t bbox[8], entity_t *e )
 {
 	int i;
 	vec3_t		mins, maxs;
-	dmdl_t		*paliashdr;
 	vec3_t		vectors[3];
 	vec3_t		thismins, oldmins, thismaxs, oldmaxs;
 	daliasframe_t *pframe, *poldframe;
 	vec3_t angles;
-
-	paliashdr = (dmdl_t *)currentmodel->extradata;
+	dmdl_t      *paliashdr = (dmdl_t *)currentmodel->extradata;
 
 	if ( ( e->frame >= paliashdr->num_frames ) || ( e->frame < 0 ) )
 	{
@@ -465,9 +465,7 @@ static qboolean R_CullAliasModel( vec3_t bbox[8], entity_t *e )
 		}
 
 		if ( aggregatemask )
-		{
 			return true;
-		}
 
 		return false;
 	}
@@ -501,14 +499,14 @@ void R_DrawAliasModel (entity_t *e)
 
 	paliashdr = (dmdl_t *)currentmodel->extradata;
 
-	//
-	// get lighting information
-	//
-	// PMM - rewrote, reordered to handle new shells & mixing
-	//
+	/*
+	 * get lighting information
+	 *
+	 * PMM - rewrote, reordered to handle new shells & mixing
+	 */
 	if ( currententity->flags & ( RF_SHELL_HALF_DAM | RF_SHELL_GREEN | RF_SHELL_RED | RF_SHELL_BLUE | RF_SHELL_DOUBLE ) )
 	{
-		// PMM -special case for godmode
+		/* PMM -special case for godmode */
 		if ( (currententity->flags & RF_SHELL_RED) &&
 			(currententity->flags & RF_SHELL_BLUE) &&
 			(currententity->flags & RF_SHELL_GREEN) )
@@ -547,7 +545,7 @@ void R_DrawAliasModel (entity_t *e)
 		else if ( currententity->flags & ( RF_SHELL_HALF_DAM | RF_SHELL_GREEN ) )
 		{
 			VectorClear (shadelight);
-			// PMM - new colors
+			/* PMM - new colors */
 			if ( currententity->flags & RF_SHELL_HALF_DAM )
 			{
 				shadelight[0] = 0.56;
@@ -560,16 +558,18 @@ void R_DrawAliasModel (entity_t *e)
 			}
 		}
 	}
-			//PMM - ok, now flatten these down to range from 0 to 1.0.
-	//		max_shell_val = max(shadelight[0], max(shadelight[1], shadelight[2]));
-	//		if (max_shell_val > 0)
-	//		{
-	//			for (i=0; i<3; i++)
-	//			{
-	//				shadelight[i] = shadelight[i] / max_shell_val;
-	//			}
-	//		}
-	// pmm
+			/* PMM - ok, now flatten these down to range from 0 to 1.0. */
+#if 0
+			max_shell_val = max(shadelight[0], max(shadelight[1], shadelight[2]));
+			if (max_shell_val > 0)
+			{
+				for (i=0; i<3; i++)
+				{
+					shadelight[i] = shadelight[i] / max_shell_val;
+				}
+			}
+#endif
+	/* pmm */
 	else if ( currententity->flags & RF_FULLBRIGHT )
 	{
 		for (i=0 ; i<3 ; i++)
@@ -579,12 +579,12 @@ void R_DrawAliasModel (entity_t *e)
 	{
 		R_LightPoint (currententity->origin, shadelight);
 
-		// player lighting hack for communication back to server
-		// big hack!
+		/* player lighting hack for communication back to server
+		 * big hack! */
 		if ( currententity->flags & RF_WEAPONMODEL )
 		{
-			// pick the greatest component, which should be the same
-			// as the mono value returned by software
+			/* pick the greatest component, which should be the same
+			 * as the mono value returned by software */
 			if (shadelight[0] > shadelight[1])
 			{
 				if (shadelight[0] > shadelight[2])
@@ -631,30 +631,28 @@ void R_DrawAliasModel (entity_t *e)
 	}
 
 	if ( currententity->flags & RF_GLOW )
-	{	// bonus items will pulse with time
-		float	scale;
-		float	min;
+   {
+      /* bonus items will pulse with time */
+      float scale = 0.1 * sin(r_newrefdef.time*7);
+      for (i=0 ; i<3 ; i++)
+      {
+         float min      = shadelight[i] * 0.8;
+         shadelight[i] += scale;
+         if (shadelight[i] < min)
+            shadelight[i] = min;
+      }
+   }
 
-		scale = 0.1 * sin(r_newrefdef.time*7);
-		for (i=0 ; i<3 ; i++)
-		{
-			min = shadelight[i] * 0.8;
-			shadelight[i] += scale;
-			if (shadelight[i] < min)
-				shadelight[i] = min;
-		}
-	}
-
-// =================
-// PGM	ir goggles color override
+/* =================
+ * PGM	ir goggles color override */
 	if ( r_newrefdef.rdflags & RDF_IRGOGGLES && currententity->flags & RF_IR_VISIBLE)
 	{
 		shadelight[0] = 1.0;
 		shadelight[1] = 0.0;
 		shadelight[2] = 0.0;
 	}
-// PGM	
-// =================
+/* PGM	 */
+/* ================= */
 
 	shadedots = r_avertexnormal_dots[((int)(currententity->angles[1] * (SHADEDOT_QUANT / 360.0))) & (SHADEDOT_QUANT - 1)];
 	
@@ -664,16 +662,16 @@ void R_DrawAliasModel (entity_t *e)
 	shadevector[2] = 1;
 	VectorNormalize (shadevector);
 
-	//
-	// locate the proper data
-	//
+	/* 
+	 * locate the proper data
+	 */
 
 	c_alias_polys += paliashdr->num_tris;
 
-	//
-	// draw all the triangles
-	//
-	if (currententity->flags & RF_DEPTHHACK) // hack the depth range to prevent view model from poking into walls
+	/*
+	 * draw all the triangles
+	 */
+	if (currententity->flags & RF_DEPTHHACK) /* hack the depth range to prevent view model from poking into walls */
 		qglDepthRange (gldepthmin, gldepthmin + 0.3*(gldepthmax-gldepthmin));
 
 	if (currententity->flags & RF_WEAPONMODEL)
@@ -691,13 +689,13 @@ void R_DrawAliasModel (entity_t *e)
 	}
 
     qglPushMatrix ();
-	e->angles[PITCH] = -e->angles[PITCH];	// sigh.
+	e->angles[PITCH] = -e->angles[PITCH];	/* sigh. */
 	R_RotateForEntity (e);
-	e->angles[PITCH] = -e->angles[PITCH];	// sigh.
+	e->angles[PITCH] = -e->angles[PITCH];	/* sigh. */
 
-	// select skin
+	/* select skin */
 	if (currententity->skin)
-		skin = currententity->skin;	// custom player skin
+		skin = currententity->skin;	/* custom player skin */
 	else
 	{
 		if (currententity->skinnum >= MAX_MD2SKINS)
@@ -710,12 +708,12 @@ void R_DrawAliasModel (entity_t *e)
 		}
 	}
 	if (!skin)
-		skin = r_notexture;	// fallback...
+		skin = r_notexture;	/* fallback... */
 	GL_Bind(skin->texnum);
 
-	// draw it
+	/* draw it */
 
-	//->glShadeModel (GL_SMOOTH);
+	/*->glShadeModel (GL_SMOOTH); */
 
 	GL_TexEnv( GL_MODULATE );
 	if ( currententity->flags & RF_TRANSLUCENT )
@@ -747,7 +745,7 @@ void R_DrawAliasModel (entity_t *e)
 	GL_DrawAliasFrameLerp (paliashdr, currententity->backlerp);
 
 	GL_TexEnv( GL_REPLACE );
-	//->glShadeModel (GL_FLAT);
+	/*->glShadeModel (GL_FLAT); */
 
 	qglPopMatrix ();
 

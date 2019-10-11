@@ -17,11 +17,11 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 */
-// r_misc.c
+/* r_misc.c */
 
 typedef struct
 {
-	unsigned		width, height;			// coordinates from main game
+	unsigned		width, height;			/* coordinates from main game */
 } viddef_t;
 
 #include "gl_local.h"
@@ -48,9 +48,9 @@ void R_InitParticleTexture (void)
 	int		x,y;
 	byte	data[8][8][4];
 
-	//
-	// particle texture
-	//
+	/*
+	 * particle texture
+	 */
 	for (x=0 ; x<8 ; x++)
 	{
 		for (y=0 ; y<8 ; y++)
@@ -63,16 +63,16 @@ void R_InitParticleTexture (void)
 	}
 	r_particletexture = GL_LoadPic ("***particle***", (byte *)data, 8, 8, it_sprite, 32);
 
-	//
-	// also use this for bad textures, but without alpha
-	//
+	/*
+	 * also use this for bad textures, but without alpha
+	 */
 	for (x=0 ; x<8 ; x++)
 	{
 		for (y=0 ; y<8 ; y++)
 		{
 			data[y][x][0] = dottexture[x&3][y&3]*255;
-			data[y][x][1] = 0; // dottexture[x&3][y&3]*255;
-			data[y][x][2] = 0; //dottexture[x&3][y&3]*255;
+			data[y][x][1] = 0; /* dottexture[x&3][y&3]*255; */
+			data[y][x][2] = 0; /* dottexture[x&3][y&3]*255; */
 			data[y][x][3] = 255;
 		}
 	}
@@ -104,64 +104,64 @@ GL_ScreenShot_f
 */  
 void GL_ScreenShot_f (void) 
 {
-	byte		*buffer;
-	char		picname[80]; 
-	char		checkname[MAX_OSPATH];
-	int			i, c, temp;
-	FILE		*f;
+   byte		*buffer;
+   char		picname[80]; 
+   char		checkname[MAX_OSPATH];
+   int			i, c, temp;
+   FILE		*f;
 
-	// create the scrnshots directory if it doesn't exist
-	Com_sprintf (checkname, sizeof(checkname), "%s/scrnshot", ri.FS_Gamedir());
-	Sys_Mkdir (checkname);
+   /* create the scrnshots directory if it doesn't exist */
+   Com_sprintf (checkname, sizeof(checkname), "%s/scrnshot", ri.FS_Gamedir());
+   Sys_Mkdir (checkname);
 
-// 
-// find a file name to save it to 
-// 
-	strcpy(picname,"quake00.tga");
+   /* 
+    * find a file name to save it to 
+    */
+   strcpy(picname,"quake00.tga");
 
-	for (i=0 ; i<=99 ; i++) 
-	{ 
-		picname[5] = i/10 + '0'; 
-		picname[6] = i%10 + '0'; 
-		Com_sprintf (checkname, sizeof(checkname), "%s/scrnshot/%s", ri.FS_Gamedir(), picname);
-		f = fopen (checkname, "rb");
-		if (!f)
-			break;	// file doesn't exist
-		fclose (f);
-	} 
-	if (i==100) 
-	{
-		ri.Con_Printf (PRINT_ALL, "SCR_ScreenShot_f: Couldn't create a file\n"); 
-		return;
- 	}
+   for (i=0 ; i<=99 ; i++) 
+   { 
+      picname[5] = i/10 + '0'; 
+      picname[6] = i%10 + '0'; 
+      Com_sprintf (checkname, sizeof(checkname), "%s/scrnshot/%s", ri.FS_Gamedir(), picname);
+      f = fopen (checkname, "rb");
+      if (!f)
+         break;	/* file doesn't exist */
+      fclose (f);
+   } 
+   if (i==100) 
+   {
+      ri.Con_Printf (PRINT_ALL, "SCR_ScreenShot_f: Couldn't create a file\n"); 
+      return;
+   }
 
 
-	buffer = malloc(vid.width*vid.height*3 + 18);
-	memset (buffer, 0, 18);
-	buffer[2] = 2;		// uncompressed type
-	buffer[12] = vid.width&255;
-	buffer[13] = vid.width>>8;
-	buffer[14] = vid.height&255;
-	buffer[15] = vid.height>>8;
-	buffer[16] = 24;	// pixel size
+   buffer = malloc(vid.width*vid.height*3 + 18);
+   memset (buffer, 0, 18);
+   buffer[2] = 2;		/* uncompressed type */
+   buffer[12] = vid.width&255;
+   buffer[13] = vid.width>>8;
+   buffer[14] = vid.height&255;
+   buffer[15] = vid.height>>8;
+   buffer[16] = 24;	/* pixel size */
 
-	qglReadPixels (0, 0, vid.width, vid.height, GL_RGB, GL_UNSIGNED_BYTE, buffer+18 ); 
+   qglReadPixels (0, 0, vid.width, vid.height, GL_RGB, GL_UNSIGNED_BYTE, buffer+18 ); 
 
-	// swap rgb to bgr
-	c = 18+vid.width*vid.height*3;
-	for (i=18 ; i<c ; i+=3)
-	{
-		temp = buffer[i];
-		buffer[i] = buffer[i+2];
-		buffer[i+2] = temp;
-	}
+   /* swap rgb to bgr */
+   c = 18+vid.width*vid.height*3;
+   for (i=18 ; i<c ; i+=3)
+   {
+      temp = buffer[i];
+      buffer[i] = buffer[i+2];
+      buffer[i+2] = temp;
+   }
 
-	f = fopen (checkname, "wb");
-	fwrite (buffer, 1, c, f);
-	fclose (f);
+   f = fopen (checkname, "wb");
+   fwrite (buffer, 1, c, f);
+   fclose (f);
 
-	free (buffer);
-	ri.Con_Printf (PRINT_ALL, "Wrote %s\n", picname);
+   free (buffer);
+   ri.Con_Printf (PRINT_ALL, "Wrote %s\n", picname);
 } 
 
 /*
@@ -192,7 +192,9 @@ void GL_SetDefaultState( void )
 	qglColor4f(1,1,1,1);
 
 	qglPolygonMode (GL_FRONT_AND_BACK, GL_FILL);
-	//->glShadeModel (GL_FLAT);
+#if 0
+	glShadeModel (GL_FLAT);
+#endif
 
 	GL_TextureMode( gl_texturemode->string );
 	GL_TextureAlphaMode( gl_texturealphamode->string );

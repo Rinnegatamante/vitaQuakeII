@@ -18,11 +18,11 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 */
 
-// draw.c
+/* draw.c */
 
 typedef struct
 {
-	unsigned		width, height;			// coordinates from main game
+	unsigned		width, height;			/* coordinates from main game */
 } viddef_t;
 
 #include "gl_local.h"
@@ -36,7 +36,7 @@ Draw_InitLocal
 */
 void Draw_InitLocal (void)
 {
-	// load console characters (don't bilerp characters)
+	/* load console characters (don't bilerp characters) */
 	draw_chars = GL_FindImage ("pics/conchars.pcx", it_pic, false);
 	GL_Bind( draw_chars->texnum );
 	qglTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
@@ -44,32 +44,32 @@ void Draw_InitLocal (void)
 }
 
 
-void DrawQuad(float x, float y, float w, float h, float u, float v, float uw, float vh)
+static void DrawQuad(float x, float y, float w, float h, float u, float v, float uw, float vh)
 {
-  float texcoord[2*4] = {u, v, u + uw, v, u + uw, v + vh, u, v + vh};
-  float vertex[3*4] = {x,y,0.5f,x+w,y,0.5f, x+w, y+h,0.5f, x, y+h,0.5f};
-  vglVertexAttribPointerMapped(0, vertex);
-  vglVertexAttribPointerMapped(1, texcoord);
-  GL_DrawPolygon(GL_TRIANGLE_FAN, 4);
+   float texcoord[2*4] = {u, v, u + uw, v, u + uw, v + vh, u, v + vh};
+   float vertex[3*4] = {x,y,0.5f,x+w,y,0.5f, x+w, y+h,0.5f, x, y+h,0.5f};
+   vglVertexAttribPointerMapped(0, vertex);
+   vglVertexAttribPointerMapped(1, texcoord);
+   GL_DrawPolygon(GL_TRIANGLE_FAN, 4);
 }
 
-void DrawPic(float x, float y, float w, float h, float u, float v, float u2, float v2)
+static void DrawPic(float x, float y, float w, float h, float u, float v, float u2, float v2)
 {
-  float texcoord[2*4] = {u, v, u2, v, u2, v2, u, v2};
-  float vertex[3*4] = {x,y,0.5f,x+w,y,0.5f, x+w, y+h,0.5f, x, y+h,0.5f};
-  vglVertexAttribPointerMapped(0, vertex);
-  vglVertexAttribPointerMapped(1, texcoord);
-  GL_DrawPolygon(GL_TRIANGLE_FAN, 4);
+   float texcoord[2*4] = {u, v, u2, v, u2, v2, u, v2};
+   float vertex[3*4] = {x,y,0.5f,x+w,y,0.5f, x+w, y+h,0.5f, x, y+h,0.5f};
+   vglVertexAttribPointerMapped(0, vertex);
+   vglVertexAttribPointerMapped(1, texcoord);
+   GL_DrawPolygon(GL_TRIANGLE_FAN, 4);
 }
 
-void DrawQuad_NoTex(float x, float y, float w, float h, float r, float g, float b, float a)
+static void DrawQuad_NoTex(float x, float y, float w, float h, float r, float g, float b, float a)
 {
-  float vertex[3*4] = {x,y,0.5f,x+w,y,0.5f, x+w, y+h,0.5f, x, y+h,0.5f};
-  qglDisableClientState(GL_TEXTURE_COORD_ARRAY);
-  qglColor4f(r, g, b, a);
-  vglVertexAttribPointerMapped(0, vertex);
-  GL_DrawPolygon(GL_TRIANGLE_FAN, 4);
-  qglEnableClientState(GL_TEXTURE_COORD_ARRAY);
+   float vertex[3*4] = {x,y,0.5f,x+w,y,0.5f, x+w, y+h,0.5f, x, y+h,0.5f};
+   qglDisableClientState(GL_TEXTURE_COORD_ARRAY);
+   qglColor4f(r, g, b, a);
+   vglVertexAttribPointerMapped(0, vertex);
+   GL_DrawPolygon(GL_TRIANGLE_FAN, 4);
+   qglEnableClientState(GL_TEXTURE_COORD_ARRAY);
 }
 
 /*
@@ -89,10 +89,10 @@ void Draw_Char (int x, int y, int num, float factor)
 	num &= 255;
 	
 	if ( (num&127) == 32 )
-		return;		// space
+		return;		/* space */
 
 	if (y <= -8)
-		return;			// totally off screen
+		return;			/* totally off screen */
 
 	row = num>>4;
 	col = num&15;
@@ -257,7 +257,7 @@ void Draw_Fill (int x, int y, int w, int h, int c)
 
 }
 
-//=============================================================================
+/*============================================================================= */
 
 /*
 ================
@@ -274,7 +274,7 @@ void Draw_FadeScreen (void)
 }
 
 
-//====================================================================
+/*==================================================================== */
 
 
 /*
@@ -331,12 +331,16 @@ void Draw_StretchRaw (int x, int y, int w, int h, int cols, int rows, byte *data
 	qglTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	qglTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
-	//if ( ( gl_config.renderer == GL_RENDERER_MCD ) || ( gl_config.renderer & GL_RENDERER_RENDITION ) ) 
+#if 0
+   if ( ( gl_config.renderer == GL_RENDERER_MCD ) || ( gl_config.renderer & GL_RENDERER_RENDITION ) ) 
+#endif
 		qglDisable(GL_ALPHA_TEST);
 
 	DrawPic(x, y, w, h, 0, 0, 1, t);
 
-	//if ( ( gl_config.renderer == GL_RENDERER_MCD ) || ( gl_config.renderer & GL_RENDERER_RENDITION ) ) 
+#if 0
+	if ( ( gl_config.renderer == GL_RENDERER_MCD ) || ( gl_config.renderer & GL_RENDERER_RENDITION ) ) 
+#endif
 		qglEnable(GL_ALPHA_TEST);
 }
 

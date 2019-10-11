@@ -17,10 +17,10 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 */
-// r_main.c
+/* r_main.c */
 typedef struct
 {
-	unsigned		width, height;			// coordinates from main game
+	unsigned		width, height;			/* coordinates from main game */
 } viddef_t;
 
 #include "gl_local.h"
@@ -38,26 +38,26 @@ float		gldepthmin, gldepthmax;
 glconfig_t gl_config;
 glstate_t  gl_state;
 
-image_t		*r_notexture;		// use for bad textures
-image_t		*r_particletexture;	// little dot for particles
+image_t		*r_notexture;		   /* use for bad textures */
+image_t		*r_particletexture;	/* little dot for particles */
 
 entity_t	*currententity;
 model_t		*currentmodel;
 
 cplane_t	frustum[4];
 
-int			r_visframecount;	// bumped when going to a new PVS
-int			r_framecount;		// used for dlight push checking
+int			r_visframecount;	/* bumped when going to a new PVS */
+int			r_framecount;		/* used for dlight push checking */
 
 int			c_brush_polys, c_alias_polys;
 
-float		v_blend[4];			// final blending color
+float		v_blend[4];			/* final blending color */
 
 void GL_Strings_f( void );
 
-//
-// view origin
-//
+/*
+ * view origin
+ */
 vec3_t	vup;
 vec3_t	vpn;
 vec3_t	vright;
@@ -66,9 +66,9 @@ vec3_t	r_origin;
 float	r_world_matrix[16];
 float	r_base_world_matrix[16];
 
-//
-// screen size info
-//
+/*
+ * screen size info
+ */
 refdef_t	r_newrefdef;
 
 int		r_viewcluster, r_viewcluster2, r_oldviewcluster, r_oldviewcluster2;
@@ -83,7 +83,7 @@ cvar_t	*r_nocull;
 cvar_t	*r_lerpmodels;
 cvar_t	*r_lefthand;
 
-cvar_t	*r_lightlevel;	// FIXME: This is a HACK to get the client's light level
+cvar_t	*r_lightlevel;	/* FIXME: This is a HACK to get the client's light level */
 
 cvar_t	*gl_nosubimage;
 cvar_t	*gl_allow_software;
@@ -195,8 +195,8 @@ void R_DrawSpriteModel (entity_t *e)
 	float		*up, *right;
 	dsprite_t		*psprite;
 
-	// don't even bother culling, because it's just a single
-	// polygon without a surface cache
+	/* don't even bother culling, because it's just a single
+	 * polygon without a surface cache */
 
 	psprite = (dsprite_t *)currentmodel->extradata;
 
@@ -204,7 +204,7 @@ void R_DrawSpriteModel (entity_t *e)
 
 	frame = &psprite->frames[e->frame];
 
-	// normal sprite
+	/* normal sprite */
 	up = vup;
 	right = vright;
 
@@ -257,7 +257,7 @@ void R_DrawSpriteModel (entity_t *e)
 	qglColor4f( 1, 1, 1, 1 );
 }
 
-//==================================================================================
+/*================================================================================== */
 
 /*
 =============
@@ -316,12 +316,12 @@ void R_DrawEntitiesOnList (void)
 	if (!r_drawentities->value)
 		return;
 
-	// draw non-transparent first
+	/* draw non-transparent first */
 	for (i=0 ; i<r_newrefdef.num_entities ; i++)
 	{
 		currententity = &r_newrefdef.entities[i];
 		if (currententity->flags & RF_TRANSLUCENT)
-			continue;	// solid
+			continue;	/* solid */
 
 		if ( currententity->flags & RF_BEAM )
 		{
@@ -353,14 +353,14 @@ void R_DrawEntitiesOnList (void)
 		}
 	}
 
-	// draw transparent entities
-	// we could sort these if it ever becomes a problem...
-	qglDepthMask (GL_FALSE);		// no z writes
+	/* draw transparent entities
+	 * we could sort these if it ever becomes a problem... */
+	qglDepthMask (GL_FALSE);		/* no z writes */
 	for (i=0 ; i<r_newrefdef.num_entities ; i++)
 	{
 		currententity = &r_newrefdef.entities[i];
 		if (!(currententity->flags & RF_TRANSLUCENT))
-			continue;	// solid
+			continue;	/* solid */
 
 		if ( currententity->flags & RF_BEAM )
 		{
@@ -392,7 +392,7 @@ void R_DrawEntitiesOnList (void)
 			}
 		}
 	}
-	qglDepthMask (GL_TRUE);		// back to writing
+	qglDepthMask (GL_TRUE);		/* back to writing */
 
 }
 
@@ -409,7 +409,7 @@ void GL_DrawParticles( int num_particles, const particle_t particles[], const un
 	byte			color[4];
 
     GL_Bind(r_particletexture->texnum);
-	qglDepthMask( GL_FALSE );		// no z buffering
+	qglDepthMask( GL_FALSE );		/* no z buffering */
 	qglEnable( GL_BLEND );
 	GL_TexEnv( GL_MODULATE );
 
@@ -422,7 +422,7 @@ void GL_DrawParticles( int num_particles, const particle_t particles[], const un
 	int num_vertices = num_particles*3;
 	for ( p = particles, i=0 ; i < num_particles ; i++,p++)
 	{
-		// hack a scale up to keep particles from disapearing
+		/* hack a scale up to keep particles from disapearing */
 		scale = ( p->origin[0] - r_origin[0] ) * vpn[0] + 
 			    ( p->origin[1] - r_origin[1] ) * vpn[1] +
 			    ( p->origin[2] - r_origin[2] ) * vpn[2];
@@ -475,7 +475,7 @@ void GL_DrawParticles( int num_particles, const particle_t particles[], const un
 	
 	qglDisable( GL_BLEND );
 	qglColor4f( 1,1,1,1 );
-	qglDepthMask( GL_TRUE );		// back to normal Z buffering
+	qglDepthMask( GL_TRUE );		/* back to normal Z buffering */
 	GL_TexEnv( GL_REPLACE );
 }
 
@@ -496,49 +496,47 @@ R_PolyBlend
 */
 void R_PolyBlend (void)
 {
-	if (!gl_polyblend->value)
-		return;
-	if (!v_blend[3])
-		return;
+   if (!gl_polyblend->value)
+      return;
+   if (!v_blend[3])
+      return;
 
-	qglDisable(GL_ALPHA_TEST);
-	qglEnable (GL_BLEND);
-	qglDisable (GL_DEPTH_TEST);
+   qglDisable(GL_ALPHA_TEST);
+   qglEnable (GL_BLEND);
+   qglDisable (GL_DEPTH_TEST);
 
-    qglLoadIdentity ();
+   qglLoadIdentity ();
 
-	// FIXME: get rid of these
-    qglRotatef (-90,  1, 0, 0);	    // put Z going up
-    qglRotatef (90,  0, 0, 1);	    // put Z going up
-	
-	float vertices[] = {
-		10, 100, 100,
-		10,-100, 100,
-		10,-100,-100,
-		10, 100,-100
-	};
-	
-	qglDisableClientState(GL_TEXTURE_COORD_ARRAY);
-	qglColor4f(v_blend[0], v_blend[1], v_blend[2], v_blend[3]);
-	vglVertexAttribPointerMapped(0, vertices);
-	GL_DrawPolygon(GL_TRIANGLE_FAN, 4);
-	qglEnableClientState(GL_TEXTURE_COORD_ARRAY);
-	
-	qglDisable (GL_BLEND);
-	qglEnable(GL_ALPHA_TEST);
+   /* FIXME: get rid of these */
+   qglRotatef (-90,  1, 0, 0);	    /* put Z going up */
+   qglRotatef (90,  0, 0, 1);	       /* put Z going up */
 
-	qglColor4f(1,1,1,1);
+   float vertices[] = {
+      10, 100, 100,
+      10,-100, 100,
+      10,-100,-100,
+      10, 100,-100
+   };
+
+   qglDisableClientState(GL_TEXTURE_COORD_ARRAY);
+   qglColor4f(v_blend[0], v_blend[1], v_blend[2], v_blend[3]);
+   vglVertexAttribPointerMapped(0, vertices);
+   GL_DrawPolygon(GL_TRIANGLE_FAN, 4);
+   qglEnableClientState(GL_TEXTURE_COORD_ARRAY);
+
+   qglDisable (GL_BLEND);
+   qglEnable(GL_ALPHA_TEST);
+
+   qglColor4f(1,1,1,1);
 }
 
-//=======================================================================
+/*======================================================================= */
 
 int SignbitsForPlane (cplane_t *out)
 {
-	int	bits, j;
-
-	// for fast box on planeside test
-
-	bits = 0;
+	int j;
+	/* for fast box on planeside test */
+	int bits = 0;
 	for (j=0 ; j<3 ; j++)
 	{
 		if (out->normal[j] < 0)
@@ -552,13 +550,13 @@ void R_SetFrustum (void)
 {
 	int		i;
 
-	// rotate VPN right by FOV_X/2 degrees
+	/* rotate VPN right by FOV_X/2 degrees */
 	RotatePointAroundVector( frustum[0].normal, vup, vpn, -(90-r_newrefdef.fov_x / 2 ) );
-	// rotate VPN left by FOV_X/2 degrees
+	/* rotate VPN left by FOV_X/2 degrees */
 	RotatePointAroundVector( frustum[1].normal, vup, vpn, 90-r_newrefdef.fov_x / 2 );
-	// rotate VPN up by FOV_X/2 degrees
+	/* rotate VPN up by FOV_X/2 degrees */
 	RotatePointAroundVector( frustum[2].normal, vright, vpn, 90-r_newrefdef.fov_y / 2 );
-	// rotate VPN down by FOV_X/2 degrees
+	/* rotate VPN down by FOV_X/2 degrees */
 	RotatePointAroundVector( frustum[3].normal, vright, vpn, -( 90 - r_newrefdef.fov_y / 2 ) );
 
 	for (i=0 ; i<4 ; i++)
@@ -569,7 +567,7 @@ void R_SetFrustum (void)
 	}
 }
 
-//=======================================================================
+/*======================================================================= */
 
 /*
 ===============
@@ -583,12 +581,12 @@ void R_SetupFrame (void)
 
 	r_framecount++;
 
-// build the transformation matrix for the given view angles
+   /* build the transformation matrix for the given view angles */
 	VectorCopy (r_newrefdef.vieworg, r_origin);
 
 	AngleVectors (r_newrefdef.viewangles, vpn, vright, vup);
 
-// current viewcluster
+   /* current viewcluster */
 	if ( !( r_newrefdef.rdflags & RDF_NOWORLDMODEL ) )
 	{
 		r_oldviewcluster = r_viewcluster;
@@ -596,29 +594,31 @@ void R_SetupFrame (void)
 		leaf = Mod_PointInLeaf (r_origin, r_worldmodel);
 		r_viewcluster = r_viewcluster2 = leaf->cluster;
 
-		// check above and below so crossing solid water doesn't draw wrong
+		/* check above and below so crossing solid water doesn't draw wrong */
 		if (!leaf->contents)
-		{	// look down a bit
-			vec3_t	temp;
+      {
+         /* look down a bit */
+         vec3_t	temp;
 
-			VectorCopy (r_origin, temp);
-			temp[2] -= 16;
-			leaf = Mod_PointInLeaf (temp, r_worldmodel);
-			if ( !(leaf->contents & CONTENTS_SOLID) &&
-				(leaf->cluster != r_viewcluster2) )
-				r_viewcluster2 = leaf->cluster;
-		}
+         VectorCopy (r_origin, temp);
+         temp[2] -= 16;
+         leaf = Mod_PointInLeaf (temp, r_worldmodel);
+         if ( !(leaf->contents & CONTENTS_SOLID) &&
+               (leaf->cluster != r_viewcluster2) )
+            r_viewcluster2 = leaf->cluster;
+      }
 		else
-		{	// look up a bit
-			vec3_t	temp;
+      {
+         /* look up a bit */
+         vec3_t	temp;
 
-			VectorCopy (r_origin, temp);
-			temp[2] += 16;
-			leaf = Mod_PointInLeaf (temp, r_worldmodel);
-			if ( !(leaf->contents & CONTENTS_SOLID) &&
-				(leaf->cluster != r_viewcluster2) )
-				r_viewcluster2 = leaf->cluster;
-		}
+         VectorCopy (r_origin, temp);
+         temp[2] += 16;
+         leaf = Mod_PointInLeaf (temp, r_worldmodel);
+         if ( !(leaf->contents & CONTENTS_SOLID) &&
+               (leaf->cluster != r_viewcluster2) )
+            r_viewcluster2 = leaf->cluster;
+      }
 	}
 
 	for (i=0 ; i<4 ; i++)
@@ -627,7 +627,7 @@ void R_SetupFrame (void)
 	c_brush_polys = 0;
 	c_alias_polys = 0;
 
-	// clear out the portion of the screen that the NOWORLDMODEL defines
+	/* clear out the portion of the screen that the NOWORLDMODEL defines */
 	if ( r_newrefdef.rdflags & RDF_NOWORLDMODEL )
 	{
 		qglEnable( GL_SCISSOR_TEST );
@@ -666,12 +666,14 @@ R_SetupGL
 void R_SetupGL (void)
 {
 	float	screenaspect;
-//	float	yfov;
+#if 0
+   float	yfov;
+#endif
 	int		x, x2, y2, y, w, h;
 
-	//
-	// set up viewport
-	//
+	/*
+	 * set up viewport
+	 */
 	x = floor(r_newrefdef.x * vid.width / vid.width);
 	x2 = ceil((r_newrefdef.x + r_newrefdef.width) * vid.width / vid.width);
 	y = floor(vid.height - r_newrefdef.y * vid.height / vid.height);
@@ -682,11 +684,13 @@ void R_SetupGL (void)
 
 	qglViewport (x, y2, w, h);
 
-	//
-	// set up projection matrix
-	//
+	/*
+	 * set up projection matrix
+	 */
 	screenaspect = (float)r_newrefdef.width/r_newrefdef.height;
-//	yfov = 2*atan((float)r_newrefdef.height/r_newrefdef.width)*180/M_PI;
+#if 0
+	yfov = 2*atan((float)r_newrefdef.height/r_newrefdef.width)*180/M_PI;
+#endif
 	qglMatrixMode(GL_PROJECTION);
 	qglLoadIdentity ();
 	MYgluPerspective (r_newrefdef.fov_y,  screenaspect,  4,  4096);
@@ -696,8 +700,8 @@ void R_SetupGL (void)
 	qglMatrixMode(GL_MODELVIEW);
 	qglLoadIdentity ();
 
-    qglRotatef (-90,  1, 0, 0);	    // put Z going up
-    qglRotatef (90,  0, 0, 1);	    // put Z going up
+    qglRotatef (-90,  1, 0, 0);	    /* put Z going up */
+    qglRotatef (90,  0, 0, 1);	    /* put Z going up */
 	if (gl_xflip->value){
 		qglScalef (1, -1, 1);
 		qglCullFace(GL_BACK);
@@ -707,14 +711,16 @@ void R_SetupGL (void)
 	qglRotatef (-r_newrefdef.viewangles[1],  0, 0, 1);
 	qglTranslatef (-r_newrefdef.vieworg[0],  -r_newrefdef.vieworg[1],  -r_newrefdef.vieworg[2]);
 
-//	if ( gl_state.camera_separation != 0 && gl_state.stereo_enabled )
-//		qglTranslatef ( gl_state.camera_separation, 0, 0 );
+#if 0
+	if ( gl_state.camera_separation != 0 && gl_state.stereo_enabled )
+		qglTranslatef ( gl_state.camera_separation, 0, 0 );
+#endif
 
 	qglGetFloatv (GL_MODELVIEW_MATRIX, r_world_matrix);
 
-	//
-	// set drawing parms
-	//
+	/*
+	 * set drawing parms
+	 */
 	if (gl_cull->value)
 		qglEnable(GL_CULL_FACE);
 	else
@@ -784,7 +790,7 @@ void R_RenderView (refdef_t *fd)
 
 	R_SetupGL ();
 
-	R_MarkLeaves ();	// done here so we know if we're in water
+	R_MarkLeaves ();	/* done here so we know if we're in water */
 
 	R_DrawWorld ();
 
@@ -811,7 +817,7 @@ void R_RenderView (refdef_t *fd)
 
 void	R_SetGL2D (void)
 {
-	// set 2D virtual screen size
+	/* set 2D virtual screen size */
 	qglViewport (0,0, vid.width, vid.height);
 	qglMatrixMode(GL_PROJECTION);
     qglLoadIdentity ();
@@ -825,6 +831,7 @@ void	R_SetGL2D (void)
 	qglColor4f (1,1,1,1);
 }
 
+#if 0
 static void GL_DrawColoredStereoLinePair( float r, float g, float b, float y )
 {
 	//->glColor3f( r, g, b );
@@ -865,7 +872,7 @@ static void GL_DrawStereoPattern( void )
 	//->	GLimp_EndFrame();
 	//->}
 }
-
+#endif
 
 /*
 ====================
@@ -880,12 +887,12 @@ void R_SetLightLevel (void)
 	if (r_newrefdef.rdflags & RDF_NOWORLDMODEL)
 		return;
 
-	// save off light value for server to look at (BIG HACK!)
+	/* save off light value for server to look at (BIG HACK!) */
 
 	R_LightPoint (r_newrefdef.vieworg, shadelight);
 
-	// pick the greatest component, which should be the same
-	// as the mono value returned by software
+	/* pick the greatest component, which should be the same
+	 * as the mono value returned by software */
 	if (shadelight[0] > shadelight[1])
 	{
 		if (shadelight[0] > shadelight[2])
@@ -1032,7 +1039,7 @@ qboolean R_SetMode (void)
 	vid_fullscreen->modified = false;
 	gl_mode->modified = false;
 
-	if ( ( err = GLimp_SetMode( &vid.width, &vid.height, gl_mode->value, fullscreen ) ) == rserr_ok )
+	if ( ( err = GLimp_SetMode((int*)&vid.width, (int*)&vid.height, gl_mode->value, fullscreen ) ) == rserr_ok )
 	{
 		gl_state.prev_mode = gl_mode->value;
 	}
@@ -1043,7 +1050,7 @@ qboolean R_SetMode (void)
 			ri.Cvar_SetValue( "vid_fullscreen", 0);
 			vid_fullscreen->modified = false;
 			ri.Con_Printf( PRINT_ALL, "ref_gl::R_SetMode() - fullscreen unavailable in this mode\n" );
-			if ( ( err = GLimp_SetMode( &vid.width, &vid.height, gl_mode->value, false ) ) == rserr_ok )
+			if ( ( err = GLimp_SetMode((int*)&vid.width, (int*)&vid.height, gl_mode->value, false ) ) == rserr_ok )
 				return true;
 		}
 		else if ( err == rserr_invalid_mode )
@@ -1053,8 +1060,8 @@ qboolean R_SetMode (void)
 			ri.Con_Printf( PRINT_ALL, "ref_gl::R_SetMode() - invalid mode\n" );
 		}
 
-		// try setting it back to something safe
-		if ( ( err = GLimp_SetMode( &vid.width, &vid.height, gl_state.prev_mode, false ) ) != rserr_ok )
+		/* try setting it back to something safe */
+		if ( ( err = GLimp_SetMode((int*)&vid.width, (int*)&vid.height, gl_state.prev_mode, false ) ) != rserr_ok )
 		{
 			ri.Con_Printf( PRINT_ALL, "ref_gl::R_SetMode() - could not revert to safe mode\n" );
 			return false;
@@ -1070,14 +1077,11 @@ R_Init
 */
 qboolean R_Init( void *hinstance, void *hWnd )
 {	
-	int		err;
 	int		j;
 	extern float r_turbsin[256];
 
 	for ( j = 0; j < 256; j++ )
-	{
 		r_turbsin[j] *= 0.5;
-	}
 
 	ri.Con_Printf (PRINT_ALL, "ref_gl version: "REF_VERSION"\n");
 
@@ -1089,13 +1093,13 @@ qboolean R_Init( void *hinstance, void *hWnd )
 
 	ri.Con_Printf (PRINT_ALL, "Initializing GLimp\n");
 	
-	// initialize OS-specific parts of OpenGL
+	/* initialize OS-specific parts of OpenGL */
 	GLimp_Init( hinstance, hWnd );
 
-	// set our "safe" modes
+	/* set our "safe" modes */
 	gl_state.prev_mode = 3;
 
-	// create the window and set up the context
+	/* create the window and set up the context */
 	if ( !R_SetMode () )
 	{
         ri.Con_Printf (PRINT_ALL, "ref_gl::R_Init() - could not R_SetMode()\n" );
@@ -1132,6 +1136,7 @@ qboolean R_Init( void *hinstance, void *hWnd )
 	
 	Draw_InitLocal ();
 
+   return true;
 }
 
 /*
@@ -1173,10 +1178,9 @@ void R_BeginFrame( float camera_separation )
 	** change modes if necessary
 	*/
 	if ( gl_mode->modified || vid_fullscreen->modified )
-	{	// FIXME: only restart if CDS is required
-		cvar_t	*ref;
-
-		ref = ri.Cvar_Get ("vid_ref", "gl", 0);
+	{
+      /* FIXME: only restart if CDS is required */
+		cvar_t *ref = ri.Cvar_Get ("vid_ref", "gl", 0);
 		ref->modified = true;
 	}
 
@@ -1221,18 +1225,20 @@ void R_BeginFrame( float camera_separation )
 	/*
 	** draw buffer stuff
 	*/
-	//->if ( gl_drawbuffer->modified )
-	//->{
-	//->	gl_drawbuffer->modified = false;
+#if 0
+   if ( gl_drawbuffer->modified )
+   {
+      gl_drawbuffer->modified = false;
 
-	//->	if ( gl_state.camera_separation == 0 || !gl_state.stereo_enabled )
-	//->	{
-	//->		if ( Q_stricmp( gl_drawbuffer->string, "GL_FRONT" ) == 0 )
-	//->			qglDrawBuffer( GL_FRONT );
-	//->		else
-	//->			qglDrawBuffer( GL_BACK );
-	//->	}
-	//->}
+      if ( gl_state.camera_separation == 0 || !gl_state.stereo_enabled )
+      {
+         if ( Q_stricmp( gl_drawbuffer->string, "GL_FRONT" ) == 0 )
+            qglDrawBuffer( GL_FRONT );
+         else
+            qglDrawBuffer( GL_BACK );
+      }
+   }
+#endif
 
 	/*
 	** texturemode stuff
@@ -1260,9 +1266,9 @@ void R_BeginFrame( float camera_separation )
 	*/
 	GL_UpdateSwapInterval();
 
-	//
-	// clear screen if desired
-	//
+	/*
+	 * clear screen if desired
+	 */
 	R_Clear ();
 }
 
@@ -1381,7 +1387,7 @@ void R_DrawBeam( entity_t *e )
 	qglDepthMask( GL_TRUE );
 }
 
-//===================================================================
+/*=================================================================== */
 
 
 void	R_BeginRegistration (char *map);
@@ -1449,7 +1455,7 @@ refexport_t GetRefAPI (refimport_t rimp )
 
 
 #ifndef REF_HARD_LINKED
-// this is only here so the functions in q_shared.c and q_shwin.c can link
+/* this is only here so the functions in q_shared.c and q_shwin.c can link */
 void Sys_Error (char *error, ...)
 {
 	va_list		argptr;
