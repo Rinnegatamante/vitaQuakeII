@@ -265,22 +265,22 @@ qboolean GLimp_InitGL (void)
 	return true;
 }
 
-static void context_destroy() 
+static void context_destroy(void) 
 {
 	context_needs_reinit = true;
 }
 
-extern void restore_textures();
+extern void restore_textures(void);
 bool first_reset = true;
 
-static void context_reset() { 
+static void context_reset(void)
+{
 	if (!context_needs_reinit)
 		return;
 
 	initialize_gl();
-	if (!first_reset) {
+	if (!first_reset)
 		restore_textures();
-	}
 	first_reset = false;
 	context_needs_reinit = false;
 }
@@ -1539,8 +1539,8 @@ void retro_get_system_av_info(struct retro_system_av_info *info)
 
    info->geometry.base_width   = scr_width;
    info->geometry.base_height  = scr_height;
-   info->geometry.max_width    = 3840;
-   info->geometry.max_height   = 2160;
+   info->geometry.max_width    = scr_width;
+   info->geometry.max_height   = scr_height;
    info->geometry.aspect_ratio = (scr_width * 1.0f) / (scr_height * 1.0f);
 }
 
@@ -1632,12 +1632,12 @@ bool retro_load_game(const struct retro_game_info *info)
 		return false;
 	}
 
-	hw_render.context_type    = RETRO_HW_CONTEXT_OPENGL;
-	hw_render.context_reset   = context_reset;
-	hw_render.context_destroy = context_destroy;
+	hw_render.context_type       = RETRO_HW_CONTEXT_OPENGL;
+	hw_render.context_reset      = context_reset;
+	hw_render.context_destroy    = context_destroy;
 	hw_render.bottom_left_origin = true;
-	hw_render.depth = true;
-	hw_render.stencil = true;
+	hw_render.depth              = true;
+	hw_render.stencil            = true;
 
 	if (!environ_cb(RETRO_ENVIRONMENT_SET_HW_RENDER, &hw_render))
 	{
@@ -1702,9 +1702,7 @@ bool retro_load_game(const struct retro_game_info *info)
 		log_cb(RETRO_LOG_INFO, "Rumble environment not supported.\n");
 	
 	if (strstr(path_lower, "baseq2"))
-	{
 		extract_directory(g_rom_dir, g_rom_dir, sizeof(g_rom_dir));
-	}
 
 	return true;
 	
@@ -1718,9 +1716,13 @@ bool first_boot = true;
 
 void retro_run(void)
 {
+	bool updated = false;
+
 	qglBindFramebuffer(RARCH_GL_FRAMEBUFFER, hw_render.get_current_framebuffer());
 	qglEnable(GL_TEXTURE_2D);
-	if (first_boot) {
+
+	if (first_boot)
+   {
 		const char *argv[32];
 		const char *empty_string = "";
 	
@@ -1734,7 +1736,6 @@ void retro_run(void)
 		if (cpu_features_get_time_usec() - rumble_tick > 500000)
          IN_StopRumble(); /* 0.5 sec */
 	
-	bool updated = false;
 	if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE_UPDATE, &updated) && updated)
 		update_variables(false);
 
@@ -1846,17 +1847,17 @@ qboolean SNDDMA_Init(void)
    Cvar_SetValue( "s_loadas8bit", false );
 
    /* Fill the audio DMA information block */
-   dma.samplebits = 16;
-   dma.speed = SAMPLE_RATE;
-   dma.channels = 2;
-   dma.samples = BUFFER_SIZE;
-   dma.samplepos = 0;
+   dma.samplebits       = 16;
+   dma.speed            = SAMPLE_RATE;
+   dma.channels         = 2;
+   dma.samples          = BUFFER_SIZE;
+   dma.samplepos        = 0;
    dma.submission_chunk = 1;
-   dma.buffer = audio_buffer;
+   dma.buffer           = audio_buffer;
 
-   sound_initialized = 1;
+   sound_initialized    = 1;
 
-   initial_tick = cpu_features_get_time_usec();
+   initial_tick         = cpu_features_get_time_usec();
 
    return true;
 }
@@ -1865,8 +1866,6 @@ int SNDDMA_GetDMAPos(void)
 {
 	if(!sound_initialized)
 		return 0;
-	
-	
 	return dma.samplepos = audio_buffer_ptr;
 }
 
@@ -1952,39 +1951,39 @@ DIRECT LINK GLUE
 #define MAXPRINTMSG 4096
 void VID_Printf (int print_level, char *fmt, ...)
 {
-        va_list     argptr;
-        char        msg[MAXPRINTMSG];
+   va_list     argptr;
+   char        msg[MAXPRINTMSG];
 
-        va_start (argptr,fmt);
-        vsprintf (msg,fmt,argptr);
-        va_end (argptr);
+   va_start(argptr,fmt);
+   vsprintf(msg,fmt,argptr);
+   va_end(argptr);
 #ifdef DEBUG
-	printf(msg);
+   printf(msg);
 #endif
-        if (print_level == PRINT_ALL)
-                Com_Printf ("%s", msg);
-        else
-                Com_DPrintf ("%s", msg);
+   if (print_level == PRINT_ALL)
+      Com_Printf("%s", msg);
+   else
+      Com_DPrintf("%s", msg);
 }
 
 void VID_Error (int err_level, char *fmt, ...)
 {
-        va_list     argptr;
-        char        msg[MAXPRINTMSG];
+   va_list     argptr;
+   char        msg[MAXPRINTMSG];
 
-        va_start (argptr,fmt);
-        vsprintf (msg,fmt,argptr);
-        va_end (argptr);
+   va_start (argptr,fmt);
+   vsprintf (msg,fmt,argptr);
+   va_end (argptr);
 #ifdef DEBUG
-	printf(msg);
+   printf(msg);
 #endif
-        Com_Error (err_level, "%s", msg);
+   Com_Error (err_level, "%s", msg);
 }
 
 void VID_NewWindow (int width, int height)
 {
-        viddef.width = width;
-        viddef.height = height;
+   viddef.width = width;
+   viddef.height = height;
 }
 
 /*
@@ -1999,27 +1998,30 @@ typedef struct vidmode_s
 
 vidmode_t vid_modes[] =
 {
-    { "Mode 0: 480x272",     480, 272,   0 },
-	{ "Mode 1: 640x368",     640, 368,   1 },
-	{ "Mode 2: 720x408",     720, 408,   2 },
-	{ "Mode 3: 960x544",     960, 544,   3 },
-	{ "Mode 4: 1280x720",   1280, 720,   4 },
-	{ "Mode 5: 1920x1080",  1920,1080,   5 },
-	{ "Mode 6: 2560x1440",  2560,1440,   6 },
-	{ "Mode 7: 3840x2160",  3840,2160,   7 }
+   { "Mode 0: 480x272",     480, 272,   0 },
+   { "Mode 1: 640x368",     640, 368,   1 },
+   { "Mode 2: 720x408",     720, 408,   2 },
+   { "Mode 3: 960x544",     960, 544,   3 },
+   { "Mode 4: 1280x720",   1280, 720,   4 },
+   { "Mode 5: 1920x1080",  1920,1080,   5 },
+   { "Mode 6: 2560x1440",  2560,1440,   6 },
+   { "Mode 7: 3840x2160",  3840,2160,   7 },
+   { "Mode 8: 5120x2880",  5120,2880,   8 },
+   { "Mode 9: 7680x4320",  7680,4320,   9 },
+   { "Mode 10: 15360x8640",  15360,8640,   10 }
 };
 #define VID_NUM_MODES ( sizeof( vid_modes ) / sizeof( vid_modes[0] ) )
 
 qboolean VID_GetModeInfo( int *width, int *height, int mode )
 {
-    if ( mode < 0 || mode >= VID_NUM_MODES )
-        return false;
+   if ( mode < 0 || mode >= VID_NUM_MODES )
+      return false;
 
-    *width  = vid_modes[mode].width;
-    *height = vid_modes[mode].height;
-    printf("VID_GetModeInfo %dx%d mode %d\n",*width,*height,mode);
+   *width  = vid_modes[mode].width;
+   *height = vid_modes[mode].height;
+   printf("VID_GetModeInfo %dx%d mode %d\n",*width,*height,mode);
 
-    return true;
+   return true;
 }
 
 static void NullCallback( void *unused )
@@ -2061,12 +2063,10 @@ static void ResetDefaults( void *unused )
 
 static void ApplyChanges( void *unused )
 {
-   float gamma;
-
    /*
     ** invert sense so greater = brighter, and scale to a range of 0.5 to 1.3
     */
-   gamma = ( 0.8 - ( s_brightness_slider.curvalue/10.0 - 0.5 ) ) + 0.5;
+   float gamma = ( 0.8 - ( s_brightness_slider.curvalue/10.0 - 0.5 ) ) + 0.5;
 
    Cvar_SetValue( "vid_gamma", gamma );
    /*Cvar_SetValue( "gl_mode", s_mode_list.curvalue ); */
