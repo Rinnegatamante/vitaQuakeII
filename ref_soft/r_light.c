@@ -17,7 +17,7 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 */
-// r_light.c
+/* r_light.c */
 
 #include "r_local.h"
 
@@ -34,10 +34,10 @@ DYNAMIC LIGHTS
 
 /*
 =============
-R_MarkLights
+SWR_MarkLights
 =============
 */
-void R_MarkLights (dlight_t *light, int bit, mnode_t *node)
+static void SWR_MarkLights (dlight_t *light, int bit, mnode_t *node)
 {
 	mplane_t	*splitplane;
 	float		dist;
@@ -50,26 +50,26 @@ void R_MarkLights (dlight_t *light, int bit, mnode_t *node)
 	splitplane = node->plane;
 	dist = DotProduct (light->origin, splitplane->normal) - splitplane->dist;
 	
-//=====
-//PGM
+   /*=====
+    *PGM */
 	i=light->intensity;
 	if(i<0)
 		i=-i;
-//PGM
-//=====
+   /*PGM
+    *=====*/
 
-	if (dist > i)	// PGM (dist > light->intensity)
+	if (dist > i)	/* PGM (dist > light->intensity) */
 	{
-		R_MarkLights (light, bit, node->children[0]);
+		SWR_MarkLights (light, bit, node->children[0]);
 		return;
 	}
-	if (dist < -i)	// PGM (dist < -light->intensity)
+	if (dist < -i)	/* PGM (dist < -light->intensity) */
 	{
-		R_MarkLights (light, bit, node->children[1]);
+		SWR_MarkLights (light, bit, node->children[1]);
 		return;
 	}
 		
-// mark the polygons
+   /* mark the polygons */
 	surf = r_worldmodel->surfaces + node->firstsurface;
 	for (i=0 ; i<node->numsurfaces ; i++, surf++)
 	{
@@ -81,17 +81,17 @@ void R_MarkLights (dlight_t *light, int bit, mnode_t *node)
 		surf->dlightbits |= bit;
 	}
 
-	R_MarkLights (light, bit, node->children[0]);
-	R_MarkLights (light, bit, node->children[1]);
+	SWR_MarkLights (light, bit, node->children[0]);
+	SWR_MarkLights (light, bit, node->children[1]);
 }
 
 
 /*
 =============
-R_PushDlights
+SWR_PushDlights
 =============
 */
-void R_PushDlights (model_t *model)
+void SWR_PushDlights (model_t *model)
 {
 	int		i;
 	dlight_t	*l;
@@ -99,8 +99,8 @@ void R_PushDlights (model_t *model)
 	r_dlightframecount = r_framecount;
 	for (i=0, l = r_newrefdef.dlights ; i<r_newrefdef.num_dlights ; i++, l++)
 	{
-		R_MarkLights ( l, 1<<i, 
-			model->nodes + model->firstnode);
+		SWR_MarkLights ( l, 1<<i, 
+            model->nodes + model->firstnode);
 	}
 }
 
@@ -114,7 +114,7 @@ LIGHT SAMPLING
 */
 
 vec3_t	pointcolor;
-mplane_t		*lightplane;		// used as shadow plane
+mplane_t		*lightplane;		/* used as shadow plane */
 vec3_t			lightspot;
 
 int RecursiveLightPoint (mnode_t *node, vec3_t start, vec3_t end)
@@ -134,11 +134,11 @@ int RecursiveLightPoint (mnode_t *node, vec3_t start, vec3_t end)
 	int			r;
 
 	if (node->contents != -1)
-		return -1;		// didn't hit anything
+		return -1;		/* didn't hit anything */
 	
-// calculate mid point
+   /* calculate mid point */
 
-// FIXME: optimize for axial
+   /* FIXME: optimize for axial */
 	plane = node->plane;
 	front = DotProduct (start, plane->normal) - plane->dist;
 	back = DotProduct (end, plane->normal) - plane->dist;
@@ -151,18 +151,18 @@ int RecursiveLightPoint (mnode_t *node, vec3_t start, vec3_t end)
 	mid[0] = start[0] + (end[0] - start[0])*frac;
 	mid[1] = start[1] + (end[1] - start[1])*frac;
 	mid[2] = start[2] + (end[2] - start[2])*frac;
-	if (plane->type < 3)	// axial planes
+	if (plane->type < 3)	/* axial planes */
 		mid[plane->type] = plane->dist;
 
-// go down front side	
+   /* go down front side	 */
 	r = RecursiveLightPoint (node->children[side], start, mid);
 	if (r >= 0)
-		return r;		// hit something
+		return r;		/* hit something */
 		
 	if ( (back < 0) == side )
-		return -1;		// didn't hit anuthing
+		return -1;		/* didn't hit anything */
 		
-// check for impact on this node
+   /* check for impact on this node */
 	VectorCopy (mid, lightspot);
 	lightplane = plane;
 
@@ -170,7 +170,7 @@ int RecursiveLightPoint (mnode_t *node, vec3_t start, vec3_t end)
 	for (i=0 ; i<node->numsurfaces ; i++, surf++)
 	{
 		if (surf->flags&(SURF_DRAWTURB|SURF_DRAWSKY)) 
-			continue;	// no lightmaps
+			continue;	/* no lightmaps */
 
 		tex = surf->texinfo;
 		
@@ -201,7 +201,7 @@ int RecursiveLightPoint (mnode_t *node, vec3_t start, vec3_t end)
 			for (maps = 0 ; maps < MAXLIGHTMAPS && surf->styles[maps] != 255 ;
 					maps++)
 			{
-				samp = *lightmap * /* 0.5 * */ (1.0/255);	// adjust for gl scale
+				samp = *lightmap * /* 0.5 * */ (1.0/255);	/* adjust for gl scale */
 				scales = r_newrefdef.lightstyles[surf->styles[maps]].rgb;
 				VectorMA (pointcolor, samp, scales, pointcolor);
 				lightmap += ((surf->extents[0]>>4)+1) *
@@ -212,16 +212,16 @@ int RecursiveLightPoint (mnode_t *node, vec3_t start, vec3_t end)
 		return 1;
 	}
 
-// go down back side
+   /* go down back side */
 	return RecursiveLightPoint (node->children[!side], mid, end);
 }
 
 /*
 ===============
-R_LightPoint
+SWR_LightPoint
 ===============
 */
-void R_LightPoint (vec3_t p, vec3_t color)
+void SWR_LightPoint (vec3_t p, vec3_t color)
 {
 	vec3_t		end;
 	float		r;
@@ -252,9 +252,9 @@ void R_LightPoint (vec3_t p, vec3_t color)
 		VectorCopy (pointcolor, color);
 	}
 
-	//
-	// add dynamic lights
-	//
+	/*
+	 * add dynamic lights
+	 */
 	light = 0;
 	for (lnum=0 ; lnum<r_newrefdef.num_dlights ; lnum++)
 	{
@@ -271,17 +271,17 @@ void R_LightPoint (vec3_t p, vec3_t color)
 	}
 }
 
-//===================================================================
+/*=================================================================== */
 
 
-unsigned		blocklights[1024];	// allow some very large lightmaps
+unsigned		blocklights[1024];	/* allow some very large lightmaps */
 
 /*
 ===============
-R_AddDynamicLights
+SWR_AddDynamicLights
 ===============
 */
-void R_AddDynamicLights (void)
+static void SWR_AddDynamicLights (void)
 {
 	msurface_t *surf;
 	int			lnum;
@@ -293,7 +293,7 @@ void R_AddDynamicLights (void)
 	int			smax, tmax;
 	mtexinfo_t	*tex;
 	dlight_t	*dl;
-	int			negativeLight;	//PGM
+	int			negativeLight;	/*PGM */
 
 	surf = r_drawsurf.surf;
 	smax = (surf->extents[0]>>4)+1;
@@ -303,26 +303,28 @@ void R_AddDynamicLights (void)
 	for (lnum=0 ; lnum<r_newrefdef.num_dlights ; lnum++)
 	{
 		if ( !(surf->dlightbits & (1<<lnum) ) )
-			continue;		// not lit by this light
+			continue;		/* not lit by this light */
 
 		dl = &r_newrefdef.dlights[lnum];
 		rad = dl->intensity;
 
-//=====
-//PGM
+      /*=====
+       *PGM
+       */
 		negativeLight = 0;
 		if(rad < 0)
 		{
 			negativeLight = 1;
 			rad = -rad;
 		}
-//PGM
-//=====
+      /*PGM
+       *=====
+       */
 
 		dist = DotProduct (dl->origin, surf->plane->normal) -
 				surf->plane->dist;
 		rad -= fabs(dist);
-		minlight = 32;		// dl->minlight;
+		minlight = 32;		/* dl->minlight; */
 		if (rad < minlight)
 			continue;
 		minlight = rad - minlight;
@@ -353,8 +355,9 @@ void R_AddDynamicLights (void)
 					dist = sd + (td>>1);
 				else
 					dist = td + (sd>>1);
-//====
-//PGM
+            /*====
+             *PGM
+             */
 				if(!negativeLight)
 				{
 					if (dist < minlight)
@@ -367,8 +370,9 @@ void R_AddDynamicLights (void)
 					if(blocklights[t*smax + s] < minlight)
 						blocklights[t*smax + s] = minlight;
 				}
-//PGM
-//====
+            /*PGM
+             *====
+             */
 			}
 		}
 	}
@@ -376,12 +380,12 @@ void R_AddDynamicLights (void)
 
 /*
 ===============
-R_BuildLightMap
+SWR_BuildLightMap
 
 Combine and scale multiple lightmaps into the 8.8 format in blocklights
 ===============
 */
-void R_BuildLightMap (void)
+void SWR_BuildLightMap (void)
 {
 	int			smax, tmax;
 	int			t;
@@ -404,28 +408,28 @@ void R_BuildLightMap (void)
 		return;
 	}
 
-// clear to no light
+   /* clear to no light */
 	for (i=0 ; i<size ; i++)
 		blocklights[i] = 0;
 
 
-// add all the lightmaps
+   /* add all the lightmaps */
 	lightmap = surf->samples;
 	if (lightmap)
 		for (maps = 0 ; maps < MAXLIGHTMAPS && surf->styles[maps] != 255 ;
 			 maps++)
 		{
-			scale = r_drawsurf.lightadj[maps];	// 8.8 fraction		
+			scale = r_drawsurf.lightadj[maps];	/* 8.8 fraction */
 			for (i=0 ; i<size ; i++)
 				blocklights[i] += lightmap[i] * scale;
-			lightmap += size;	// skip to next lightmap
+			lightmap += size;	/* skip to next lightmap */
 		}
 
-// add all the dynamic lights
+   /* add all the dynamic lights */
 	if (surf->dlightframe == r_framecount)
-		R_AddDynamicLights ();
+		SWR_AddDynamicLights ();
 
-// bound, invert, and shift
+   /* bound, invert, and shift */
 	for (i=0 ; i<size ; i++)
 	{
 		t = (int)blocklights[i];

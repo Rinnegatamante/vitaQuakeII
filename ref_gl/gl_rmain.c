@@ -53,6 +53,8 @@ int			c_brush_polys, c_alias_polys;
 
 float		v_blend[4];			/* final blending color */
 
+/* forward declarations */
+static void R_DrawBeam( entity_t *e );
 void GL_Strings_f( void );
 
 /*
@@ -916,7 +918,7 @@ R_RenderFrame
 
 @@@@@@@@@@@@@@@@@@@@@
 */
-void R_RenderFrame (refdef_t *fd)
+static void R_RenderFrame (refdef_t *fd)
 {
 	R_RenderView( fd );
 	R_SetLightLevel ();
@@ -1144,7 +1146,7 @@ qboolean R_Init( void *hinstance, void *hWnd )
 R_Shutdown
 ===============
 */
-void R_Shutdown (void)
+static void R_Shutdown (void)
 {	
 	ri.Cmd_RemoveCommand ("modellist");
 	ri.Cmd_RemoveCommand ("screenshot");
@@ -1169,7 +1171,7 @@ void R_Shutdown (void)
 R_BeginFrame
 @@@@@@@@@@@@@@@@@@@@@
 */
-void R_BeginFrame( float camera_separation )
+static void R_BeginFrame( float camera_separation )
 {
 
 	gl_state.camera_separation = camera_separation;
@@ -1315,7 +1317,7 @@ void R_SetPalette ( const unsigned char *palette)
 /*
 ** R_DrawBeam
 */
-void R_DrawBeam( entity_t *e )
+static void R_DrawBeam( entity_t *e )
 {
 #define NUM_BEAM_SEGS 6
 
@@ -1395,8 +1397,6 @@ struct model_s	*R_RegisterModel (char *name);
 struct image_s	*R_RegisterSkin (char *name);
 void R_SetSky (char *name, float rotate, vec3_t axis);
 void	R_EndRegistration (void);
-
-void	R_RenderFrame (refdef_t *fd);
 
 struct image_s	*Draw_FindPic (char *name);
 

@@ -113,7 +113,7 @@ void D_ViewChanged (void)
 	if ( r_newrefdef.rdflags & RDF_NOWORLDMODEL )
 	{
 		memset( d_pzbuffer, 0xff, vid.width * vid.height * sizeof( d_pzbuffer[0] ) );
-		Draw_Fill( r_newrefdef.x, r_newrefdef.y, r_newrefdef.width, r_newrefdef.height,( int ) sw_clearcolor->value & 0xff );
+		SWR_Draw_Fill( r_newrefdef.x, r_newrefdef.y, r_newrefdef.width, r_newrefdef.height,( int ) sw_clearcolor->value & 0xff );
 	}
 
 	alias_colormap = vid.colormap;
@@ -421,10 +421,10 @@ void R_ViewChanged (vrect_t *vr)
 
 /*
 ===============
-R_SetupFrame
+SWR_SetupFrame
 ===============
 */
-void R_SetupFrame (void)
+void SWR_SetupFrame (void)
 {
 	int			i;
 	vrect_t		vrect;
@@ -447,7 +447,7 @@ void R_SetupFrame (void)
 // current viewleaf
 	if ( !( r_newrefdef.rdflags & RDF_NOWORLDMODEL ) )
 	{
-		r_viewleaf = Mod_PointInLeaf (r_origin, r_worldmodel);
+		r_viewleaf    = SWR_Mod_PointInLeaf (r_origin, r_worldmodel);
 		r_viewcluster = r_viewleaf->cluster;
 	}
 

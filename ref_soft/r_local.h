@@ -448,7 +448,7 @@ extern affinetridesc_t  r_affinetridesc;
 extern vec3_t   r_pright, r_pup, r_ppn;
 
 void D_DrawSurfaces (void);
-void R_DrawParticle( void );
+void SWR_DrawParticle( void );
 void D_ViewChanged (void);
 void D_WarpScreen (void);
 void R_PolysetUpdateTables (void);
@@ -613,10 +613,9 @@ void R_DrawPolyList (void);
 //
 extern  qboolean                insubmodel;
 
-void R_DrawAlphaSurfaces( void );
+void SWR_DrawAlphaSurfaces( void );
 
 void R_DrawSprite (void);
-void R_DrawBeam( entity_t *e );
 
 void R_RenderFace (msurface_t *fa, int clipflags);
 void R_RenderBmodelFace (bedge_t *pedges, msurface_t *psurf);
@@ -650,7 +649,7 @@ void D_DrawSurfaces (void);
 void R_InsertNewEdges (edge_t *edgestoadd, edge_t *edgelist);
 void R_StepActiveU (edge_t *pedge);
 void R_RemoveEdges (edge_t *pedge);
-void R_PushDlights (model_t *model);
+void SWR_PushDlights (model_t *model);
 
 extern void R_Surf8Start (void);
 extern void R_Surf8End (void);
@@ -679,7 +678,7 @@ extern int              r_currentbkey;
 
 void    R_InitTurb (void);
 
-void R_DrawParticles (void);
+void SWR_DrawParticles (void);
 void R_SurfacePatch (void);
 
 extern int              r_amodels_drawn;
@@ -739,8 +738,8 @@ void R_PrintAliasStats (void);
 void R_PrintTimes (void);
 void R_PrintDSpeeds (void);
 void R_AnimateLight (void);
-void R_LightPoint (vec3_t p, vec3_t color);
-void R_SetupFrame (void);
+void SWR_LightPoint (vec3_t p, vec3_t color);
+void SWR_SetupFrame (void);
 void R_cshift_f (void);
 void R_EmitEdge (mvertex_t *pv0, mvertex_t *pv1);
 void R_ClipEdge (mvertex_t *pv0, mvertex_t *pv1, clipplane_t *clip);
@@ -757,35 +756,27 @@ extern  void            *colormap;
 float R_DLightPoint (vec3_t p);
 
 void R_NewMap (void);
-void R_Register (void);
-void R_UnRegister (void);
-void Draw_InitLocal (void);
-qboolean R_Init( void *hInstance, void *wndProc );
-void R_Shutdown (void);
+void SWR_Register (void);
+void SWR_Draw_InitLocal (void);
+qboolean SWR_Init( void *hInstance, void *wndProc );
 void R_InitCaches (void);
 void D_FlushCaches (void);
 
 void	R_ScreenShot_f( void );
-void    R_BeginRegistration (char *map);
-struct model_s  *R_RegisterModel (char *name);
-void    R_EndRegistration (void);
+void    SWR_BeginRegistration (char *map);
+struct model_s  *SWR_RegisterModel (char *name);
+void    SWR_EndRegistration (void);
 
-void    R_RenderFrame (refdef_t *fd);
+struct image_s  *SWR_Draw_FindPic (char *name);
 
-struct image_s  *Draw_FindPic (char *name);
-
-void    Draw_GetPicSize (int *w, int *h, char *name);
-void    Draw_Pic (int x, int y, char *name);
-void    Draw_StretchPic (int x, int y, int w, int h, char *name);
-void    Draw_StretchRaw (int x, int y, int w, int h, int cols, int rows, byte *data);
-void    Draw_Char (int x, int y, int c);
-void    Draw_TileClear (int x, int y, int w, int h, char *name);
-void    Draw_Fill (int x, int y, int w, int h, int c);
-void    Draw_FadeScreen (void);
-
-void    Draw_GetPalette (void);
-
-void	 R_BeginFrame( float camera_separation );
+void    SWR_Draw_GetPicSize (int *w, int *h, char *name);
+void    SWR_Draw_Pic (int x, int y, char *name);
+void    SWR_Draw_StretchPic (int x, int y, int w, int h, char *name);
+void    SWR_Draw_StretchRaw (int x, int y, int w, int h, int cols, int rows, byte *data);
+void    SWR_Draw_Char (int x, int y, int c);
+void    SWR_Draw_TileClear (int x, int y, int w, int h, char *name);
+void    SWR_Draw_Fill (int x, int y, int w, int h, int c);
+void    SWR_Draw_FadeScreen (void);
 
 void	R_CinematicSetPalette( const unsigned char *palette );
 

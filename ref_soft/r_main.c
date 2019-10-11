@@ -60,6 +60,11 @@ int			r_maxsurfsseen, r_maxedgesseen, r_cnumsurfs;
 qboolean	r_surfsonstack;
 int			r_clipflags;
 
+/* forward declarations */
+static void Draw_GetPalette(void);
+static void SWR_BeginFrame( float camera_separation );
+static void R_DrawBeam( entity_t *e );
+
 //
 // view origin
 //
@@ -106,7 +111,7 @@ image_t  	*r_notexture_mip;
 float	da_time1, da_time2, dp_time1, dp_time2, db_time1, db_time2, rw_time1, rw_time2;
 float	se_time1, se_time2, de_time1, de_time2;
 
-void R_MarkLeaves (void);
+static void SWR_MarkLeaves (void);
 
 cvar_t	*r_lefthand;
 cvar_t	*sw_aliasstats;
@@ -242,7 +247,7 @@ void R_InitTurb (void)
 
 void R_ImageList_f( void );
 
-void R_Register (void)
+void SWR_Register (void)
 {
 	sw_aliasstats = ri.Cvar_Get ("sw_polymodelstats", "0", 0);
 	sw_allow_modex = ri.Cvar_Get( "sw_allow_modex", "1", CVAR_ARCHIVE );
@@ -273,7 +278,7 @@ void R_Register (void)
 	vid_fullscreen = ri.Cvar_Get( "vid_fullscreen", "0", CVAR_ARCHIVE );
 	vid_gamma = ri.Cvar_Get( "vid_gamma", "1.0", CVAR_ARCHIVE );
 
-	ri.Cmd_AddCommand ("modellist", Mod_Modellist_f);
+	ri.Cmd_AddCommand ("modellist", SWR_Mod_Modellist_f);
 	ri.Cmd_AddCommand( "screenshot", R_ScreenShot_f );
 	ri.Cmd_AddCommand( "imagelist", R_ImageList_f );
 
@@ -285,7 +290,7 @@ void R_Register (void)
 //PGM
 }
 
-void R_UnRegister (void)
+static void SWR_UnRegister (void)
 {
 	ri.Cmd_RemoveCommand( "screenshot" );
 	ri.Cmd_RemoveCommand ("modellist");
@@ -297,11 +302,11 @@ void R_UnRegister (void)
 R_Init
 ===============
 */
-qboolean R_Init( void *hInstance, void *wndProc )
+qboolean SWR_Init( void *hInstance, void *wndProc )
 {
 	R_InitImages ();
-	Mod_Init ();
-	Draw_InitLocal ();
+	SWR_Mod_Init ();
+	SWR_Draw_InitLocal ();
 	R_InitTextures ();
 
 	R_InitTurb ();
@@ -325,12 +330,12 @@ qboolean R_Init( void *hInstance, void *wndProc )
 
 	r_aliasuvscale = 1.0;
 
-	R_Register ();
+	SWR_Register ();
 	Draw_GetPalette ();
 	SWimp_Init( hInstance, wndProc );
 
 	// create the window
-	R_BeginFrame( 0 );
+	SWR_BeginFrame( 0 );
 
 	ri.Con_Printf (PRINT_ALL, "ref_soft version: "REF_VERSION"\n");
 
@@ -339,18 +344,18 @@ qboolean R_Init( void *hInstance, void *wndProc )
 
 /*
 ===============
-R_Shutdown
+SWR_Shutdown
 ===============
 */
-void R_Shutdown (void)
+static void SWR_Shutdown (void)
 {
-	// free z buffer
+	/* free z buffer */
 	if (d_pzbuffer)
 	{
 		free (d_pzbuffer);
 		d_pzbuffer = NULL;
 	}
-	// free surface cache
+	/* free surface cache */
 	if (sc_base)
 	{
 		D_FlushCaches ();
@@ -358,14 +363,14 @@ void R_Shutdown (void)
 		sc_base = NULL;
 	}
 
-	// free colormap
+	/* free colormap */
 	if (vid.colormap)
 	{
 		free (vid.colormap);
 		vid.colormap = NULL;
 	}
-	R_UnRegister ();
-	Mod_FreeAll ();
+	SWR_UnRegister ();
+	SWR_Mod_FreeAll ();
 	R_ShutdownImages ();
 
 	SWimp_Shutdown();
@@ -422,13 +427,13 @@ void R_NewMap (void)
 
 /*
 ===============
-R_MarkLeaves
+SWR_MarkLeaves
 
 Mark the leaves and nodes that are in the PVS for the current
 cluster
 ===============
 */
-void R_MarkLeaves (void)
+static void SWR_MarkLeaves (void)
 {
 	byte	*vis;
 	mnode_t	*node;
@@ -457,7 +462,7 @@ void R_MarkLeaves (void)
 		return;
 	}
 
-	vis = Mod_ClusterPVS (r_viewcluster, r_worldmodel);
+	vis = SWR_Mod_ClusterPVS (r_viewcluster, r_worldmodel);
 	
 	for (i=0,leaf=r_worldmodel->leafs ; i<r_worldmodel->numleafs ; i++, leaf++)
 	{
@@ -496,20 +501,20 @@ void R_MarkLeaves (void)
 }
 
 /*
-** R_DrawNullModel
+** SWR_DrawNullModel
 **
 ** IMPLEMENT THIS!
 */
-void R_DrawNullModel( void )
+static void SWR_DrawNullModel( void )
 {
 }
 
 /*
 =============
-R_DrawEntitiesOnList
+SWR_DrawEntitiesOnList
 =============
 */
-void R_DrawEntitiesOnList (void)
+static void SWR_DrawEntitiesOnList (void)
 {
 	int			i;
 	qboolean	translucent_entities = false;
@@ -541,7 +546,7 @@ void R_DrawEntitiesOnList (void)
 			currentmodel = currententity->model;
 			if (!currentmodel)
 			{
-				R_DrawNullModel();
+				SWR_DrawNullModel();
 				continue;
 			}
 			VectorCopy (currententity->origin, r_entorigin);
@@ -586,7 +591,7 @@ void R_DrawEntitiesOnList (void)
 			currentmodel = currententity->model;
 			if (!currentmodel)
 			{
-				R_DrawNullModel();
+				SWR_DrawNullModel();
 				continue;
 			}
 			VectorCopy (currententity->origin, r_entorigin);
@@ -811,11 +816,11 @@ void R_DrawBEntitiesOnList (void)
 
 		r_pcurrentvertbase = currentmodel->vertexes;
 
-	// FIXME: stop transforming twice
+      /* FIXME: stop transforming twice */
 		R_RotateBmodel ();
 
-	// calculate dynamic lighting for bmodel
-		R_PushDlights (currentmodel);
+      /* calculate dynamic lighting for bmodel */
+		SWR_PushDlights (currentmodel);
 
 		if (topnode->contents == CONTENTS_NODE)
 		{
@@ -966,7 +971,7 @@ void R_CalcPalette (void)
 
 //=======================================================================
 
-void R_SetLightLevel (void)
+static void SWR_SetLightLevel (void)
 {
 	vec3_t		light;
 
@@ -976,19 +981,19 @@ void R_SetLightLevel (void)
 		return;
 	}
 
-	// save off light value for server to look at (BIG HACK!)
-	R_LightPoint (r_newrefdef.vieworg, light);
+	/* save off light value for server to look at (BIG HACK!) */
+	SWR_LightPoint (r_newrefdef.vieworg, light);
 	r_lightlevel->value = 150.0 * light[0];
 }
 
 
 /*
 @@@@@@@@@@@@@@@@
-R_RenderFrame
+SWR_RenderFrame
 
 @@@@@@@@@@@@@@@@
 */
-void R_RenderFrame (refdef_t *fd)
+static void SWR_RenderFrame (refdef_t *fd)
 {
 	r_newrefdef = *fd;
 
@@ -1001,11 +1006,11 @@ void R_RenderFrame (refdef_t *fd)
 	if (r_speeds->value || r_dspeeds->value)
 		r_time1 = Sys_Milliseconds ();
 
-	R_SetupFrame ();
+	SWR_SetupFrame ();
 
-	R_MarkLeaves ();	// done here so we know if we're in water
+	SWR_MarkLeaves ();	// done here so we know if we're in water
 
-	R_PushDlights (r_worldmodel);
+	SWR_PushDlights (r_worldmodel);
 
 	R_EdgeDrawing ();
 
@@ -1015,7 +1020,7 @@ void R_RenderFrame (refdef_t *fd)
 		de_time1 = se_time2;
 	}
 
-	R_DrawEntitiesOnList ();
+	SWR_DrawEntitiesOnList ();
 
 	if (r_dspeeds->value)
 	{
@@ -1023,14 +1028,14 @@ void R_RenderFrame (refdef_t *fd)
 		dp_time1 = Sys_Milliseconds ();
 	}
 
-	R_DrawParticles ();
+	SWR_DrawParticles ();
 
 	if (r_dspeeds->value)
 		dp_time2 = Sys_Milliseconds ();
 
-	R_DrawAlphaSurfaces();
+	SWR_DrawAlphaSurfaces();
 
-	R_SetLightLevel ();
+	SWR_SetLightLevel ();
 
 	if (r_dowarp)
 		D_WarpScreen ();
@@ -1092,7 +1097,7 @@ void R_InitGraphics( int width, int height )
 /*
 ** R_BeginFrame
 */
-void R_BeginFrame( float camera_separation )
+static void SWR_BeginFrame( float camera_separation )
 {
 	extern void Draw_BuildGammaTable( void );
 
@@ -1166,9 +1171,9 @@ void R_GammaCorrectAndSetPalette( const unsigned char *palette )
 }
 
 /*
-** R_CinematicSetPalette
+** SWR_CinematicSetPalette
 */
-void R_CinematicSetPalette( const unsigned char *palette )
+static void SWR_CinematicSetPalette( const unsigned char *palette )
 {
 	byte palette32[1024];
 	int		i, j, w;
@@ -1236,7 +1241,7 @@ void Draw_BuildGammaTable (void)
 /*
 ** R_DrawBeam
 */
-void R_DrawBeam( entity_t *e )
+static void R_DrawBeam( entity_t *e )
 {
 #define NUM_BEAM_SEGS 6
 
@@ -1292,10 +1297,11 @@ R_SetSky
 ============
 */
 // 3dstudio environment map names
-char	*suf[6] = {"rt", "bk", "lf", "ft", "up", "dn"};
+extern char *suf[6];
 int	r_skysideimage[6] = {5, 2, 4, 1, 0, 3};
 extern	mtexinfo_t		r_skytexinfo[6];
-void R_SetSky (char *name, float rotate, vec3_t axis)
+
+static void SWR_SetSky (char *name, float rotate, vec3_t axis)
 {
 	int		i;
 	char	pathname[MAX_QPATH];
@@ -1317,7 +1323,7 @@ void R_SetSky (char *name, float rotate, vec3_t axis)
 Draw_GetPalette
 ===============
 */
-void Draw_GetPalette (void)
+static void Draw_GetPalette (void)
 {
 	byte	*pal, *out;
 	int		i;
@@ -1344,53 +1350,53 @@ void Draw_GetPalette (void)
 	free (pal);
 }
 
-struct image_s *R_RegisterSkin (char *name);
+struct image_s *SWR_RegisterSkin (char *name);
 
 /*
 @@@@@@@@@@@@@@@@@@@@@
-GetRefAPI
+SWR_GetRefAPI
 
 @@@@@@@@@@@@@@@@@@@@@
 */
-refexport_t GetRefAPI (refimport_t rimp)
+refexport_t SWR_GetRefAPI (refimport_t rimp)
 {
-	refexport_t	re;
+   refexport_t	re;
 
-	ri = rimp;
+   ri = rimp;
 
-	re.api_version = API_VERSION;
+   re.api_version = API_VERSION;
 
-	re.BeginRegistration = R_BeginRegistration;
-    re.RegisterModel = R_RegisterModel;
-    re.RegisterSkin = R_RegisterSkin;
-	re.RegisterPic = Draw_FindPic;
-	re.SetSky = R_SetSky;
-	re.EndRegistration = R_EndRegistration;
+   re.BeginRegistration = SWR_BeginRegistration;
+   re.RegisterModel     = SWR_RegisterModel;
+   re.RegisterSkin      = SWR_RegisterSkin;
+   re.RegisterPic       = SWR_Draw_FindPic;
+   re.SetSky            = SWR_SetSky;
+   re.EndRegistration   = SWR_EndRegistration;
 
-	re.RenderFrame = R_RenderFrame;
+   re.RenderFrame       = SWR_RenderFrame;
 
-	re.DrawGetPicSize = Draw_GetPicSize;
-	re.DrawPic = Draw_Pic;
-	re.DrawStretchPic = Draw_StretchPic;
-	re.DrawChar = Draw_Char;
-	re.DrawTileClear = Draw_TileClear;
-	re.DrawFill = Draw_Fill;
-	re.DrawFadeScreen= Draw_FadeScreen;
+   re.DrawGetPicSize    = SWR_Draw_GetPicSize;
+   re.DrawPic           = SWR_Draw_Pic;
+   re.DrawStretchPic    = SWR_Draw_StretchPic;
+   re.DrawChar          = SWR_Draw_Char;
+   re.DrawTileClear     = SWR_Draw_TileClear;
+   re.DrawFill          = SWR_Draw_Fill;
+   re.DrawFadeScreen    = SWR_Draw_FadeScreen;
 
-	re.DrawStretchRaw = Draw_StretchRaw;
+   re.DrawStretchRaw      = SWR_Draw_StretchRaw;
 
-	re.Init = R_Init;
-	re.Shutdown = R_Shutdown;
+   re.Init                = SWR_Init;
+   re.Shutdown            = SWR_Shutdown;
 
-	re.CinematicSetPalette = R_CinematicSetPalette;
-	re.BeginFrame = R_BeginFrame;
-	re.EndFrame = SWimp_EndFrame;
+   re.CinematicSetPalette = SWR_CinematicSetPalette;
+   re.BeginFrame          = SWR_BeginFrame;
+   re.EndFrame            = SWimp_EndFrame;
 
-	re.AppActivate = SWimp_AppActivate;
+   re.AppActivate         = SWimp_AppActivate;
 
-	Swap_Init ();
+   Swap_Init ();
 
-	return re;
+   return re;
 }
 
 #ifndef REF_HARD_LINKED

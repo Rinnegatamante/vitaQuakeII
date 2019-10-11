@@ -49,10 +49,10 @@ int		modfilelen;
 
 /*
 ================
-Mod_Modellist_f
+SWR_Mod_Modellist_f
 ================
 */
-void Mod_Modellist_f (void)
+void SWR_Mod_Modellist_f (void)
 {
 	int		i;
 	model_t	*mod;
@@ -72,29 +72,29 @@ void Mod_Modellist_f (void)
 
 /*
 ===============
-Mod_Init
+SWR_Mod_Init
 ===============
 */
-void Mod_Init (void)
+void SWR_Mod_Init (void)
 {
 	memset (mod_novis, 0xff, sizeof(mod_novis));
 }
 
 /*
 ==================
-Mod_ForName
+SWR_Mod_ForName
 
 Loads in a model for the given name
 ==================
 */
-model_t *Mod_ForName (char *name, qboolean crash)
+static model_t *SWR_Mod_ForName (char *name, qboolean crash)
 {
 	model_t	*mod;
 	unsigned *buf;
 	int		i;
 	
 	if (!name[0])
-		ri.Sys_Error (ERR_DROP,"Mod_ForName: NULL name");
+		ri.Sys_Error (ERR_DROP,"SWR_Mod_ForName: NULL name");
 
 	//
 	// inline models are grabbed only from worldmodel
@@ -182,17 +182,17 @@ model_t *Mod_ForName (char *name, qboolean crash)
 
 /*
 ===============
-Mod_PointInLeaf
+SWR_Mod_PointInLeaf
 ===============
 */
-mleaf_t *Mod_PointInLeaf (vec3_t p, model_t *model)
+mleaf_t *SWR_Mod_PointInLeaf (vec3_t p, model_t *model)
 {
 	mnode_t		*node;
 	float		d;
 	mplane_t	*plane;
 	
 	if (!model || !model->nodes)
-		ri.Sys_Error (ERR_DROP, "Mod_PointInLeaf: bad model");
+		ri.Sys_Error (ERR_DROP, "SWR_Mod_PointInLeaf: bad model");
 
 	node = model->nodes;
 	while (1)
@@ -262,10 +262,10 @@ byte *Mod_DecompressVis (byte *in, model_t *model)
 
 /*
 ==============
-Mod_ClusterPVS
+SWR_Mod_ClusterPVS
 ==============
 */
-byte *Mod_ClusterPVS (int cluster, model_t *model)
+byte *SWR_Mod_ClusterPVS (int cluster, model_t *model)
 {
 	if (cluster == -1 || !model->vis)
 		return mod_novis;
@@ -1113,12 +1113,12 @@ void Mod_LoadSpriteModel (model_t *mod, void *buffer)
 
 /*
 @@@@@@@@@@@@@@@@@@@@@
-R_BeginRegistration
+SWR_BeginRegistration
 
 Specifies the model that will be used as the world
 @@@@@@@@@@@@@@@@@@@@@
 */
-void R_BeginRegistration (char *model)
+void SWR_BeginRegistration (char *model)
 {
 	char	fullname[MAX_QPATH];
 	cvar_t	*flushmap;
@@ -1132,26 +1132,25 @@ void R_BeginRegistration (char *model)
 	// this guarantees that mod_known[0] is the world map
 	flushmap = ri.Cvar_Get ("flushmap", "0", 0);
 	if ( strcmp(mod_known[0].name, fullname) || flushmap->value)
-		Mod_Free (&mod_known[0]);
-	r_worldmodel = R_RegisterModel (fullname);
+		SWR_Mod_Free(&mod_known[0]);
+	r_worldmodel = SWR_RegisterModel (fullname);
 	R_NewMap ();
 }
 
 
 /*
 @@@@@@@@@@@@@@@@@@@@@
-R_RegisterModel
+SWR_RegisterModel
 
 @@@@@@@@@@@@@@@@@@@@@
 */
-struct model_s *R_RegisterModel (char *name)
+struct model_s *SWR_RegisterModel (char *name)
 {
-	model_t	*mod;
 	int		i;
 	dsprite_t	*sprout;
 	dmdl_t		*pheader;
+	model_t *mod = SWR_Mod_ForName (name, false);
 
-	mod = Mod_ForName (name, false);
 	if (mod)
 	{
 		mod->registration_sequence = registration_sequence;
@@ -1183,11 +1182,11 @@ struct model_s *R_RegisterModel (char *name)
 
 /*
 @@@@@@@@@@@@@@@@@@@@@
-R_EndRegistration
+SWR_EndRegistration
 
 @@@@@@@@@@@@@@@@@@@@@
 */
-void R_EndRegistration (void)
+void SWR_EndRegistration (void)
 {
 	int		i;
 	model_t	*mod;
@@ -1215,10 +1214,10 @@ void R_EndRegistration (void)
 
 /*
 ================
-Mod_Free
+SWR_Mod_Free
 ================
 */
-void Mod_Free (model_t *mod)
+void SWR_Mod_Free(model_t *mod)
 {
 	Hunk_Free (mod->extradata);
 	memset (mod, 0, sizeof(*mod));
@@ -1226,16 +1225,16 @@ void Mod_Free (model_t *mod)
 
 /*
 ================
-Mod_FreeAll
+SWR_Mod_FreeAll
 ================
 */
-void Mod_FreeAll (void)
+void SWR_Mod_FreeAll(void)
 {
 	int		i;
 
 	for (i=0 ; i<mod_numknown ; i++)
 	{
 		if (mod_known[i].extradatasize)
-			Mod_Free (&mod_known[i]);
+			SWR_Mod_Free(&mod_known[i]);
 	}
 }

@@ -48,7 +48,7 @@ static void	(*surfmiptable[4])(void) = {
 	R_DrawSurfaceBlock8_mip3
 };
 
-void R_BuildLightMap (void);
+void SWR_BuildLightMap (void);
 extern	unsigned		blocklights[1024];	// allow some very large lightmaps
 
 float           surfscale;
@@ -59,12 +59,12 @@ surfcache_t	*sc_rover, *sc_base;
 
 /*
 ===============
-R_TextureAnimation
+SWR_TextureAnimation
 
 Returns the proper texture for a given time and base texture
 ===============
 */
-image_t *R_TextureAnimation (mtexinfo_t *tex)
+static image_t *SWR_TextureAnimation (mtexinfo_t *tex)
 {
 	int		c;
 
@@ -579,7 +579,7 @@ surfcache_t *D_CacheSurface (msurface_t *surface, int miplevel)
 //
 // if the surface is animating or flashing, flush the cache
 //
-	r_drawsurf.image = R_TextureAnimation (surface->texinfo);
+	r_drawsurf.image       = SWR_TextureAnimation (surface->texinfo);
 	r_drawsurf.lightadj[0] = r_newrefdef.lightstyles[surface->styles[0]].white*128;
 	r_drawsurf.lightadj[1] = r_newrefdef.lightstyles[surface->styles[1]].white*128;
 	r_drawsurf.lightadj[2] = r_newrefdef.lightstyles[surface->styles[2]].white*128;
@@ -640,7 +640,7 @@ surfcache_t *D_CacheSurface (msurface_t *surface, int miplevel)
 	c_surf++;
 
 	// calculate the lightings
-	R_BuildLightMap ();
+	SWR_BuildLightMap ();
 	
 	// rasterize the surface into the cache
 	R_DrawSurface ();

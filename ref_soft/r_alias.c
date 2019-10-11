@@ -24,8 +24,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 #include "r_local.h"
 
-#define LIGHT_MIN	5		// lowest light value we'll allow, to avoid the
-							//  need for inner-loop light clamping
+#define LIGHT_MIN	5		/* lowest light value we'll allow, to avoid the
+							    *  need for inner-loop light clamping */
 
 //PGM
 extern byte iractive;
@@ -54,13 +54,7 @@ float   aliasoldworldtransform[3][4];
 static float	s_ziscale;
 static vec3_t	s_alias_forward, s_alias_right, s_alias_up;
 
-
-#define NUMVERTEXNORMALS	162
-
-float	r_avertexnormals[NUMVERTEXNORMALS][3] = {
-#include "anorms.h"
-};
-
+extern float	r_avertexnormals[162][3];
 
 void R_AliasSetUpLerpData( dmdl_t *pmdl, float backlerp );
 void R_AliasSetUpTransform (void);
@@ -897,7 +891,7 @@ void R_AliasSetupLighting (void)
 	}
 	else
 	{
-		R_LightPoint (currententity->origin, light);
+		SWR_LightPoint (currententity->origin, light);
 	}
 
 	// save off light value for server to look at (BIG HACK!)

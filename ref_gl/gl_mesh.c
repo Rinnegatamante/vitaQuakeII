@@ -34,11 +34,7 @@ typedef struct
 =============================================================
 */
 
-#define NUMVERTEXNORMALS	162
-
-float	r_avertexnormals[NUMVERTEXNORMALS][3] = {
-#include "anorms.h"
-};
+extern float	r_avertexnormals[162][3];
 
 typedef float vec4_t[4];
 

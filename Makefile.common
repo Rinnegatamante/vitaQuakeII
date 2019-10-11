@@ -90,6 +90,9 @@ REFGL = 	ref_gl/gl_draw.c \
 			ref_gl/gl_rsurf.c \
 			ref_gl/gl_warp.c
 
+REFCOMMON = ref_common/r_alias_common.c \
+				ref_common/r_image_common.c
+
 GAME = 		game/m_tank.c \
 				game/p_client.c \
 				game/p_hud.c \
@@ -140,5 +143,6 @@ GAME = 		game/m_tank.c \
 				game/m_supertank.c
 
 SOURCES_C   += $(CLIENT) $(QCOMMON) $(SERVER) $(GAME) $(SYSTEM) $(REFGL)
+SOURCES_C   += $(REFCOMMON)
 #SOURCES_C   += $(REFSOFT)
 SOURCES_C   += $(foreach dir,$(JPEG8C_DIR), $(wildcard $(dir)/*.c))

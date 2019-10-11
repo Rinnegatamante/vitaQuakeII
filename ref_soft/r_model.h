@@ -238,18 +238,17 @@ typedef struct model_s
 
 //============================================================================
 
-void	Mod_Init (void);
+void	SWR_Mod_Init (void);
 void	Mod_ClearAll (void);
-model_t *Mod_ForName (char *name, qboolean crash);
 void	*Mod_Extradata (model_t *mod);	// handles caching
 void	Mod_TouchModel (char *name);
 
-mleaf_t *Mod_PointInLeaf (float *p, model_t *model);
-byte	*Mod_ClusterPVS (int cluster, model_t *model);
+mleaf_t *SWR_Mod_PointInLeaf (float *p, model_t *model);
+byte	*SWR_Mod_ClusterPVS (int cluster, model_t *model);
 
-void Mod_Modellist_f (void);
-void Mod_FreeAll (void);
-void Mod_Free (model_t *mod);
+void SWR_Mod_Modellist_f (void);
+void SWR_Mod_FreeAll (void);
+void SWR_Mod_Free (model_t *mod);
 
 extern	int		registration_sequence;
 

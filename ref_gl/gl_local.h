@@ -259,14 +259,12 @@ extern	int		registration_sequence;
 void V_AddBlend (float r, float g, float b, float a, float *v_blend);
 
 qboolean 	R_Init( void *hinstance, void *hWnd );
-void	R_Shutdown( void );
 
 void R_RenderView (refdef_t *fd);
 void GL_ScreenShot_f (void);
 void R_DrawAliasModel (entity_t *e);
 void R_DrawBrushModel (entity_t *e);
 void R_DrawSpriteModel (entity_t *e);
-void R_DrawBeam( entity_t *e );
 void R_DrawWorld (void);
 void R_RenderDlights (void);
 void R_DrawAlphaSurfaces (void);
@@ -295,7 +293,6 @@ void	Draw_Fill (int x, int y, int w, int h, int c);
 void	Draw_FadeScreen (void);
 void	Draw_StretchRaw (int x, int y, int w, int h, int cols, int rows, byte *data);
 
-void	R_BeginFrame( float camera_separation );
 void	R_SwapBuffers( int );
 void	R_SetPalette ( const unsigned char *palette);
 

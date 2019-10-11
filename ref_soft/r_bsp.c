@@ -449,10 +449,10 @@ int c_drawnode;
 
 /*
 ================
-R_RecursiveWorldNode
+SWR_RecursiveWorldNode
 ================
 */
-void R_RecursiveWorldNode (mnode_t *node, int clipflags)
+static void SWR_RecursiveWorldNode (mnode_t *node, int clipflags)
 {
 	int			i, c, side, *pindex;
 	vec3_t		acceptpt, rejectpt;
@@ -560,10 +560,10 @@ c_drawnode++;
 		else
 			side = 1;
 
-	// recurse down the children, front side first
-		R_RecursiveWorldNode (node->children[side], clipflags);
+      /* recurse down the children, front side first */
+		SWR_RecursiveWorldNode (node->children[side], clipflags);
 
-	// draw stuff
+      /* draw stuff */
 		c = node->numsurfaces;
 
 		if (c)
@@ -597,12 +597,12 @@ c_drawnode++;
 				} while (--c);
 			}
 
-		// all surfaces on the same node share the same sequence number
+         /* all surfaces on the same node share the same sequence number */
 			r_currentkey++;
 		}
 
-	// recurse down the back side
-		R_RecursiveWorldNode (node->children[!side], clipflags);
+      /* recurse down the back side */
+		SWR_RecursiveWorldNode (node->children[!side], clipflags);
 	}
 }
 
@@ -631,7 +631,7 @@ void R_RenderWorld (void)
 	currentmodel = r_worldmodel;
 	r_pcurrentvertbase = currentmodel->vertexes;
 
-	R_RecursiveWorldNode (currentmodel->nodes, 15);
+	SWR_RecursiveWorldNode (currentmodel->nodes, 15);
 }
 
 

@@ -97,7 +97,7 @@ __declspec(naked) void BlendParticle100( void )
 }
 
 /*
-** R_DrawParticle (asm version)
+** SWR_DrawParticle (asm version)
 **
 ** Since we use __declspec( naked ) we don't have a stack frame
 ** that we can use.  Since I want to reserve EBP anyway, I tossed
@@ -106,7 +106,7 @@ __declspec(naked) void BlendParticle100( void )
 ** other than a slightly higher global memory footprint.
 **
 */
-__declspec(naked) void R_DrawParticle( void )
+__declspec(naked) void SWR_DrawParticle( void )
 {
 	static vec3_t	local, transformed;
 	static float	zi;
@@ -452,7 +452,7 @@ static byte BlendParticle100( int pcolor, int dstcolor )
 }
 
 /*
-** R_DrawParticle
+** SWR_DrawParticle
 **
 ** Yes, this is amazingly slow, but it's the C reference
 ** implementation and should be both robust and vaguely
@@ -464,7 +464,7 @@ static byte BlendParticle100( int pcolor, int dstcolor )
 ** function pointer route.  This exacts some overhead, but
 ** it pays off in clean and easy to understand code.
 */
-void R_DrawParticle( void )
+void SWR_DrawParticle( void )
 {
 	particle_t *pparticle = partparms.particle;
 	int         level     = partparms.level;
@@ -586,14 +586,14 @@ void R_DrawParticle( void )
 #endif	// !id386
 
 /*
-** R_DrawParticles
+** SWR_DrawParticles
 **
 ** Responsible for drawing all of the particles in the particle list
 ** throughout the world.  Doesn't care if we're using the C path or
 ** if we're using the asm path, it simply assigns a function pointer
 ** and goes.
 */
-void R_DrawParticles (void)
+void SWR_DrawParticles (void)
 {
 	particle_t *p;
 	int         i;
@@ -627,7 +627,7 @@ void R_DrawParticles (void)
 			s_prefetch_address = ( unsigned int ) r_newrefdef.particles;
 #endif
 
-		R_DrawParticle();
+		SWR_DrawParticle();
 	}
 
 #if id386 && !defined __linux__

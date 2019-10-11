@@ -18,7 +18,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 */
 
-// draw.c
+/* draw.c */
 
 #include "r_local.h"
 
@@ -29,10 +29,10 @@ image_t		*draw_chars;				// 8*8 graphic characters
 
 /*
 ================
-Draw_FindPic
+SWR_Draw_FindPic
 ================
 */
-image_t *Draw_FindPic (char *name)
+image_t *SWR_Draw_FindPic (char *name)
 {
 	image_t	*image;
 	char	fullname[MAX_QPATH];
@@ -52,26 +52,26 @@ image_t *Draw_FindPic (char *name)
 
 /*
 ===============
-Draw_InitLocal
+SWR_Draw_InitLocal
 ===============
 */
-void Draw_InitLocal (void)
+void SWR_Draw_InitLocal (void)
 {
-	draw_chars = Draw_FindPic ("conchars");
+	draw_chars = SWR_Draw_FindPic ("conchars");
 }
 
 
 
 /*
 ================
-Draw_Char
+SWR_Draw_Char
 
 Draws one 8*8 graphics character
 It can be clipped to the top of the screen to allow the console to be
 smoothly scrolled off.
 ================
 */
-void Draw_Char (int x, int y, int num)
+void SWR_Draw_Char (int x, int y, int num)
 {
 	byte			*dest;
 	byte			*source;
@@ -138,14 +138,12 @@ void Draw_Char (int x, int y, int num)
 
 /*
 =============
-Draw_GetPicSize
+SWR_Draw_GetPicSize
 =============
 */
-void Draw_GetPicSize (int *w, int *h, char *pic)
+void SWR_Draw_GetPicSize (int *w, int *h, char *pic)
 {
-	image_t *gl;
-
-	gl = Draw_FindPic (pic);
+	image_t *gl = SWR_Draw_FindPic (pic);
 	if (!gl)
 	{
 		*w = *h = -1;
@@ -160,7 +158,7 @@ void Draw_GetPicSize (int *w, int *h, char *pic)
 Draw_StretchPicImplementation
 =============
 */
-void Draw_StretchPicImplementation (int x, int y, int w, int h, image_t	*pic)
+static void SWR_Draw_StretchPicImplementation (int x, int y, int w, int h, image_t	*pic)
 {
 	byte			*dest, *source;
 	int				v, u, sv;
@@ -217,17 +215,15 @@ void Draw_StretchPicImplementation (int x, int y, int w, int h, image_t	*pic)
 Draw_StretchPic
 =============
 */
-void Draw_StretchPic (int x, int y, int w, int h, char *name)
+void SWR_Draw_StretchPic (int x, int y, int w, int h, char *name)
 {
-	image_t	*pic;
-
-	pic = Draw_FindPic (name);
+	image_t *pic = SWR_Draw_FindPic (name);
 	if (!pic)
 	{
 		ri.Con_Printf (PRINT_ALL, "Can't find pic: %s\n", name);
 		return;
 	}
-	Draw_StretchPicImplementation (x, y, w, h, pic);
+	SWR_Draw_StretchPicImplementation (x, y, w, h, pic);
 }
 
 /*
@@ -235,30 +231,28 @@ void Draw_StretchPic (int x, int y, int w, int h, char *name)
 Draw_StretchRaw
 =============
 */
-void Draw_StretchRaw (int x, int y, int w, int h, int cols, int rows, byte *data)
+void SWR_Draw_StretchRaw (int x, int y, int w, int h, int cols, int rows, byte *data)
 {
 	image_t	pic;
 
 	pic.pixels[0] = data;
 	pic.width = cols;
 	pic.height = rows;
-	Draw_StretchPicImplementation (x, y, w, h, &pic);
+	SWR_Draw_StretchPicImplementation (x, y, w, h, &pic);
 }
 
 /*
 =============
-Draw_Pic
+SWR_Draw_Pic
 =============
 */
-void Draw_Pic (int x, int y, char *name)
+void SWR_Draw_Pic (int x, int y, char *name)
 {
-	image_t			*pic;
 	byte			*dest, *source;
 	int				v, u;
 	int				tbyte;
 	int				height;
-
-	pic = Draw_FindPic (name);
+	image_t *pic = Draw_FindPic (name);
 	if (!pic)
 	{
 		ri.Con_Printf (PRINT_ALL, "Can't find pic: %s\n", name);
@@ -336,13 +330,13 @@ void Draw_Pic (int x, int y, char *name)
 
 /*
 =============
-Draw_TileClear
+SWR_Draw_TileClear
 
 This repeats a 64*64 tile graphic to fill the screen around a sized down
 refresh window.
 =============
 */
-void Draw_TileClear (int x, int y, int w, int h, char *name)
+void SWR_Draw_TileClear (int x, int y, int w, int h, char *name)
 {
 	int			i, j;
 	byte		*psrc;
@@ -367,7 +361,7 @@ void Draw_TileClear (int x, int y, int w, int h, char *name)
 	if (w <= 0 || h <= 0)
 		return;
 
-	pic = Draw_FindPic (name);
+	pic = SWR_Draw_FindPic (name);
 	if (!pic)
 	{
 		ri.Con_Printf (PRINT_ALL, "Can't find pic: %s\n", name);
@@ -386,12 +380,12 @@ void Draw_TileClear (int x, int y, int w, int h, char *name)
 
 /*
 =============
-Draw_Fill
+SWR_Draw_Fill
 
 Fills a box of pixels with a single color
 =============
 */
-void Draw_Fill (int x, int y, int w, int h, int c)
+void SWR_Draw_Fill (int x, int y, int w, int h, int c)
 {
 	byte			*dest;
 	int				u, v;
@@ -421,17 +415,17 @@ void Draw_Fill (int x, int y, int w, int h, int c)
 
 /*
 ================
-Draw_FadeScreen
+SWR_Draw_FadeScreen
 
 ================
 */
-void Draw_FadeScreen (void)
+void SWR_Draw_FadeScreen(void)
 {
-	int			x,y;
+	int			x, y;
 	byte		*pbuf;
 	int	t;
 
-	for (y=0 ; y<vid.height ; y++)
+	for (y = 0; y < vid.height; y++)
 	{
 		pbuf = (byte *)(vid.buffer + vid.rowbytes*y);
 		t = (y & 1) << 1;

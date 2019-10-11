@@ -1938,6 +1938,7 @@ viddef_t    viddef;             /* global video state */
 refexport_t re;
 
 refexport_t GetRefAPI (refimport_t rimp);
+refexport_t SWR_GetRefAPI (refimport_t rimp);
 
 
 /*
@@ -2108,8 +2109,12 @@ void    VID_Init (void)
    ri.Vid_GetModeInfo = VID_GetModeInfo;
    ri.Vid_MenuInit = VID_MenuInit;
 
+#if 0
+   re = SWR_GetRefAPI(ri);
    /* JASON this is called from the video DLL */
+#else
    re = GetRefAPI(ri);
+#endif
 
    if (re.api_version != API_VERSION)
       Com_Error (ERR_FATAL, "Re has incompatible api_version");
