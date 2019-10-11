@@ -77,7 +77,7 @@ typedef struct mplane_s
 typedef struct
 {
 	unsigned short	v[2];
-	unsigned int	cachededgeoffset;
+	uintptr_t	cachededgeoffset;
 } medge_t;
 
 typedef struct mtexinfo_s
