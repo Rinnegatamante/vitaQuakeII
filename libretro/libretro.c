@@ -47,11 +47,12 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define RARCH_GL_COLOR_ATTACHMENT0 GL_COLOR_ATTACHMENT0
 #endif
 
-static bool did_flip = false;
 qboolean gl_set = false;
+bool is_soft_render = false;
 
 unsigned	sys_frame_time;
 uint64_t rumble_tick;
+void *tex_buffer = NULL;
 
 /* TODO/FIXME - should become float for better accuracy */
 int      framerate    = 60;
@@ -248,7 +249,6 @@ void GLimp_BeginFrame( float camera_separation )
 
 void GLimp_EndFrame (void)
 {
-	did_flip = true;
 }
 
 qboolean GLimp_InitGL (void)
@@ -278,10 +278,12 @@ static void context_reset(void)
 	if (!context_needs_reinit)
 		return;
 
-	initialize_gl();
-	if (!first_reset)
-		restore_textures();
-	first_reset = false;
+	if (!is_soft_render) {
+		initialize_gl();
+		if (!first_reset)
+			restore_textures();
+		first_reset = false;
+	}
 	context_needs_reinit = false;
 }
 
@@ -1406,7 +1408,7 @@ static void update_variables(bool startup)
 		var.key = "vitaquakeii_shadows";
 		var.value = NULL;
 
-		if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
+		if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value && !is_soft_render)
 		{
 			if (strcmp(var.value, "disabled") == 0)
 				Cvar_SetValue( "gl_shadows", 0 );
@@ -1642,8 +1644,16 @@ bool retro_load_game(const struct retro_game_info *info)
 	if (!environ_cb(RETRO_ENVIRONMENT_SET_HW_RENDER, &hw_render))
 	{
 		if (log_cb)
-			log_cb(RETRO_LOG_ERROR, "vitaQuakeII: libretro frontend doesn't have OpenGL support.\n");
-		return false;
+			log_cb(RETRO_LOG_ERROR, "vitaQuakeII: libretro frontend doesn't have OpenGL support, falling back to software renderer.\n");
+		
+		fmt = RETRO_PIXEL_FORMAT_RGB565;
+		if (!environ_cb(RETRO_ENVIRONMENT_SET_PIXEL_FORMAT, &fmt))
+		{
+			if (log_cb)
+				log_cb(RETRO_LOG_INFO, "RGB565 is not supported.\n");
+			return false;
+		}
+		is_soft_render = true;
 	}
 	
 
@@ -1718,16 +1728,19 @@ void retro_run(void)
 {
 	bool updated = false;
 
-	qglBindFramebuffer(RARCH_GL_FRAMEBUFFER, hw_render.get_current_framebuffer());
-	qglEnable(GL_TEXTURE_2D);
+	if (!is_soft_render) {
+		qglBindFramebuffer(RARCH_GL_FRAMEBUFFER, hw_render.get_current_framebuffer());
+		qglEnable(GL_TEXTURE_2D);
+	}
 
 	if (first_boot)
-   {
+	{
 		const char *argv[32];
 		const char *empty_string = "";
 	
 		argv[0] = empty_string;
 		Qcommon_Init(1, (char**)argv);
+		if (is_soft_render) Cvar_Set( "vid_ref", "soft" );
 		update_variables(false);
 		first_boot = false;
 	}
@@ -1745,7 +1758,8 @@ void retro_run(void)
 	if (shutdown_core)
 		return;
 
-	video_cb(RETRO_HW_FRAME_BUFFER_VALID, scr_width, scr_height, 0);
+	if (is_soft_render) video_cb(tex_buffer, scr_width, scr_height, scr_width << 1);
+	else video_cb(RETRO_HW_FRAME_BUFFER_VALID, scr_width, scr_height, 0);
 	
 	audio_process();
 	audio_callback();
@@ -2109,12 +2123,8 @@ void    VID_Init (void)
    ri.Vid_GetModeInfo = VID_GetModeInfo;
    ri.Vid_MenuInit = VID_MenuInit;
 
-#if 0
-   re = SWR_GetRefAPI(ri);
-   /* JASON this is called from the video DLL */
-#else
-   re = GetRefAPI(ri);
-#endif
+   if (is_soft_render) re = SWR_GetRefAPI(ri);
+   else re = GetRefAPI(ri);
 
    if (re.api_version != API_VERSION)
       Com_Error (ERR_FATAL, "Re has incompatible api_version");
@@ -2527,4 +2537,3 @@ void IN_DeactivateMouse (void)
 void IN_MouseEvent (int mstate)
 {
 }
-

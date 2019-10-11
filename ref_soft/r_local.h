@@ -770,10 +770,10 @@ void    SWR_EndRegistration (void);
 struct image_s  *SWR_Draw_FindPic (char *name);
 
 void    SWR_Draw_GetPicSize (int *w, int *h, char *name);
-void    SWR_Draw_Pic (int x, int y, char *name);
+void    SWR_Draw_Pic (int x, int y, char *name, float scale);
 void    SWR_Draw_StretchPic (int x, int y, int w, int h, char *name);
 void    SWR_Draw_StretchRaw (int x, int y, int w, int h, int cols, int rows, byte *data);
-void    SWR_Draw_Char (int x, int y, int c);
+void    SWR_Draw_Char (int x, int y, int c, float scale);
 void    SWR_Draw_TileClear (int x, int y, int w, int h, char *name);
 void    SWR_Draw_Fill (int x, int y, int w, int h, int c);
 void    SWR_Draw_FadeScreen (void);

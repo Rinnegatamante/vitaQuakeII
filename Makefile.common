@@ -78,7 +78,8 @@ REFSOFT = 	ref_soft/r_alias.c \
 				ref_soft/r_bsp.c \
 				ref_soft/r_draw.c \
 				ref_soft/r_edge.c \
-				ref_soft/r_image.c
+				ref_soft/r_image.c \
+				libretro/swimpl.c
 
 REFGL = 	ref_gl/gl_draw.c \
 			ref_gl/gl_image.c \
@@ -142,7 +143,5 @@ GAME = 		game/m_tank.c \
 				game/m_soldier.c \
 				game/m_supertank.c
 
-SOURCES_C   += $(CLIENT) $(QCOMMON) $(SERVER) $(GAME) $(SYSTEM) $(REFGL)
-SOURCES_C   += $(REFCOMMON)
-#SOURCES_C   += $(REFSOFT)
+SOURCES_C   += $(CLIENT) $(QCOMMON) $(SERVER) $(GAME) $(SYSTEM) $(REFGL) $(REFSOFT) $(REFCOMMON)
 SOURCES_C   += $(foreach dir,$(JPEG8C_DIR), $(wildcard $(dir)/*.c))

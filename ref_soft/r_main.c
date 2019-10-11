@@ -247,6 +247,8 @@ void R_InitTurb (void)
 
 void R_ImageList_f( void );
 
+extern cvar_t *gl_xflip;
+
 void SWR_Register (void)
 {
 	sw_aliasstats = ri.Cvar_Get ("sw_polymodelstats", "0", 0);
@@ -264,7 +266,8 @@ void SWR_Register (void)
 	sw_surfcacheoverride = ri.Cvar_Get ("sw_surfcacheoverride", "0", 0);
 	sw_waterwarp = ri.Cvar_Get ("sw_waterwarp", "1", 0);
 	sw_mode = ri.Cvar_Get( "sw_mode", "0", CVAR_ARCHIVE );
-
+	gl_xflip = ri.Cvar_Get( "gl_xflip", "0", CVAR_ARCHIVE);
+	
 	r_lefthand = ri.Cvar_Get( "hand", "0", CVAR_USERINFO | CVAR_ARCHIVE );
 	r_speeds = ri.Cvar_Get ("r_speeds", "0", 0);
 	r_fullbright = ri.Cvar_Get ("r_fullbright", "0", 0);
