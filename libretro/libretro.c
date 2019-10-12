@@ -54,6 +54,9 @@ unsigned	sys_frame_time;
 uint64_t rumble_tick;
 void *tex_buffer = NULL;
 
+extern cvar_t *gl_shadows;
+extern cvar_t *sw_texfilt;
+
 /* TODO/FIXME - should become float for better accuracy */
 int      framerate    = 60;
 unsigned framerate_ms = 16;
@@ -1324,29 +1327,42 @@ static void update_variables(bool startup)
             framerate_ms = 4;
             break;
       }
+
+      var.key = "vitaquakeii_resolution";
+      var.value = NULL;
+
+      if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && !initial_resolution_set)
+      {
+         char *pch;
+         char str[100];
+         snprintf(str, sizeof(str), "%s", var.value);
+
+         pch = strtok(str, "x");
+         if (pch)
+            scr_width = strtoul(pch, NULL, 0);
+         pch = strtok(NULL, "x");
+         if (pch)
+            scr_height = strtoul(pch, NULL, 0);
+
+         if (log_cb)
+            log_cb(RETRO_LOG_INFO, "Got size: %u x %u.\n", scr_width, scr_height);
+
+         initial_resolution_set = true;
+      }
    }
+   else
+   {
+      var.key = "vitaquakeii_dithered_filtering";
+      var.value = NULL;
 
-	var.key = "vitaquakeii_resolution";
-	var.value = NULL;
-
-	if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && !initial_resolution_set)
-	{
-		char *pch;
-		char str[100];
-		snprintf(str, sizeof(str), "%s", var.value);
-
-		pch = strtok(str, "x");
-		if (pch)
-			scr_width = strtoul(pch, NULL, 0);
-		pch = strtok(NULL, "x");
-		if (pch)
-			scr_height = strtoul(pch, NULL, 0);
-
-		if (log_cb)
-			log_cb(RETRO_LOG_INFO, "Got size: %u x %u.\n", scr_width, scr_height);
-
-		initial_resolution_set = true;
-	}
+      if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value && sw_texfilt)
+      {
+         if (strcmp(var.value, "enabled") == 0)
+            sw_texfilt->value = 1.0f;
+         else
+            sw_texfilt->value = 0.0f;
+      }
+   }
    
 	var.key = "vitaquakeii_invert_y_axis";
 	var.value = NULL;
@@ -1926,7 +1942,6 @@ static cvar_t *sw_stipplealpha;
 cvar_t *gl_picmip;
 cvar_t *gl_mode;
 cvar_t *gl_driver;
-extern cvar_t *gl_shadows;
 
 extern void M_ForceMenuOff( void );
 

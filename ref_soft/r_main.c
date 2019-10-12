@@ -145,6 +145,8 @@ cvar_t	*vid_gamma;
 cvar_t	*sw_lockpvs;
 //PGM
 
+cvar_t	*sw_texfilt;
+
 #define	STRINGER(x) "x"
 
 
@@ -291,6 +293,8 @@ void SWR_Register (void)
 //PGM
 	sw_lockpvs = ri.Cvar_Get ("sw_lockpvs", "0", 0);
 //PGM
+
+   sw_texfilt = ri.Cvar_Get ("sw_texfilt", "0", 0);
 }
 
 static void SWR_UnRegister (void)

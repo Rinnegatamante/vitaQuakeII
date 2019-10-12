@@ -74,6 +74,17 @@ struct retro_core_option_definition option_defs_us[] = {
       "960x544"
    },
    {
+      "vitaquakeii_dithered_filtering",
+      "Dithered filtering",
+      "Enables kernel-based software texture smoothing/filtering. Will take a hit on performance. Only works with the software renderer.",
+      {
+         { "disabled",  "Disabled" },
+         { "enabled",   "Enabled" },
+         { NULL, NULL },
+      },
+      "disabled"
+   },
+   {
       "vitaquakeii_shadows",
       "Dynamic Shadows",
       "Enables dynamic shadows rendering.",

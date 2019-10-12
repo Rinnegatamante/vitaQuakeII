@@ -386,6 +386,18 @@ void NonTurbulent8 (espan_t *pspan)
 //PGM
 //====================
 
+int kernel[2][2][2] =
+{
+   {
+        {16384,0},
+        {49152,32768}
+   }
+   ,
+   {
+      {32768,49152},
+      {0,16384}
+   }
+};
 
 #if	!id386
 
@@ -479,10 +491,11 @@ void D_DrawSpans16 (espan_t *pspan)
 			}
 			else
 			{
-			// calculate s/z, t/z, zi->fixed s and t at last pixel in span (so
-			// can't step off polygon), clamp, calculate s and t steps across
-			// span by division, biasing steps low so we don't run off the
-			// texture
+            /* calculate s/z, t/z, zi->fixed s and t at last pixel in span (so
+             * can't step off polygon), clamp, calculate s and t steps across
+             * span by division, biasing steps low so we don't run off the
+             * texture
+             */
 				spancountminus1 = (float)(spancount - 1);
 				sdivz += d_sdivzstepu * spancountminus1;
 				tdivz += d_tdivzstepu * spancountminus1;
@@ -509,12 +522,43 @@ void D_DrawSpans16 (espan_t *pspan)
 				}
 			}
 
-			do
-			{
-				*pdest++ = *(pbase + (s >> 16) + (t >> 16) * cachewidth);
-				s += sstep;
-				t += tstep;
-			} while (--spancount > 0);
+         /* Drawing phase */
+         if (sw_texfilt->value == 0.0f)
+         {
+            do
+            {
+               *pdest++ = *(pbase + (s >> 16) + (t >> 16) * cachewidth);
+               s += sstep;
+               t += tstep;
+            } while (--spancount > 0);
+         }
+         else if (sw_texfilt->value == 1.0f)
+         {
+            do
+            { 
+               int idiths = s;
+               int iditht = t;
+
+               int X = (pspan->u + spancount) & 1;
+               int Y = (pspan->v)&1;
+
+               /* Using the kernel */
+               idiths += kernel[X][Y][0];
+               iditht += kernel[X][Y][1];
+
+               idiths = idiths >> 16;
+               idiths = idiths ? idiths -1 : idiths;
+
+
+               iditht = iditht >> 16;
+               iditht = iditht ? iditht -1 : iditht;
+
+
+               *pdest++ = *(pbase + idiths + iditht * cachewidth);
+               s += sstep;
+               t += tstep;
+            } while (--spancount > 0);
+         }
 
 			s = snext;
 			t = tnext;
