@@ -76,8 +76,8 @@ void R_RenderDlight (dlight_t *light)
 	}
 	
 	qglColor4f(0,0,0,1);
-	vglVertexAttribPointerMapped(0, pPos);
-	vglVertexAttribPointerMapped(2, pColor);
+	glVertexAttribPointerMapped(0, pPos);
+	glVertexAttribPointerMapped(2, pColor);
 	GL_DrawPolygon(GL_TRIANGLE_FAN, 18);
 	qglDisableClientState(GL_COLOR_ARRAY);
 	qglEnableClientState(GL_TEXTURE_COORD_ARRAY);

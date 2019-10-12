@@ -25,7 +25,11 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define __QGL_H__
 
 #ifdef __LIBRETRO__
+#if platform==vita
+#include <vitaGL.h>
+#else
 #include <glsym/rglgen_private_headers.h>
+#endif
 #else
 #include <GL/gl.h>
 #endif
@@ -54,7 +58,12 @@ void     QGL_Shutdown( void );
 #define GL_TEXTURE0_SGIS					0x835E
 #define GL_TEXTURE1_SGIS					0x835F
 
-extern void vglVertexAttribPointerMapped(int id, void* ptr);
+#ifndef GLclampf
+#define GLclampf GLfloat
+#define GLclampd GLdouble
+#endif
+
+extern void glVertexAttribPointerMapped(int id, void* ptr);
 
 extern  void ( APIENTRY * qglBlendFunc )(GLenum sfactor, GLenum dfactor);
 extern  void ( APIENTRY * qglTexImage2D )(GLenum target, GLint level, GLint internalformat, GLsizei width, GLsizei height, GLint border, GLenum format, GLenum type, const GLvoid *pixels);

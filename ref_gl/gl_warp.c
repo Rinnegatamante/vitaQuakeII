@@ -251,8 +251,8 @@ void EmitWaterPolys (msurface_t *fa)
 			memcpy(gVertexBuffer, &v[0], sizeof(vec3_t));
 			gVertexBuffer += 3;
 		}
-		vglVertexAttribPointerMapped(0, pPoint);
-		vglVertexAttribPointerMapped(1, pUV);
+		glVertexAttribPointerMapped(0, pPoint);
+		glVertexAttribPointerMapped(1, pUV);
 		GL_DrawPolygon(GL_TRIANGLE_FAN, p->numverts);
 	}
 }
@@ -604,8 +604,8 @@ void R_DrawSkyBox (void)
       MakeSkyVec (skymins[0][i], skymaxs[1][i], i);
       MakeSkyVec (skymaxs[0][i], skymaxs[1][i], i);
       MakeSkyVec (skymaxs[0][i], skymins[1][i], i);
-      vglVertexAttribPointerMapped(0, SkyPos);
-      vglVertexAttribPointerMapped(1, SkyTex);
+      glVertexAttribPointerMapped(0, SkyPos);
+      glVertexAttribPointerMapped(1, SkyTex);
       GL_DrawPolygon(GL_TRIANGLE_FAN, 4);
 
    }

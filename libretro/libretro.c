@@ -19,13 +19,18 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 */
 
+#if platform==vita
+#define GL_H
+#include <vitaGL.h>
+#else
 #include <glsym/rglgen_private_headers.h>
+#include <glsym/glsym.h>
+#endif
 
 #include <libretro.h>
 #include <retro_dirent.h>
 #include <features/features_cpu.h>
 #include <file/file_path.h>
-#include <glsym/glsym.h>
 
 #include "libretro_core_options.h"
 
@@ -159,7 +164,7 @@ void GL_DrawPolygon(GLenum prim, int num)
 	qglDrawElements(prim, num, GL_UNSIGNED_SHORT, indices);
 }
 
-void vglVertexAttribPointerMapped(int id, void* ptr)
+void glVertexAttribPointerMapped(int id, void* ptr)
 {
    switch (id)
    {
@@ -1350,19 +1355,6 @@ static void update_variables(bool startup)
          initial_resolution_set = true;
       }
    }
-   else
-   {
-      var.key = "vitaquakeii_dithered_filtering";
-      var.value = NULL;
-
-      if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value && sw_texfilt)
-      {
-         if (strcmp(var.value, "enabled") == 0)
-            sw_texfilt->value = 1.0f;
-         else
-            sw_texfilt->value = 0.0f;
-      }
-   }
    
 	var.key = "vitaquakeii_invert_y_axis";
 	var.value = NULL;
@@ -1386,6 +1378,17 @@ static void update_variables(bool startup)
 				Cvar_SetValue( "pstv_rumble", 0 );
 			else
 				Cvar_SetValue( "pstv_rumble", 1 );
+		}
+		
+		var.key = "vitaquakeii_dithered_filtering";
+		var.value = NULL;
+
+		if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value && sw_texfilt)
+		{
+			if (strcmp(var.value, "enabled") == 0)
+				Cvar_SetValue( "sw_texfilt", 1 );
+			else
+				Cvar_SetValue( "sw_texfilt", 1 );
 		}
 	
 		var.key = "vitaquakeii_specular";
