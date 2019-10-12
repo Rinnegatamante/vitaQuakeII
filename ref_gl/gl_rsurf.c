@@ -121,8 +121,8 @@ static void DrawGLPoly (glpoly_t *p)
       memcpy(gTexCoordBuffer, &v[3], sizeof(float)*2);
       gTexCoordBuffer +=2;
    }
-   vglVertexAttribPointerMapped(0, pnv);
-   vglVertexAttribPointerMapped(1, pnt);
+   glVertexAttribPointerMapped(0, pnv);
+   glVertexAttribPointerMapped(1, pnt);
    GL_DrawPolygon(GL_TRIANGLE_FAN, p->numverts);
 }
 
@@ -151,8 +151,8 @@ static void DrawGLFlowingPoly (msurface_t *fa)
       memcpy(gTexCoordBuffer, &v[3], sizeof(float)*2);
       gTexCoordBuffer +=2;
    }
-   vglVertexAttribPointerMapped(0, pnv);
-   vglVertexAttribPointerMapped(1, pnt);
+   glVertexAttribPointerMapped(0, pnv);
+   glVertexAttribPointerMapped(1, pnt);
    GL_DrawPolygon(GL_TRIANGLE_FAN, p->numverts);
 }
 
@@ -189,7 +189,7 @@ void R_DrawTriangleOutlines (void)
 					memcpy(&gVertexBuffer[3], p->verts[j-1], sizeof(vec3_t));
 					memcpy(&gVertexBuffer[6], p->verts[j], sizeof(vec3_t));
 					memcpy(&gVertexBuffer[9], p->verts[0], sizeof(vec3_t));
-					vglVertexAttribPointerMapped(0, pPos);
+					glVertexAttribPointerMapped(0, pPos);
 					GL_DrawPolygon(GL_LINE_STRIP, 4);
 				}
 			}
@@ -223,8 +223,8 @@ static void DrawGLPolyChain( glpoly_t *p, float soffset, float toffset )
             *gTexCoordBuffer++ = v[5];
             *gTexCoordBuffer++ = v[6];
          }
-         vglVertexAttribPointerMapped(0, pPos);
-         vglVertexAttribPointerMapped(1, pTex);
+         glVertexAttribPointerMapped(0, pPos);
+         glVertexAttribPointerMapped(1, pTex);
          GL_DrawPolygon(GL_TRIANGLE_FAN, p->numverts);
       }
    }
@@ -246,8 +246,8 @@ static void DrawGLPolyChain( glpoly_t *p, float soffset, float toffset )
             *gTexCoordBuffer++ = v[5] - soffset;
             *gTexCoordBuffer++ = v[6] - toffset;
          }
-         vglVertexAttribPointerMapped(0, pPos);
-         vglVertexAttribPointerMapped(1, pTex);
+         glVertexAttribPointerMapped(0, pPos);
+         glVertexAttribPointerMapped(1, pTex);
          GL_DrawPolygon(GL_TRIANGLE_FAN, p->numverts);
       }
    }

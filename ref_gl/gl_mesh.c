@@ -200,8 +200,8 @@ void GL_DrawAliasFrameLerp (dmdl_t *paliashdr, float backlerp)
 			} while (--count);
 			qglDisableClientState(GL_TEXTURE_COORD_ARRAY);
 			qglEnableClientState(GL_COLOR_ARRAY);
-			vglVertexAttribPointerMapped(0, pPos);
-			vglVertexAttribPointerMapped(2, pColor);
+			glVertexAttribPointerMapped(0, pPos);
+			glVertexAttribPointerMapped(2, pColor);
 			GL_DrawPolygon(prim, c);
 			qglDisableClientState(GL_COLOR_ARRAY);
 			qglEnableClientState(GL_TEXTURE_COORD_ARRAY);
@@ -228,9 +228,9 @@ void GL_DrawAliasFrameLerp (dmdl_t *paliashdr, float backlerp)
 				
 			} while (--count);
 			qglEnableClientState(GL_COLOR_ARRAY);
-			vglVertexAttribPointerMapped(0, pPos);
-			vglVertexAttribPointerMapped(1, pTexCoord);
-			vglVertexAttribPointerMapped(2, pColor);
+			glVertexAttribPointerMapped(0, pPos);
+			glVertexAttribPointerMapped(1, pTexCoord);
+			glVertexAttribPointerMapped(2, pColor);
 			GL_DrawPolygon(prim, c);
 			qglDisableClientState(GL_COLOR_ARRAY);
 		}
@@ -320,7 +320,7 @@ void GL_DrawAliasShadow (dmdl_t *paliashdr, int posenum)
 
       qglDisableClientState(GL_TEXTURE_COORD_ARRAY);
       qglColor4f(0,0,0,0.5);
-      vglVertexAttribPointerMapped(0, pPos);
+      glVertexAttribPointerMapped(0, pPos);
       GL_DrawPolygon(prim, c);
       qglEnableClientState(GL_TEXTURE_COORD_ARRAY);
    }

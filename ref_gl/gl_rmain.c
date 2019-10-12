@@ -246,8 +246,8 @@ void R_DrawSpriteModel (entity_t *e)
 	VectorMA (point, frame->width - frame->origin_x, right, gVertexBuffer);
 	gVertexBuffer += 3;
 	
-	vglVertexAttribPointerMapped(0, pPoint);
-	vglVertexAttribPointerMapped(1, texcoord);
+	glVertexAttribPointerMapped(0, pPoint);
+	glVertexAttribPointerMapped(1, texcoord);
 	GL_DrawPolygon(GL_TRIANGLE_FAN, 4);
 	
 	qglDisable(GL_ALPHA_TEST);
@@ -292,12 +292,12 @@ void R_DrawNullModel (void)
 	
 	qglDisableClientState(GL_TEXTURE_COORD_ARRAY);
 	qglColor4f(shadelight[0], shadelight[1], shadelight[2], 1);
-	vglVertexAttribPointerMapped(0, pPos);
+	glVertexAttribPointerMapped(0, pPos);
 	GL_DrawPolygon(GL_TRIANGLE_FAN, 6);
 	
 	pPos[2] = 16;
 	
-	vglVertexAttribPointerMapped(0, pPos);
+	glVertexAttribPointerMapped(0, pPos);
 	qglColor4f(shadelight[0], shadelight[1], shadelight[2], 1);
 	GL_DrawPolygon(GL_TRIANGLE_FAN, 6);
 	qglEnableClientState(GL_TEXTURE_COORD_ARRAY);
@@ -469,9 +469,9 @@ void GL_DrawParticles( int num_particles, const particle_t particles[], const un
 	}
 
 	qglEnableClientState(GL_COLOR_ARRAY);
-	vglVertexAttribPointerMapped(0, pPos);
-	vglVertexAttribPointerMapped(1, pTex);
-	vglVertexAttribPointerMapped(2, pColor);
+	glVertexAttribPointerMapped(0, pPos);
+	glVertexAttribPointerMapped(1, pTex);
+	glVertexAttribPointerMapped(2, pColor);
 	GL_DrawPolygon(GL_TRIANGLES, num_vertices);
 	qglDisableClientState(GL_COLOR_ARRAY);
 	
@@ -522,7 +522,7 @@ void R_PolyBlend (void)
 
    qglDisableClientState(GL_TEXTURE_COORD_ARRAY);
    qglColor4f(v_blend[0], v_blend[1], v_blend[2], v_blend[3]);
-   vglVertexAttribPointerMapped(0, vertices);
+   glVertexAttribPointerMapped(0, vertices);
    GL_DrawPolygon(GL_TRIANGLE_FAN, 4);
    qglEnableClientState(GL_TEXTURE_COORD_ARRAY);
 
@@ -1381,7 +1381,7 @@ static void R_DrawBeam( entity_t *e )
 
 	qglDisableClientState(GL_TEXTURE_COORD_ARRAY);
 	qglColor4f(r, g, b, e->alpha);
-	vglVertexAttribPointerMapped(0, pPos);
+	glVertexAttribPointerMapped(0, pPos);
 	GL_DrawPolygon(GL_TRIANGLE_STRIP, num_vertices);
 	qglEnableClientState(GL_TEXTURE_COORD_ARRAY);
 	

@@ -48,8 +48,8 @@ static void DrawQuad(float x, float y, float w, float h, float u, float v, float
 {
    float texcoord[2*4] = {u, v, u + uw, v, u + uw, v + vh, u, v + vh};
    float vertex[3*4] = {x,y,0.5f,x+w,y,0.5f, x+w, y+h,0.5f, x, y+h,0.5f};
-   vglVertexAttribPointerMapped(0, vertex);
-   vglVertexAttribPointerMapped(1, texcoord);
+   glVertexAttribPointerMapped(0, vertex);
+   glVertexAttribPointerMapped(1, texcoord);
    GL_DrawPolygon(GL_TRIANGLE_FAN, 4);
 }
 
@@ -57,8 +57,8 @@ static void DrawPic(float x, float y, float w, float h, float u, float v, float 
 {
    float texcoord[2*4] = {u, v, u2, v, u2, v2, u, v2};
    float vertex[3*4] = {x,y,0.5f,x+w,y,0.5f, x+w, y+h,0.5f, x, y+h,0.5f};
-   vglVertexAttribPointerMapped(0, vertex);
-   vglVertexAttribPointerMapped(1, texcoord);
+   glVertexAttribPointerMapped(0, vertex);
+   glVertexAttribPointerMapped(1, texcoord);
    GL_DrawPolygon(GL_TRIANGLE_FAN, 4);
 }
 
@@ -67,7 +67,7 @@ static void DrawQuad_NoTex(float x, float y, float w, float h, float r, float g,
    float vertex[3*4] = {x,y,0.5f,x+w,y,0.5f, x+w, y+h,0.5f, x, y+h,0.5f};
    qglDisableClientState(GL_TEXTURE_COORD_ARRAY);
    qglColor4f(r, g, b, a);
-   vglVertexAttribPointerMapped(0, vertex);
+   glVertexAttribPointerMapped(0, vertex);
    GL_DrawPolygon(GL_TRIANGLE_FAN, 4);
    qglEnableClientState(GL_TEXTURE_COORD_ARRAY);
 }
