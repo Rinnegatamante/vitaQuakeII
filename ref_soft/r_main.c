@@ -149,9 +149,6 @@ cvar_t	*sw_texfilt;
 
 #define	STRINGER(x) "x"
 
-
-#if	!id386
-
 // r_vars.c
 
 // all global and static refresh variables are collected in a contiguous block
@@ -190,8 +187,6 @@ short			*d_pzbuffer;
 unsigned int	d_zrowbytes;
 unsigned int	d_zwidth;
 
-
-#endif	// !id386
 
 byte	r_notexture_buffer[1024];
 
@@ -328,13 +323,6 @@ qboolean SWR_Init( void *hInstance, void *wndProc )
 	r_refdef.xOrigin = XCENTERING;
 	r_refdef.yOrigin = YCENTERING;
 
-// TODO: collect 386-specific code in one place
-#if	id386
-	Sys_MakeCodeWriteable ((uintptr_t)R_EdgeCodeStart,
-					     (uintptr_t)R_EdgeCodeEnd - (uintptr_t)R_EdgeCodeStart);
-	Sys_SetFPCW ();		// get bit masks for FPCW	(FIXME: is this id386?)
-#endif	// id386
-
 	r_aliasuvscale = 1.0;
 
 	SWR_Register ();
@@ -403,10 +391,10 @@ void R_NewMap (void)
 		surface_p = surfaces;
 		surf_max = &surfaces[r_cnumsurfs];
 		r_surfsonstack = false;
-	// surface 0 doesn't really exist; it's just a dummy because index 0
-	// is used to indicate no edge attached to surface
+      /* surface 0 doesn't really exist; it's just a dummy because index 0
+       * is used to indicate no edge attached to surface */
 		surfaces--;
-		R_SurfacePatch ();
+		SWR_SurfacePatch ();
 	}
 	else
 	{
@@ -886,10 +874,10 @@ void R_EdgeDrawing (void)
 		surfaces =  (surf_t *)
 				(((uintptr_t)&lsurfs[0] + CACHE_SIZE - 1) & ~(CACHE_SIZE - 1));
 		surf_max = &surfaces[r_cnumsurfs];
-	// surface 0 doesn't really exist; it's just a dummy because index 0
-	// is used to indicate no edge attached to surface
+      /* surface 0 doesn't really exist; it's just a dummy because index 0
+       * is used to indicate no edge attached to surface */
 		surfaces--;
-		R_SurfacePatch ();
+		SWR_SurfacePatch ();
 	}
 
 	R_BeginEdgeFrame ();

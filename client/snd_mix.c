@@ -28,11 +28,6 @@ int		snd_scaletable[32][256];
 int 	*snd_p, snd_linear_count, snd_vol;
 short	*snd_out;
 
-void S_WriteLinearBlastStereo16 (void);
-
-//#if !(defined __linux__ && defined __i386__)
-//#if	!id386
-
 void S_WriteLinearBlastStereo16 (void)
 {
 	int		i;
@@ -361,10 +356,6 @@ void S_InitScaletable (void)
 			snd_scaletable[i][j] = ((signed char)j) * scale;
 	}
 }
-
-
-//#if !(defined __linux__ && defined __i386__)
-//#if	!id386
 
 void S_PaintChannelFrom8 (channel_t *ch, sfxcache_t *sc, int count, int offset)
 {

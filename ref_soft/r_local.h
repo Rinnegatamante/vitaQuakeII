@@ -627,15 +627,6 @@ void R_TransformFrustum (void);
 void R_DrawSurfaceBlock16 (void);
 void R_DrawSurfaceBlock8 (void);
 
-#if     id386
-
-void R_DrawSurfaceBlock8_mip0 (void);
-void R_DrawSurfaceBlock8_mip1 (void);
-void R_DrawSurfaceBlock8_mip2 (void);
-void R_DrawSurfaceBlock8_mip3 (void);
-
-#endif
-
 void R_GenSkyTile (void *pdest);
 void R_GenSkyTile16 (void *pdest);
 void R_Surf8Patch (void);
@@ -682,7 +673,7 @@ extern int              r_currentbkey;
 void    R_InitTurb (void);
 
 void SWR_DrawParticles (void);
-void R_SurfacePatch (void);
+void SWR_SurfacePatch (void);
 
 extern int              r_amodels_drawn;
 extern edge_t   *auxedges;

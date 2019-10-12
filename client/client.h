@@ -579,11 +579,4 @@ void CL_DrawInventory (void);
 //
 void CL_PredictMovement (void);
 
-#if id386
-#error
-void x86_TimerStart( void );
-void x86_TimerStop( void );
-void x86_TimerInit( unsigned long smallest, unsigned longest );
-unsigned long *x86_TimerGetHistogram( void );
-#endif
 #endif
