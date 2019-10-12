@@ -974,7 +974,7 @@ void R_Register( void )
 	gl_shadows = ri.Cvar_Get ("gl_shadows", "0", CVAR_ARCHIVE );
 	gl_dynamic = ri.Cvar_Get ("gl_dynamic", "1", 0);
 	gl_nobind = ri.Cvar_Get ("gl_nobind", "0", 0);
-	gl_round_down = ri.Cvar_Get ("gl_round_down", "1", 0);
+	gl_round_down = ri.Cvar_Get ("gl_round_down", "0", 0);
 	gl_picmip = ri.Cvar_Get ("gl_picmip", "0", 0);
 	gl_skymip = ri.Cvar_Get ("gl_skymip", "0", 0);
 	gl_showtris = ri.Cvar_Get ("gl_showtris", "0", 0);
