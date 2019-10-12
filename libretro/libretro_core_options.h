@@ -87,7 +87,7 @@ struct retro_core_option_definition option_defs_us[] = {
    {
       "vitaquakeii_shadows",
       "Dynamic Shadows",
-      "Enables dynamic shadows rendering.",
+      "Enables dynamic shadows rendering. Only works with the hardware renderer.",
       {
          { "disabled",  "Disabled" },
          { "enabled",   "Enabled" },
@@ -120,7 +120,7 @@ struct retro_core_option_definition option_defs_us[] = {
    {
       "vitaquakeii_xhair",
       "Show Crosshair",
-      "Enables in game crosshair.",
+      "Enables in game crosshair. Only works with the hardware renderer.",
       {
          { "disabled",  "Disabled" },
          { "enabled",   "Enabled" },
@@ -177,6 +177,32 @@ struct retro_core_option_definition option_defs_us[] = {
 /* RETRO_LANGUAGE_ITALIAN */
 struct retro_core_option_definition option_defs_it[] = {
    {
+      "vitaquakeii_framerate",
+      "Framerate (riavvio)",
+      "Modifica il framerate. Richiede un riavvio.",
+      {
+         { "auto",            "Auto"},
+         { "50",              "50fps"},
+         { "60",              "60fps"},
+         { "72",              "72fps"},
+         { "75",              "75fps"},
+         { "90",              "90fps"},
+         { "100",              "100fps"},
+         { "119",              "119fps"},
+         { "120",              "120fps"},
+         { "144",              "144fps"},
+         { "155",              "155fps"},
+         { "160",              "160fps"},
+         { "165",              "165fps"},
+         { "180",              "180fps"},
+         { "200",              "200fps"},
+         { "240",              "240fps"},
+         { "244",              "244fps"},
+         { NULL, NULL },
+      },
+      "auto"
+   },
+   {
       "vitaquakeii_resolution",
       "Risoluzione interna (riavvio)",
       "Configura la risoluzione. Richiede un riavvio.",
@@ -194,9 +220,20 @@ struct retro_core_option_definition option_defs_it[] = {
       "960x544"
    },
    {
+      "vitaquakeii_dithered_filtering",
+      "Filtro Dithering",
+      "Abilita filtraggio software kernel-based per le texture. Riduce le performance. Funziona solo con renderer software.",
+      {
+         { "disabled",  "Disattivato" },
+         { "enabled",   "Attivato" },
+         { NULL, NULL },
+      },
+      "disabled"
+   },
+   {
       "vitaquakeii_shadows",
       "Ombre Dinamiche",
-      "Abilita il rendering delle ombre dinamiche.",
+      "Abilita il rendering delle ombre dinamiche. Funziona solo con renderer hardware.",
       {
          { "disabled",  "Disattivato" },
          { "enabled",   "Attivato" },
@@ -218,7 +255,7 @@ struct retro_core_option_definition option_defs_it[] = {
    {
       "vitaquakeii_specular",
       "Modalità Speculare",
-      "Rende tutti i livelli di gioco speculari.",
+      "Rende tutti i livelli di gioco speculari. Funziona solo con renderer hardware.",
       {
          { "disabled",  "Disattivata" },
          { "enabled",   "Attivata" },
