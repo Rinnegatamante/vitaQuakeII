@@ -120,7 +120,7 @@ struct retro_core_option_definition option_defs_us[] = {
    {
       "vitaquakeii_xhair",
       "Show Crosshair",
-      "Enables in game crosshair. Only works with the hardware renderer.",
+      "Enables in game crosshair.",
       {
          { "disabled",  "Disabled" },
          { "enabled",   "Enabled" },
