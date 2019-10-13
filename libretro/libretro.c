@@ -2520,9 +2520,9 @@ void IN_Move (usercmd_t *cmd)
             rsx = rsx + analog_deadzone;
          /* For now we are sharing the sensitivity with the mouse setting */
          if (gl_xflip->value)
-            cl.viewangles[YAW] += sensitivity->value * rsx / (ANALOG_RANGE - analog_deadzone);
+            cl.viewangles[YAW] += (float)(sensitivity->value * rsx / (ANALOG_RANGE - analog_deadzone)) / (framerate / 60.0f);
          else
-            cl.viewangles[YAW] -= sensitivity->value * rsx / (ANALOG_RANGE - analog_deadzone);
+            cl.viewangles[YAW] -= (float)(sensitivity->value * rsx / (ANALOG_RANGE - analog_deadzone)) / (framerate / 60.0f);
       }
 
       if (rsy > analog_deadzone || rsy < -analog_deadzone) {
@@ -2530,7 +2530,7 @@ void IN_Move (usercmd_t *cmd)
             rsy = rsy - analog_deadzone;
          if (rsy < -analog_deadzone)
             rsy = rsy + analog_deadzone;
-         cl.viewangles[PITCH] -= sensitivity->value * rsy / (ANALOG_RANGE - analog_deadzone);
+         cl.viewangles[PITCH] -= (float)(sensitivity->value * rsy / (ANALOG_RANGE - analog_deadzone)) / (framerate / 60.0f);
       }
 
       if (cl.viewangles[PITCH] > 80)
