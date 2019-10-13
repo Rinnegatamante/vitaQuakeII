@@ -155,6 +155,7 @@ void Com_Printf (char *fmt, ...)
 	// also echo to debugging console
 	Sys_ConsoleOutput (msg);
 
+#ifndef __LIBRETRO__
 	// logfile
 	if (logfile_active && logfile_active->value)
 	{
@@ -170,6 +171,7 @@ void Com_Printf (char *fmt, ...)
 		if (logfile_active->value > 1)
 			fflush (logfile);		// force it to save every time
 	}
+#endif
 }
 
 
@@ -1534,6 +1536,7 @@ void Qcommon_Frame (int msec)
 	if (setjmp (abortframe) )
 		return;			// an ERR_DROP was thrown
 
+#ifndef __LIBRETRO__
 	if ( log_stats->modified )
 	{
 		log_stats->modified = false;
@@ -1557,7 +1560,6 @@ void Qcommon_Frame (int msec)
 			}
 		}
 	}
-#ifndef __LIBRETRO__
 	if (fixedtime->value)
 		msec = fixedtime->value;
 	else if (timescale->value)
@@ -1566,7 +1568,6 @@ void Qcommon_Frame (int msec)
 		if (msec < 1)
 			msec = 1;
 	}
-#endif
 	if (showtrace->value)
 	{
 		extern	int c_traces, c_brush_traces;
@@ -1577,6 +1578,7 @@ void Qcommon_Frame (int msec)
 		c_brush_traces = 0;
 		c_pointcontents = 0;
 	}
+#endif
 
 	do
 	{
@@ -1586,16 +1588,21 @@ void Qcommon_Frame (int msec)
 	} while (s);
 	Cbuf_Execute ();
 
+#ifndef __LIBRETRO__
 	if (host_speeds->value)
 		time_before = Sys_Milliseconds ();
+#endif
 
 	SV_Frame (msec);
 
+#ifndef __LIBRETRO__
 	if (host_speeds->value)
 		time_between = Sys_Milliseconds ();		
+#endif
 
 	CL_Frame (msec);
 
+#ifndef __LIBRETRO__
 	if (host_speeds->value)
 		time_after = Sys_Milliseconds ();		
 
@@ -1614,6 +1621,7 @@ void Qcommon_Frame (int msec)
 		Com_Printf ("all:%3i sv:%3i gm:%3i cl:%3i rf:%3i\n",
 			all, sv, gm, cl, rf);
 	}	
+#endif
 }
 
 /*
