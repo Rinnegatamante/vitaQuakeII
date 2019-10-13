@@ -152,7 +152,7 @@ static bool libretro_supports_bitmasks = false;
 static void audio_callback(void);
 
 #define SAMPLE_RATE   	48000
-#define BUFFER_SIZE 	4096
+#define BUFFER_SIZE 	2048
 #define MAX_PADS 1
 static unsigned quake_devices[1];
 
