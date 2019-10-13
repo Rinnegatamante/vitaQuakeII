@@ -146,14 +146,9 @@ done:
 	if (mipmap)
 	{
 		qglGenerateMipmap(GL_TEXTURE_2D);
-		qglTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, gl_filter_min);
-		qglTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, gl_filter_max);
 	}
-	else
-	{
-		qglTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, gl_filter_max);
-		qglTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, gl_filter_max);
-	}
+   qglTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, gl_filter_max);
+   qglTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, gl_filter_max);
 
 	return (samples == gl_alpha_format);
 }
@@ -975,11 +970,6 @@ void	GL_InitImages (void)
 	gl_state.inverse_intensity = 1 / intensity->value;
 
 	Draw_GetPalette ();
-
-	if ( gl_config.renderer & ( GL_RENDERER_VOODOO | GL_RENDERER_VOODOO2 ) )
-	{
-		g = 1.0F;
-	}
 
 	for ( i = 0; i < 256; i++ )
 	{

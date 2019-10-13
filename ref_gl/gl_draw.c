@@ -163,14 +163,8 @@ void Draw_StretchPic (int x, int y, int w, int h, char *pic)
 		return;
 	}
 
-	if ( ( ( gl_config.renderer == GL_RENDERER_MCD ) || ( gl_config.renderer & GL_RENDERER_RENDITION ) ) && !gl->has_alpha)
-		qglDisable(GL_ALPHA_TEST);
-
 	GL_Bind (gl->texnum);
 	DrawPic(x, y, w, h, gl->sl, gl->tl, gl->sh, gl->th);
-
-	if ( ( ( gl_config.renderer == GL_RENDERER_MCD ) || ( gl_config.renderer & GL_RENDERER_RENDITION ) ) && !gl->has_alpha)
-		qglEnable(GL_ALPHA_TEST);
 }
 
 
@@ -190,14 +184,8 @@ void Draw_Pic (int x, int y, char *pic, float factor)
 		return;
 	}
 
-	if ( ( ( gl_config.renderer == GL_RENDERER_MCD ) || ( gl_config.renderer & GL_RENDERER_RENDITION ) ) && !gl->has_alpha)
-		qglDisable(GL_ALPHA_TEST);
-
 	GL_Bind (gl->texnum);
 	DrawPic(x, y, gl->width * factor, gl->height * factor, gl->sl, gl->tl, gl->sh, gl->th);
-
-	if ( ( ( gl_config.renderer == GL_RENDERER_MCD ) || ( gl_config.renderer & GL_RENDERER_RENDITION ) )  && !gl->has_alpha)
-		qglEnable(GL_ALPHA_TEST);
 }
 
 /*
@@ -219,15 +207,8 @@ void Draw_TileClear (int x, int y, int w, int h, char *pic)
 		return;
 	}
 
-	if ( ( ( gl_config.renderer == GL_RENDERER_MCD ) || ( gl_config.renderer & GL_RENDERER_RENDITION ) )  && !image->has_alpha)
-		qglDisable(GL_ALPHA_TEST);
-
-	
 	GL_Bind (image->texnum);
 	DrawQuad(x, y, w, h, x/64.0, y/64.0, w/64.0, h/64.0);
-
-	if ( ( ( gl_config.renderer == GL_RENDERER_MCD ) || ( gl_config.renderer & GL_RENDERER_RENDITION ) )  && !image->has_alpha)
-		qglEnable(GL_ALPHA_TEST);
 }
 
 
@@ -286,61 +267,51 @@ extern unsigned	r_rawpalette[256];
 
 void Draw_StretchRaw (int x, int y, int w, int h, int cols, int rows, byte *data)
 {
-	unsigned	image32[320*240];
-	int			i, j, trows;
-	byte		*source;
-	int			frac, fracstep;
-	float		hscale;
-	int			row;
-	float		t;
-	
-	GL_Bind (0);
+   unsigned	image32[320*240];
+   int			i, j, trows;
+   byte		*source;
+   int			frac, fracstep;
+   float		hscale;
+   int			row;
+   float		t;
 
-	if (rows<=256)
-	{
-		hscale = 1;
-		trows = rows;
-	}
-	else
-	{
-		hscale = rows/256.0;
-		trows = 256;
-	}
-	t = rows*hscale / 256;
+   GL_Bind (0);
 
-	unsigned *dest;
+   if (rows<=256)
+   {
+      hscale = 1;
+      trows = rows;
+   }
+   else
+   {
+      hscale = rows/256.0;
+      trows = 256;
+   }
+   t = rows*hscale / 256;
 
-	for (i=0 ; i<trows ; i++)
-	{
-		row = (int)(i*hscale);
-		if (row > rows)
-			break;
-		source = data + cols*row;
-		dest = &image32[i*256];
-		fracstep = cols*0x10000/256;
-		frac = fracstep >> 1;
-		for (j=0 ; j<256 ; j++)
-		{
-			dest[j] = r_rawpalette[source[frac>>16]];
-			frac += fracstep;
-		}
-	}
+   unsigned *dest;
 
-	qglTexImage2D(GL_TEXTURE_2D, 0, gl_tex_solid_format, 256, 256, 0, GL_RGBA, GL_UNSIGNED_BYTE, image32);
-	
-	qglTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	qglTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+   for (i=0 ; i<trows ; i++)
+   {
+      row = (int)(i*hscale);
+      if (row > rows)
+         break;
+      source = data + cols*row;
+      dest = &image32[i*256];
+      fracstep = cols*0x10000/256;
+      frac = fracstep >> 1;
+      for (j=0 ; j<256 ; j++)
+      {
+         dest[j] = r_rawpalette[source[frac>>16]];
+         frac += fracstep;
+      }
+   }
 
-#if 0
-   if ( ( gl_config.renderer == GL_RENDERER_MCD ) || ( gl_config.renderer & GL_RENDERER_RENDITION ) ) 
-#endif
-		qglDisable(GL_ALPHA_TEST);
+   qglTexImage2D(GL_TEXTURE_2D, 0, gl_tex_solid_format, 256, 256, 0, GL_RGBA, GL_UNSIGNED_BYTE, image32);
 
-	DrawPic(x, y, w, h, 0, 0, 1, t);
+   qglTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+   qglTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
-#if 0
-	if ( ( gl_config.renderer == GL_RENDERER_MCD ) || ( gl_config.renderer & GL_RENDERER_RENDITION ) ) 
-#endif
-		qglEnable(GL_ALPHA_TEST);
+   DrawPic(x, y, w, h, 0, 0, 1, t);
 }
 
