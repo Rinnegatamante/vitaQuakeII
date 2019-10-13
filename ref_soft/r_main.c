@@ -244,8 +244,11 @@ void R_InitTurb (void)
 
 void R_ImageList_f( void );
 
+#ifdef HAVE_OPENGL
 extern cvar_t *gl_xflip;
-
+#else
+cvar_t *gl_xflip;
+#endif
 void SWR_Register (void)
 {
 	sw_aliasstats = ri.Cvar_Get ("sw_polymodelstats", "0", 0);

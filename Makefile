@@ -1,5 +1,6 @@
 STATIC_LINKING := 0
 AR             := ar
+HAVE_OPENGL    := 0
 
 ifneq ($(V),1)
    Q := @
@@ -66,6 +67,7 @@ ifeq ($(platform), unix)
 	EXT ?= so
    TARGET := $(TARGET_NAME)_libretro.$(EXT)
    fpic := -fPIC
+	HAVE_OPENGL = 1
    SHARED := -shared -Wl,--version-script=$(CORE_DIR)/link.T -Wl,--no-undefined
 else ifeq ($(platform), linux-portable)
    TARGET := $(TARGET_NAME)_libretro.$(EXT)
@@ -112,6 +114,7 @@ else ifeq ($(platform), vita)
 else
    CC = gcc
    TARGET := $(TARGET_NAME)_libretro.dll
+	HAVE_OPENGL = 1
    SHARED := -shared -static-libgcc -static-libstdc++ -s -Wl,--version-script=$(CORE_DIR)/link.T -Wl,--no-undefined
 endif
 
@@ -131,6 +134,10 @@ OBJECTS := $(SOURCES_C:.c=.o)
 
 CFLAGS   += -Wall -D__LIBRETRO__ $(fpic) -DREF_HARD_LINKED -DRELEASE -DGAME_HARD_LINKED -DOSTYPE=\"$(OSTYPE)\" -DARCH=\"$(ARCH)\"
 CXXFLAGS += -Wall -D__LIBRETRO__ $(fpic) -fpermissive
+
+ifeq ($(HAVE_OPENGL),1)
+CFLAGS   += -DHAVE_OPENGL
+endif
 
 ifeq ($(platform), unix)
 CFLAGS += -std=gnu99

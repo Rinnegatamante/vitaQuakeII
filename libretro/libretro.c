@@ -19,10 +19,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 */
 
-#if platform==vita
-#define GL_H
-#include <vitaGL.h>
-#else
+#ifdef HAVE_OPENGL
 #include <glsym/rglgen_private_headers.h>
 #include <glsym/glsym.h>
 #endif
@@ -36,6 +33,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #include "../client/client.h"
 #include "../client/qmenu.h"
+
+#ifdef HAVE_OPENGL
 #include "../ref_gl/gl_local.h"
 
 #if defined(HAVE_PSGL)
@@ -51,6 +50,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define RARCH_GL_FRAMEBUFFER_COMPLETE GL_FRAMEBUFFER_COMPLETE
 #define RARCH_GL_COLOR_ATTACHMENT0 GL_COLOR_ATTACHMENT0
 #endif
+#endif
 
 qboolean gl_set = false;
 bool is_soft_render = false;
@@ -59,7 +59,9 @@ unsigned	sys_frame_time;
 uint64_t rumble_tick;
 void *tex_buffer = NULL;
 
+#ifdef HAVE_OPENGL
 extern cvar_t *gl_shadows;
+#endif
 extern cvar_t *sw_texfilt;
 
 /* TODO/FIXME - should become float for better accuracy */
@@ -70,6 +72,7 @@ float *gVertexBuffer;
 float *gColorBuffer;
 float *gTexCoordBuffer;
 
+#ifdef HAVE_OPENGL
 void ( APIENTRY * qglBlendFunc )(GLenum sfactor, GLenum dfactor);
 void ( APIENTRY * qglTexImage2D )(GLenum target, GLint level, GLint internalformat, GLsizei width, GLsizei height, GLint border, GLenum format, GLenum type, const GLvoid *pixels);
 void ( APIENTRY * qglTexParameteri )(GLenum target, GLenum pname, GLint param);
@@ -121,9 +124,11 @@ typedef struct api_entry{
 } api_entry;
 
 api_entry funcs[GL_FUNCS_NUM];
+#endif
 
 char g_rom_dir[1024], g_pak_path[1024], g_save_dir[1024];
 
+#ifdef HAVE_OPENGL
 static struct retro_hw_render_callback hw_render;
 
 #define MAX_INDICES 4096
@@ -132,6 +137,7 @@ uint16_t* indices;
 float *gVertexBufferPtr;
 float *gColorBufferPtr;
 float *gTexCoordBufferPtr;
+#endif
 
 static retro_log_printf_t log_cb;
 static retro_video_refresh_t video_cb;
@@ -159,6 +165,7 @@ static int analog_deadzone = (int)(0.15f * ANALOG_RANGE);
 
 static bool context_needs_reinit = true;
 
+#ifdef HAVE_OPENGL
 void GL_DrawPolygon(GLenum prim, int num)
 {
 	qglDrawElements(prim, num, GL_UNSIGNED_SHORT, indices);
@@ -272,6 +279,7 @@ qboolean GLimp_InitGL (void)
 	gl_set = true;
 	return true;
 }
+#endif
 
 static void context_destroy(void) 
 {
@@ -285,13 +293,14 @@ static void context_reset(void)
 {
 	if (!context_needs_reinit)
 		return;
-
+#ifdef HAVE_OPENGL
 	if (!is_soft_render) {
 		initialize_gl();
 		if (!first_reset)
 			restore_textures();
 		first_reset = false;
 	}
+#endif
 	context_needs_reinit = false;
 }
 
@@ -430,9 +439,9 @@ netadr_t	net_local_adr;
 
 extern uint64_t rumble_tick;
 int scr_width = 960, scr_height = 544;
-
+#ifdef HAVE_OPENGL
 void *GetGameAPI (void *import);
-
+#endif
 qboolean	NET_CompareAdr (netadr_t a, netadr_t b)
 {
 	if (a.ip[0] == b.ip[0] && a.ip[1] == b.ip[1] && a.ip[2] == b.ip[2] && a.ip[3] == b.ip[3] && a.port == b.port)
@@ -1036,37 +1045,6 @@ static int glob_match_after_star(char *pattern, char *text)
 	}
 }
 
-#if 0
-/* Return nonzero if PATTERN has any special globbing chars in it.  */
-static int glob_pattern_p(char *pattern)
-{
-	register char *p = pattern;
-	register char c;
-	int open = 0;
-
-	while ((c = *p++) != '\0')
-		switch (c) {
-		case '?':
-		case '*':
-			return 1;
-
-		case '[':		/* Only accept an open brace if there is a close */
-			open++;		/* brace to match it.  Bracket expressions must be */
-			continue;	/* complete, according to Posix.2 */
-		case ']':
-			if (open)
-				return 1;
-			continue;
-
-		case '\\':
-			if (*p++ == '\0')
-				return 0;
-		}
-
-	return 0;
-}
-#endif
-
 /* Match the pattern PATTERN against the string TEXT;
    return 1 if it matches, 0 otherwise.
    A match means the entire string TEXT is used up in matching.
@@ -1167,18 +1145,6 @@ static int glob_match(char *pattern, char *text)
 	return *t == '\0';
 }
 
-#if 0
-static qboolean CompareAttributes(char *path, char *name,
-	unsigned musthave, unsigned canthave )
-{
-   /* . and .. never match */
-   if (strcmp(name, ".") == 0 || strcmp(name, "..") == 0)
-      return false;
-
-   return true;
-}
-#endif
-
 char *Sys_FindFirst (char *path, unsigned musthave, unsigned canhave)
 {
 	char *p;
@@ -1206,17 +1172,8 @@ char *Sys_FindFirst (char *path, unsigned musthave, unsigned canhave)
       if (!*findpattern || 
             glob_match(findpattern, retro_dirent_get_name(fdir)))
       {
-#if 0
-         if (*findpattern)
-            printf("%s matched %s\n", findpattern, d.d_name);
-         if (CompareAttributes(findbase, d.d_name, musthave, canhave))
-         {
-#endif
             sprintf (findpath, "%s/%s", findbase, retro_dirent_get_name(fdir));
             return findpath;
-#if 0
-         }
-#endif
       }
    }
 	return NULL;
@@ -1230,16 +1187,8 @@ char *Sys_FindNext (unsigned musthave, unsigned canhave)
    {
       if (!*findpattern || glob_match(findpattern, retro_dirent_get_name(fdir)))
       {
-#if 0
-         if (*findpattern)
-            printf("%s matched %s\n", findpattern, d.d_name);
-         if (CompareAttributes(findbase, d.d_name, musthave, canhave)) {
-#endif
             sprintf (findpath, "%s/%s", findbase, retro_dirent_get_name(fdir));
             return findpath;
-#if 0
-         }
-#endif
       }
    }
 	return NULL;
@@ -1390,7 +1339,7 @@ static void update_variables(bool startup)
 			else
 				Cvar_SetValue( "sw_texfilt", 1 );
 		}
-	
+#ifdef HAVE_OPENGL	
 		var.key = "vitaquakeii_specular";
 		var.value = NULL;
 
@@ -1401,7 +1350,7 @@ static void update_variables(bool startup)
 			else
 				Cvar_SetValue( "gl_xflip", 1 );
 		}
-		
+#endif		
 		var.key = "vitaquakeii_xhair";
 		var.value = NULL;
 
@@ -1426,7 +1375,7 @@ static void update_variables(bool startup)
 		
 		var.key = "vitaquakeii_shadows";
 		var.value = NULL;
-
+#ifdef HAVE_OPENGL
 		if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value && !is_soft_render)
 		{
 			if (strcmp(var.value, "disabled") == 0)
@@ -1434,7 +1383,7 @@ static void update_variables(bool startup)
 			else
 				Cvar_SetValue( "gl_shadows", 1 );
 		}
-		
+#endif		
 		var.key = "vitaquakeii_hand";
 		var.value = NULL;
 
@@ -1545,9 +1494,6 @@ void retro_get_system_info(struct retro_system_info *info)
 {
    memset(info, 0, sizeof(*info));
    info->library_name     = "vitaQuakeII";
-#ifndef GIT_VERSION
-#define GIT_VERSION ""
-#endif
    info->library_version  = "v2.1" ;
    info->need_fullpath    = true;
    info->valid_extensions = "pak";
@@ -1646,6 +1592,7 @@ bool retro_load_game(const struct retro_game_info *info)
 	struct retro_keyboard_callback cb = { keyboard_cb };
 #endif
 	enum retro_pixel_format fmt = RETRO_PIXEL_FORMAT_XRGB8888;
+#ifdef HAVE_OPENGL
 	if (!environ_cb(RETRO_ENVIRONMENT_SET_PIXEL_FORMAT, &fmt))
 	{
 		if (log_cb)
@@ -1661,6 +1608,7 @@ bool retro_load_game(const struct retro_game_info *info)
 	hw_render.stencil            = true;
 
 	if (!environ_cb(RETRO_ENVIRONMENT_SET_HW_RENDER, &hw_render))
+#endif
 	{
 		if (log_cb)
 			log_cb(RETRO_LOG_ERROR, "vitaQuakeII: libretro frontend doesn't have OpenGL support, falling back to software renderer.\n");
@@ -1746,12 +1694,12 @@ bool first_boot = true;
 void retro_run(void)
 {
 	bool updated = false;
-
+#ifdef HAVE_OPENGL
 	if (!is_soft_render) {
 		qglBindFramebuffer(RARCH_GL_FRAMEBUFFER, hw_render.get_current_framebuffer());
 		qglEnable(GL_TEXTURE_2D);
 	}
-
+#endif
 	if (first_boot)
 	{
 		const char *argv[32];
@@ -1938,10 +1886,6 @@ cvar_t *vid_fullscreen;
 cvar_t *vid_gamma;
 cvar_t *scr_viewsize;
 
-#if 0
-static cvar_t *sw_mode;
-static cvar_t *sw_stipplealpha;
-#endif
 cvar_t *gl_picmip;
 cvar_t *gl_mode;
 cvar_t *gl_driver;
@@ -1956,10 +1900,6 @@ static menulist_s       s_ref_list;
 static menuslider_s     s_tq_slider;
 static menuslider_s     s_screensize_slider;
 static menuslider_s     s_brightness_slider;
-#if 0
-static menulist_s       s_fs_box;
-static menulist_s       s_finish_box;
-#endif
 static menuaction_s     s_cancel_action;
 static menuaction_s     s_defaults_action;
 static menulist_s       s_shadows_slider;
@@ -2102,11 +2042,12 @@ static void ApplyChanges( void *unused )
 
    Cvar_SetValue( "vid_gamma", gamma );
    /*Cvar_SetValue( "gl_mode", s_mode_list.curvalue ); */
+#ifdef HAVE_OPENGL
    Cvar_SetValue( "gl_picmip", 3 - s_tq_slider.curvalue );
 
    Cvar_Set( "vid_ref", "gl" );
    Cvar_Set( "gl_driver", "opengl32" );
-
+#endif
    M_ForceMenuOff();
 }
 
@@ -2142,8 +2083,9 @@ void    VID_Init (void)
    ri.Vid_MenuInit = VID_MenuInit;
 
    if (is_soft_render) re = SWR_GetRefAPI(ri);
+#ifdef HAVE_OPENGL
    else re = GetRefAPI(ri);
-
+#endif
    if (re.api_version != API_VERSION)
       Com_Error (ERR_FATAL, "Re has incompatible api_version");
 
@@ -2193,16 +2135,10 @@ void    VID_MenuInit (void)
 
    if ( !gl_driver )
       gl_driver = Cvar_Get( "gl_driver", "opengl32", 0 );
-   if ( !gl_picmip )
-      gl_picmip = Cvar_Get( "gl_picmip", "0", 0 );
-   if ( !gl_mode )
-      gl_mode = Cvar_Get( "gl_mode", "3", 0 );
    if ( !scr_viewsize )
       scr_viewsize = Cvar_Get ("viewsize", "100", CVAR_ARCHIVE);
 
    s_screensize_slider.curvalue = scr_viewsize->value/10;
-
-   s_shadows_slider.curvalue = gl_shadows->value;
 
    switch (viddef.width) {
       case 960:
@@ -2231,57 +2167,11 @@ void    VID_MenuInit (void)
    s_ref_list.generic.callback = NullCallback;
    s_ref_list.itemnames = refs;
 
-   s_mode_list.generic.type = MTYPE_SPINCONTROL;
-   s_mode_list.generic.x        = 0;
-   s_mode_list.generic.y        = 10;
-   s_mode_list.generic.name = "video mode";
-   s_mode_list.generic.statusbar = "you need to restart vitaQuakeII to apply changes";
-   s_mode_list.generic.callback = ResCallback;
-   s_mode_list.itemnames = resolutions;
-
-   s_screensize_slider.generic.type	= MTYPE_SLIDER;
-   s_screensize_slider.generic.x		= 0;
-   s_screensize_slider.generic.y		= 20;
-   s_screensize_slider.generic.name	= "screen size";
-   s_screensize_slider.minvalue = 3;
-   s_screensize_slider.maxvalue = 12;
-   s_screensize_slider.generic.callback = ScreenSizeCallback;
-
-   s_brightness_slider.generic.type = MTYPE_SLIDER;
-   s_brightness_slider.generic.x    = 0;
-   s_brightness_slider.generic.y    = 30;
-   s_brightness_slider.generic.name = "brightness";
-   s_brightness_slider.generic.callback = BrightnessCallback;
-   s_brightness_slider.minvalue = 5;
-   s_brightness_slider.maxvalue = 13;
-   s_brightness_slider.curvalue = ( 1.3 - vid_gamma->value + 0.5 ) * 10;
-
    s_cancel_action.generic.type = MTYPE_ACTION;
    s_cancel_action.generic.name = "cancel";
    s_cancel_action.generic.x    = 0;
    s_cancel_action.generic.y    = 100;
    s_cancel_action.generic.callback = CancelChanges;
-
-   s_tq_slider.generic.type	= MTYPE_SLIDER;
-   s_tq_slider.generic.x		= 0;
-   s_tq_slider.generic.y		= 60;
-   s_tq_slider.generic.name	= "texture quality";
-   s_tq_slider.minvalue = 0;
-   s_tq_slider.maxvalue = 3;
-   s_tq_slider.curvalue = 3-gl_picmip->value;
-
-   s_defaults_action.generic.type = MTYPE_ACTION;
-   s_defaults_action.generic.name = "reset to default";
-   s_defaults_action.generic.x    = 0;
-   s_defaults_action.generic.y    = 90;
-   s_defaults_action.generic.callback = ResetDefaults;
-
-   s_shadows_slider.generic.type = MTYPE_SPINCONTROL;
-   s_shadows_slider.generic.x        = 0;
-   s_shadows_slider.generic.y        = 70;
-   s_shadows_slider.generic.name = "render shadows";
-   s_shadows_slider.generic.callback = ShadowsCallback;
-   s_shadows_slider.itemnames = yesno_names;
 
    Menu_AddItem( &s_opengl_menu, ( void * ) &s_ref_list );
 
@@ -2354,7 +2244,7 @@ const char *VID_MenuKey( int k)
 
    return sound;
 }
-
+#ifdef HAVE_OPENGL
 int GLimp_SetMode( int *pwidth, int *pheight, int mode, qboolean fullscreen )
 {
 	/*int width, height;
@@ -2381,7 +2271,7 @@ int GLimp_SetMode( int *pwidth, int *pheight, int mode, qboolean fullscreen )
 
 	return rserr_ok;
 }
-
+#endif
 /* input.c */
 
 cvar_t *in_joystick;

@@ -25,11 +25,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define __QGL_H__
 
 #ifdef __LIBRETRO__
-#if platform==vita
-#include <vitaGL.h>
-#else
 #include <glsym/rglgen_private_headers.h>
-#endif
 #else
 #include <GL/gl.h>
 #endif
