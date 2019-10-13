@@ -26,6 +26,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 cvar_t	*sw_mipcap;
 cvar_t	*sw_mipscale;
 
+void (*D_DrawSpans)(espan_t *pspan);
+
 surfcache_t		*d_initial_rover;
 qboolean		d_roverwrapped;
 int				d_minmip;
@@ -439,7 +441,12 @@ void SWR_SetupFrame (void)
 	for (i=0 ; i<(NUM_MIPS-1) ; i++)
 		d_scalemip[i] = basemip[i] * sw_mipscale->value;
 
-	d_aflatcolor = 0;
+	d_aflatcolor = 0;													
+	
+	if (sw_texfilt->value == 1)
+		D_DrawSpans = D_DrawSpans16_Dither;
+	else
+		D_DrawSpans = D_DrawSpans16;
 }
 
 /* 

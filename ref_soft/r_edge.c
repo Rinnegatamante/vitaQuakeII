@@ -33,15 +33,7 @@ void R_EdgeCodeEnd (void)
 {
 }
 
-
-#if 0
-the complex cases add new polys on most lines, so dont optimize for keeping them the same
-have multiple free span lists to try to get better coherence?
-low depth complexity -- 1 to 3 or so
-
-have a sentinal at both ends?
-#endif
-
+extern void (*D_DrawSpans)(espan_t *pspan);
 
 edge_t	*auxedges;
 edge_t	*r_edges, *edge_p, *edge_max;
@@ -930,7 +922,7 @@ void D_SkySurf (surf_t *s)
 
 	D_CalcGradients (pface);
 
-	D_DrawSpans16 (s->spans);
+	D_DrawSpans (s->spans);
 
 // set up a gradient for the background surface that places it
 // effectively at infinity distance from the viewpoint
@@ -1007,7 +999,7 @@ void D_SolidSurf (surf_t *s)
 
 	D_CalcGradients (pface);
 
-	D_DrawSpans16 (s->spans);
+	D_DrawSpans (s->spans);
 
 	D_DrawZSpans (s->spans);
 
