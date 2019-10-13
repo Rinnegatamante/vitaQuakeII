@@ -654,9 +654,9 @@ void R_RenderFace (msurface_t *fa, int clipflags)
 				{
 				// it's cached if the cached edge is valid and is owned
 				// by this medge_t
-					if ((((unsigned long)edge_p - (unsigned long)r_edges) >
+					if ((((uintptr_t)edge_p - (uintptr_t)r_edges) >
 						 r_pedge->cachededgeoffset) &&
-						(((edge_t *)((unsigned long)r_edges +
+						(((edge_t *)((uintptr_t)r_edges +
 						 r_pedge->cachededgeoffset))->owner == r_pedge))
 					{
 						R_EmitCachedEdge ();
