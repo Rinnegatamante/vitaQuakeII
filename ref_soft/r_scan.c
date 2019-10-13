@@ -396,33 +396,44 @@ int kernel[2][2][2] =
 /*
 =============
 D_DrawSpans16
+
+FIXME: actually make this subdivide by 16 instead of 8!!!  qb:  OK!!!!
 =============
 */
-void D_DrawSpans16 (espan_t *pspan) //qbism up it from 8 to 16.  This + unroll = big speed gain!
-{
-   int            count, spancount;
-   unsigned char   *pbase, *pdest;
-   fixed16_t      s, t, snext, tnext, sstep, tstep;
-   float         sdivz, tdivz, zi, z, du, dv, spancountminus1;
-   float         sdivzstepu, tdivzstepu, zistepu;
 
+/*==============================================
+//unrolled- mh, MK, qbism
+//============================================*/
+
+static int          count, spancount;
+static byte         *pbase, *pdest;
+static fixed16_t    s, t, snext, tnext, sstep, tstep;
+static float        sdivz, tdivz, zi, z, du, dv, spancountminus1;
+static float        sdivzstepu, tdivzstepu, zistepu;
+static int          izi, izistep; // mankrip
+static short      *pz; // mankrip
+
+//qbism: pointer to pbase and macroize idea from mankrip
+#define WRITEPDEST(i) { pdest[i] = *(pbase + (s >> 16) + (t >> 16) * cachewidth); s+=sstep; t+=tstep;}
+
+void D_DrawSpans16(espan_t *pspan) //qb: up it from 8 to 16.  This + unroll = big speed gain!
+{
    sstep = 0;   // keep compiler happy
    tstep = 0;   // ditto
 
-   pbase = (unsigned char *)cacheblock;
-
+   pbase = (byte *)cacheblock;
    sdivzstepu = d_sdivzstepu * 16;
    tdivzstepu = d_tdivzstepu * 16;
    zistepu = d_zistepu * 16;
 
    do
    {
-      pdest = (unsigned char *)((byte *)d_viewbuffer +
-            (r_screenwidth * pspan->v) + pspan->u);
+      pdest = (byte *)((byte *)d_viewbuffer + (r_screenwidth * pspan->v) + pspan->u);
+      count = pspan->count >> 4;
 
-      count = pspan->count;
+      spancount = pspan->count % 16;
 
-   // calculate the initial s/z, t/z, 1/z, s, and t and clamp
+      // calculate the initial s/z, t/z, 1/z, s, and t and clamp
       du = (float)pspan->u;
       dv = (float)pspan->v;
 
@@ -432,112 +443,113 @@ void D_DrawSpans16 (espan_t *pspan) //qbism up it from 8 to 16.  This + unroll =
       z = (float)0x10000 / zi;   // prescale to 16.16 fixed-point
 
       s = (int)(sdivz * z) + sadjust;
-      if (s > bbextents)
-         s = bbextents;
-      else if (s < 0)
-         s = 0;
+      if (s < 0) s = 0;
+      else if (s > bbextents) s = bbextents;
 
       t = (int)(tdivz * z) + tadjust;
-      if (t > bbextentt)
-         t = bbextentt;
-      else if (t < 0)
-         t = 0;
+      if (t < 0) t = 0;
+      else if (t > bbextentt) t = bbextentt;
 
-      do
+      while (count-- > 0) // Manoel Kasimier
       {
-      // calculate s and t at the far end of the span
-         if (count >= 16)
-            spancount = 16;
-         else
-            spancount = count;
+         sdivz += sdivzstepu;
+         tdivz += tdivzstepu;
+         zi += zistepu;
+         z = (float)0x10000 / zi;   // prescale to 16.16 fixed-point
 
-         count -= spancount;
+         snext = (int)(sdivz * z) + sadjust;
+         if (snext < 16) snext = 16;
+         else if (snext > bbextents) snext = bbextents;
 
-         if (count)
-         {
-         // calculate s/z, t/z, zi->fixed s and t at far end of span,
-         // calculate s and t steps across span by shifting
-            sdivz += sdivzstepu;
-            tdivz += tdivzstepu;
-            zi += zistepu;
-            z = (float)0x10000 / zi;   // prescale to 16.16 fixed-point
+         tnext = (int)(tdivz * z) + tadjust;
+         if (tnext < 16) tnext = 16;
+         else if (tnext > bbextentt) tnext = bbextentt;
 
-            snext = (int)(sdivz * z) + sadjust;
-            if (snext > bbextents)
-               snext = bbextents;
-            else if (snext <= 16)
-               snext = 16;   // prevent round-off error on <0 steps from
-                        //  from causing overstepping & running off the
-                        //  edge of the texture
+         sstep = (snext - s) >> 4;
+         tstep = (tnext - t) >> 4;
+         pdest += 16;
 
-            tnext = (int)(tdivz * z) + tadjust;
-            if (tnext > bbextentt)
-               tnext = bbextentt;
-            else if (tnext < 16)
-               tnext = 16;   // guard against round-off error on <0 steps
-
-            sstep = (snext - s) >> 4;
-            tstep = (tnext - t) >> 4;
-         }
-         else
-         {
-         // calculate s/z, t/z, zi->fixed s and t at last pixel in span (so
-         // can't step off polygon), clamp, calculate s and t steps across
-         // span by division, biasing steps low so we don't run off the
-         // texture
-            spancountminus1 = (float)(spancount - 1);
-            sdivz += d_sdivzstepu * spancountminus1;
-            tdivz += d_tdivzstepu * spancountminus1;
-            zi += d_zistepu * spancountminus1;
-            z = (float)0x10000 / zi;   // prescale to 16.16 fixed-point
-            snext = (int)(sdivz * z) + sadjust;
-            if (snext > bbextents)
-               snext = bbextents;
-            else if (snext < 16)
-               snext = 16;   // prevent round-off error on <0 steps from
-                        //  from causing overstepping & running off the
-                        //  edge of the texture
-
-            tnext = (int)(tdivz * z) + tadjust;
-            if (tnext > bbextentt)
-               tnext = bbextentt;
-            else if (tnext < 16)
-               tnext = 16;   // guard against round-off error on <0 steps
-
-            if (spancount > 1)
-            {
-               sstep = (snext - s) / (spancount - 1);
-               tstep = (tnext - t) / (spancount - 1);
-            }
-         }
-
-//qbism- Duff's Device loop unroll per mh.
-         pdest += spancount;
-         switch (spancount)
-         {
-         case 16: pdest[-16] = pbase[(s >> 16) + (t >> 16) * cachewidth]; s += sstep; t += tstep;
-         case 15: pdest[-15] = pbase[(s >> 16) + (t >> 16) * cachewidth]; s += sstep; t += tstep;
-         case 14: pdest[-14] = pbase[(s >> 16) + (t >> 16) * cachewidth]; s += sstep; t += tstep;
-         case 13: pdest[-13] = pbase[(s >> 16) + (t >> 16) * cachewidth]; s += sstep; t += tstep;
-         case 12: pdest[-12] = pbase[(s >> 16) + (t >> 16) * cachewidth]; s += sstep; t += tstep;
-         case 11: pdest[-11] = pbase[(s >> 16) + (t >> 16) * cachewidth]; s += sstep; t += tstep;
-         case 10: pdest[-10] = pbase[(s >> 16) + (t >> 16) * cachewidth]; s += sstep; t += tstep;
-         case 9: pdest[-9] = pbase[(s >> 16) + (t >> 16) * cachewidth]; s += sstep; t += tstep;
-         case 8: pdest[-8] = pbase[(s >> 16) + (t >> 16) * cachewidth]; s += sstep; t += tstep;
-         case 7: pdest[-7] = pbase[(s >> 16) + (t >> 16) * cachewidth]; s += sstep; t += tstep;
-         case 6: pdest[-6] = pbase[(s >> 16) + (t >> 16) * cachewidth]; s += sstep; t += tstep;
-         case 5: pdest[-5] = pbase[(s >> 16) + (t >> 16) * cachewidth]; s += sstep; t += tstep;
-         case 4: pdest[-4] = pbase[(s >> 16) + (t >> 16) * cachewidth]; s += sstep; t += tstep;
-         case 3: pdest[-3] = pbase[(s >> 16) + (t >> 16) * cachewidth]; s += sstep; t += tstep;
-         case 2: pdest[-2] = pbase[(s >> 16) + (t >> 16) * cachewidth]; s += sstep; t += tstep;
-         case 1: pdest[-1] = pbase[(s >> 16) + (t >> 16) * cachewidth]; s += sstep; t += tstep;
-         }
+         WRITEPDEST(-16);
+         WRITEPDEST(-15);
+         WRITEPDEST(-14);
+         WRITEPDEST(-13);
+         WRITEPDEST(-12);
+         WRITEPDEST(-11);
+         WRITEPDEST(-10);
+         WRITEPDEST(-9);
+         WRITEPDEST(-8);
+         WRITEPDEST(-7);
+         WRITEPDEST(-6);
+         WRITEPDEST(-5);
+         WRITEPDEST(-4);
+         WRITEPDEST(-3);
+         WRITEPDEST(-2);
+         WRITEPDEST(-1);
 
          s = snext;
          t = tnext;
+      }
+      if (spancount > 0)
+      {
+         spancountminus1 = (float)(spancount - 1);
+         sdivz += d_sdivzstepu * spancountminus1;
+         tdivz += d_tdivzstepu * spancountminus1;
+         zi += d_zistepu * spancountminus1;
+         z = (float)0x10000 / zi;   // prescale to 16.16 fixed-point
 
-      } while (count > 0);
+         snext = (int)(sdivz * z) + sadjust;
+         if (snext < 16) snext = 16;
+         else if (snext > bbextents) snext = bbextents;
 
+         tnext = (int)(tdivz * z) + tadjust;
+         if (tnext < 16) tnext = 16;
+         else if (tnext > bbextentt) tnext = bbextentt;
+
+         if (spancount > 1)
+         {
+            sstep = (snext - s) / (spancount - 1);
+            tstep = (tnext - t) / (spancount - 1);
+         }
+
+         pdest += spancount;
+
+         switch (spancount)
+         {
+         case 16:
+            WRITEPDEST(-16);
+         case 15:
+            WRITEPDEST(-15);
+         case 14:
+            WRITEPDEST(-14);
+         case 13:
+            WRITEPDEST(-13);
+         case 12:
+            WRITEPDEST(-12);
+         case 11:
+            WRITEPDEST(-11);
+         case 10:
+            WRITEPDEST(-10);
+         case  9:
+            WRITEPDEST(-9);
+         case  8:
+            WRITEPDEST(-8);
+         case  7:
+            WRITEPDEST(-7);
+         case  6:
+            WRITEPDEST(-6);
+         case  5:
+            WRITEPDEST(-5);
+         case  4:
+            WRITEPDEST(-4);
+         case  3:
+            WRITEPDEST(-3);
+         case  2:
+            WRITEPDEST(-2);
+         case  1:
+            WRITEPDEST(-1);
+            break;
+         }
+      }
    } while ((pspan = pspan->pnext) != NULL);
 }
 
