@@ -136,7 +136,10 @@ GAME = 		game/m_tank.o \
 ROGUE_DIRS = rogue
 ROGUE := $(foreach dir,$(ROGUE_DIRS), $(wildcard $(dir)/*.c))
 
-XATRIX_DIRS = xatrix
+XATRIX_DIRS = xatrix xatrix/shared xatrix/savegame xatrix/player xatrix/monster/tank xatrix/monster/supertank xatrix/monster/soldier \
+	xatrix/monster/parasite xatrix/monster/mutant xatrix/monster/misc xatrix/monster/medic xatrix/monster/insane xatrix/monster/infantry xatrix/monster/hover xatrix/monster/gunner \
+	xatrix/monster/gladiator xatrix/monster/gekk xatrix/monster/flyer xatrix/monster/float xatrix/monster/flipper xatrix/monster/fixbot xatrix/monster/chick \
+	xatrix/monster/brain xatrix/monster/boss5 xatrix/monster/boss3 xatrix/monster/boss2 xatrix/monster/berserker
 XATRIX := $(foreach dir,$(XATRIX_DIRS), $(wildcard $(dir)/*.c))
 
 CPPSOURCES	:= audiodec
