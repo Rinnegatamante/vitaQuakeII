@@ -30,7 +30,7 @@ static byte		is_silenced;
 void weapon_grenade_fire (edict_t *ent, qboolean held);
 
 
-static void P_ProjectSource (gclient_t *client, vec3_t point, vec3_t distance, vec3_t forward, vec3_t right, vec3_t result)
+void P_ProjectSource (gclient_t *client, vec3_t point, vec3_t distance, vec3_t forward, vec3_t right, vec3_t result)
 {
 	vec3_t	_distance;
 

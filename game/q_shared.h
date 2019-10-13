@@ -20,17 +20,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 	
 // q_shared.h -- included first by ALL program modules
 
-#ifdef _WIN32
-// unknown pragmas are SUPPOSED to be ignored, but....
-#pragma warning(disable : 4244)     // MIPS
-#pragma warning(disable : 4136)     // X86
-#pragma warning(disable : 4051)     // ALPHA
-
-#pragma warning(disable : 4018)     // signed/unsigned mismatch
-#pragma warning(disable : 4305)		// truncation from const double to float
-
-#endif
-
 #include <assert.h>
 #include <math.h>
 #include <stdio.h>
@@ -39,10 +28,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include <stdlib.h>
 #include <time.h>
 
-#if (defined _M_IX86 || defined __i386__) && !defined C_ONLY && !defined __sun__
-#define id386	0	//turn off assembly
-#else
-#define id386	0
+#ifndef uint16_t
+#include <stdint.h>
 #endif
 
 #if defined _M_ALPHA && !defined C_ONLY
@@ -52,7 +39,10 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #endif
 
 typedef unsigned char 		byte;
-#ifdef __cplusplus
+#if (defined(__cplusplus) || !defined(PSP2))
+#ifndef PSP2
+#include <stdbool.h>
+#endif
 #define qboolean bool
 #else
 typedef enum {false, true}	qboolean;
