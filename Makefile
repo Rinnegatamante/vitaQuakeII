@@ -133,7 +133,11 @@ GAME = 		game/m_tank.o \
 			game/m_soldier.o \
 			game/m_supertank.o
 			
-ROGUE_DIRS = rogue
+ROGUE_DIRS = rogue rogue/shared rogue/savegame rogue/player rogue/dm rogue/monster/widow rogue/monster/turret rogue/monster/tank \
+	rogue/monster/supertank rogue/monster/stalker rogue/monster/soldier rogue/monster/parasite rogue/monster/mutant rogue/monster/misc \
+	rogue/monster/medic rogue/monster/insane rogue/monster/infantry rogue/monster/hover rogue/monster/gunner rogue/monster/gladiator \
+	rogue/monster/flyer rogue/monster/float rogue/monster/flipper rogue/monster/chick rogue/monster/carrier rogue/monster/brain \
+	rogue/monster/boss3 rogue/monster/boss2 rogue/monster/berserker
 ROGUE := $(foreach dir,$(ROGUE_DIRS), $(wildcard $(dir)/*.c))
 
 XATRIX_DIRS = xatrix xatrix/shared xatrix/savegame xatrix/player xatrix/monster/tank xatrix/monster/supertank xatrix/monster/soldier \
@@ -152,8 +156,8 @@ OBJS_XATRIX := $(CLIENT) $(QCOMMON) $(SERVER) $(SYSTEM) $(REFGL) $(CPPFILES:.cpp
 PREFIX  = arm-vita-eabi
 CC      = $(PREFIX)-gcc
 CXX      = $(PREFIX)-g++
-CFLAGS  = -ffast-math -mtune=cortex-a9 -mfpu=neon -fsigned-char -g -Wl,-q -O3 \
-		-DREF_HARD_LINKED -DHAVE_OGGVORBIS -DHAVE_MPG123 \
+CFLAGS  = -ffast-math -mtune=cortex-a9 -mfpu=neon -fsigned-char -g -Wl,-q -O2 \
+		-ftree-vectorize -DREF_HARD_LINKED -DHAVE_OGGVORBIS -DHAVE_MPG123 \
 		-DHAVE_LIBSPEEXDSP -DUSE_AUDIO_RESAMPLER -DRELEASE -DGAME_HARD_LINKED -DPSP2
 CFLAGS += -DOSTYPE=\"$(OSTYPE)\" -DARCH=\"$(ARCH)\"
 CXXFLAGS  = $(CFLAGS) -fno-exceptions -std=gnu++11 -fpermissive
