@@ -1747,12 +1747,16 @@ void CL_Frame (int msec)
 	if (!cl.refresh_prepped && cls.state == ca_active)
 		CL_PrepRefresh ();
 
+#ifndef __LIBRETRO__
 	// update the screen
 	if (host_speeds->value)
 		time_before_ref = Sys_Milliseconds ();
+#endif
 	SCR_UpdateScreen ();
+#ifndef __LIBRETRO__
 	if (host_speeds->value)
 		time_after_ref = Sys_Milliseconds ();
+#endif
 
 	// update audio
 	S_Update (cl.refdef.vieworg, cl.v_forward, cl.v_right, cl.v_up);
@@ -1767,6 +1771,7 @@ void CL_Frame (int msec)
 
 	cls.framecount++;
 
+#ifndef __LIBRETRO__
 	if ( log_stats->value )
 	{
 		if ( cls.state == ca_active )
@@ -1787,6 +1792,7 @@ void CL_Frame (int msec)
 			}
 		}
 	}
+#endif
 }
 
 
