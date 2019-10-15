@@ -456,6 +456,9 @@ int quake_main (unsigned int argc, void* argv){
 	#elif defined(XATRIX)
 	char* int_argv[4] = {"", "+set", "game", "xatrix"};
 	Qcommon_Init(4, int_argv);
+	#elif defined(ZAERO)
+	char* int_argv[4] = {"", "+set", "game", "zaero"};
+	Qcommon_Init(4, int_argv);
 	#else
 	SceAppUtilAppEventParam eventParam;
 	memset(&eventParam, 0, sizeof(SceAppUtilAppEventParam));

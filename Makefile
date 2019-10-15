@@ -146,12 +146,20 @@ XATRIX_DIRS = xatrix xatrix/shared xatrix/savegame xatrix/player xatrix/monster/
 	xatrix/monster/brain xatrix/monster/boss5 xatrix/monster/boss3 xatrix/monster/boss2 xatrix/monster/berserker
 XATRIX := $(foreach dir,$(XATRIX_DIRS), $(wildcard $(dir)/*.c))
 
+ZAERO_DIRS = zaero zaero/zaero zaero/shared zaero/savegame zaero/player zaero/monster/tank zaero/monster/supertank \
+	zaero/monster/soldier zaero/monster/sentien zaero/monster/parasite zaero/monster/mutant zaero/monster/misc zaero/monster/medic \
+	zaero/monster/insane zaero/monster/infantry zaero/monster/hover zaero/monster/hound zaero/monster/handler zaero/monster/gunner \
+	zaero/monster/gladiator zaero/monster/flyer zaero/monster/float zaero/monster/flipper zaero/monster/chick zaero/monster/brain \
+	zaero/monster/boss3 zaero/monster/boss2 zaero/monster/boss zaero/monster/berserker zaero/monster/actor
+ZAERO := $(foreach dir,$(XATRIX_DIRS), $(wildcard $(dir)/*.c))
+
 CPPSOURCES	:= audiodec
 
 CPPFILES   := $(foreach dir,$(CPPSOURCES), $(wildcard $(dir)/*.cpp))
 OBJS     := $(CLIENT) $(QCOMMON) $(SERVER) $(GAME) $(SYSTEM) $(REFGL) $(CPPFILES:.cpp=.o)
 OBJS_ROGUE := $(CLIENT) $(QCOMMON) $(SERVER) $(SYSTEM) $(REFGL) $(CPPFILES:.cpp=.o) $(ROGUE:.c=.o)
 OBJS_XATRIX := $(CLIENT) $(QCOMMON) $(SERVER) $(SYSTEM) $(REFGL) $(CPPFILES:.cpp=.o) $(XATRIX:.c=.o)
+OBJS_ZAERO := $(CLIENT) $(QCOMMON) $(SERVER) $(SYSTEM) $(REFGL) $(CPPFILES:.cpp=.o) $(ZAERO:.c=.o)
 
 PREFIX  = arm-vita-eabi
 CC      = $(PREFIX)-gcc
@@ -171,6 +179,9 @@ rogue: CFLAGS += -DROGUE
 xatrix: xatrix.bin
 xatrix: CFLAGS += -DXATRIX
 
+zaero: zaero.bin
+zaero: CFLAGS += -DZAERO
+
 baseq2: $(TARGET).velf
 	vita-make-fself -s $< build\eboot.bin
 	
@@ -179,6 +190,9 @@ rogue.bin: rogue.velf
 	
 xatrix.bin: xatrix.velf
 	vita-make-fself -s $< build\xatrix.bin
+	
+zaero.bin: zaero.velf
+	vita-make-fself -s $< build\zaero.bin
 
 $(TARGET).vpk: $(TARGET).velf
 	vita-make-fself -s $< build\eboot.bin
@@ -186,7 +200,7 @@ $(TARGET).vpk: $(TARGET).velf
 	cp -f param.sfo build/sce_sys/param.sfo
 	
 	#------------ Comment this if you don't have 7zip ------------------
-	7z a -tzip $(TARGET).vpk -r .\build\sce_sys\* .\build\eboot.bin  .\build\shaders\* .\build\rogue.bin .\build\xatrix.bin
+	7z a -tzip $(TARGET).vpk -r .\build\sce_sys\* .\build\eboot.bin  .\build\shaders\* .\build\rogue.bin .\build\xatrix.bin .\build\zaero.bin
 	#-------------------------------------------------------------------
 
 %.velf: %.elf
@@ -202,6 +216,9 @@ rogue.elf: $(OBJS_ROGUE)
 	$(CXX) $(CXXFLAGS) $^ $(LIBS) -o $@
 	
 xatrix.elf: $(OBJS_XATRIX)
+	$(CXX) $(CXXFLAGS) $^ $(LIBS) -o $@
+	
+zaero.elf: $(OBJS_ZAERO)
 	$(CXX) $(CXXFLAGS) $^ $(LIBS) -o $@
 
 clean:
