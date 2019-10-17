@@ -181,7 +181,7 @@ static void BrightnessCallback( void *s )
 {
     menuslider_s *slider = ( menuslider_s * ) s;
 
-    if ( strcmp( vid_ref->string, "soft" ) == 0 )
+    //if ( strcmp( vid_ref->string, "soft" ) == 0 )
     {
         float gamma = ( 0.8 - ( slider->curvalue/10.0 - 0.5 ) ) + 0.5;
 

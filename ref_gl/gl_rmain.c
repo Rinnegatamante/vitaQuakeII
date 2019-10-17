@@ -141,6 +141,39 @@ cvar_t  *gl_xflip;
 
 extern int scr_width;
 
+void DoGamma()
+{
+
+	if (vid_gamma->value < 0.2)
+		vid_gamma->value = 0.2;
+
+	if (vid_gamma->value >= 1)
+	{
+		vid_gamma->value = 1;
+		return;
+	}
+
+	//believe it or not this actually does brighten the picture!!
+	GL_DisableState(GL_TEXTURE_COORD_ARRAY);
+	glBlendFunc(GL_DST_COLOR, GL_ONE_MINUS_SRC_ALPHA);
+	float color[4] = {1, 1, 1, vid_gamma->value};
+	
+	float vertices[3*4] = {
+		10, 100, 100,
+		10,-100, 100,
+		10,-100,-100,
+		10, 100,-100
+	};
+	
+	glUniform4fv(monocolor, 1, color);
+	vglVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 4, vertices);
+	GL_DrawPolygon(GL_TRIANGLE_FAN, 4);
+	
+	//if we do this twice, we double the brightening effect for a wider range of gamma's
+	GL_DrawPolygon(GL_TRIANGLE_FAN, 4);
+	GL_EnableState(GL_TEXTURE_COORD_ARRAY);
+}
+
 /*
 =================
 R_CullBox
@@ -499,32 +532,40 @@ void R_PolyBlend (void)
 {
 	if (!gl_polyblend->value)
 		return;
-	if (!v_blend[3])
-		return;
 
+	glBlendFunc (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	GL_DisableState(GL_ALPHA_TEST);
 	glEnable (GL_BLEND);
 	glDisable (GL_DEPTH_TEST);
+	GL_DisableState(GL_TEXTURE_COORD_ARRAY);
 
-    glLoadIdentity ();
+	glLoadIdentity ();
 
 	// FIXME: get rid of these
-    glRotatef (-90,  1, 0, 0);	    // put Z going up
-    glRotatef (90,  0, 0, 1);	    // put Z going up
+	glRotatef (-90,  1, 0, 0);	    // put Z going up
+	glRotatef (90,  0, 0, 1);	    // put Z going up
 	
-	float vertices[] = {
-		10, 100, 100,
-		10,-100, 100,
-		10,-100,-100,
-		10, 100,-100
-	};
+	GL_Color(v_blend[0],v_blend[1],v_blend[2],v_blend[3]);
 	
-	GL_DisableState(GL_TEXTURE_COORD_ARRAY);
-	glUniform4fv(monocolor, 1, v_blend);
-	vglVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 4, vertices);
-	GL_DrawPolygon(GL_TRIANGLE_FAN, 4);
+	if (v_blend[3]){
+		
+		float vertices[] = {
+			10, 100, 100,
+			10,-100, 100,
+			10,-100,-100,
+			10, 100,-100
+		};
+	
+		glUniform4fv(monocolor, 1, v_blend);
+		vglVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 4, vertices);
+		GL_DrawPolygon(GL_TRIANGLE_FAN, 4);
+	}
+	
+	if (vid_gamma->value != 1)
+		DoGamma();
+	
+	glBlendFunc (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	GL_EnableState(GL_TEXTURE_COORD_ARRAY);
-	
 	glDisable (GL_BLEND);
 	GL_EnableState(GL_ALPHA_TEST);
 
