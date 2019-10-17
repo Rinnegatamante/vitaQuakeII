@@ -375,7 +375,7 @@ char *Sys_FindFirst (char *path, unsigned musthave, unsigned canhave)
 	char *p;
 
 	if (fdir >= 0)
-		Sys_Error ("Sys_BeginFind without close");
+		Sys_FindClose();
 
 	COM_FilePath (path, findbase);
 	strcpy(findbase, path);
