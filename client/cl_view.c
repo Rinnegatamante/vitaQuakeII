@@ -76,6 +76,16 @@ V_AddEntity
 */
 void V_AddEntity (entity_t *ent)
 {
+	if (ent->flags & RF_VIEWERMODEL) //here is our client
+	{
+		int i;
+		for (i=0;i<3;i++)
+			ent->oldorigin[i] = ent->origin[i] = cl.predicted_origin[i];
+
+		if (cl_3dcam->value)
+			ent->flags&=~RF_VIEWERMODEL;
+	}
+	
 	if (r_numentities >= MAX_ENTITIES)
 		return;
 	r_entities[r_numentities++] = *ent;

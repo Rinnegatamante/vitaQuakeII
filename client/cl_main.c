@@ -34,6 +34,10 @@ cvar_t	*adr6;
 cvar_t	*adr7;
 cvar_t	*adr8;
 
+cvar_t	*cl_3dcam;
+cvar_t	*cl_3dcam_angle;
+cvar_t	*cl_3dcam_dist;
+		
 cvar_t	*cl_stereo_separation;
 cvar_t	*cl_stereo;
 
@@ -1421,6 +1425,10 @@ void CL_InitLocal (void)
 	adr6 = Cvar_Get( "adr6", "", CVAR_ARCHIVE );
 	adr7 = Cvar_Get( "adr7", "", CVAR_ARCHIVE );
 	adr8 = Cvar_Get( "adr8", "", CVAR_ARCHIVE );
+	
+	cl_3dcam = Cvar_Get ("cl_3dcam", "0", CVAR_ARCHIVE);
+	cl_3dcam_angle = Cvar_Get ("cl_3dcam_angle", "10", CVAR_ARCHIVE);
+	cl_3dcam_dist = Cvar_Get ("cl_3dcam_dist", "100", CVAR_ARCHIVE);
 
 //
 // register our variables

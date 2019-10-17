@@ -28,6 +28,23 @@ extern	struct model_s	*cl_mod_powerscreen;
 int	vidref_val;
 //PGM
 
+trace_t CL_Trace (vec3_t start, vec3_t end, float size,  int contentmask)
+{
+	vec3_t maxs, mins;
+
+	VectorSet(maxs, size, size, size);
+	VectorSet(mins, -size, -size, -size);
+
+	return CM_BoxTrace (start, end, mins, maxs, 0, contentmask);
+}
+
+void ClipCam (vec3_t start, vec3_t end, vec3_t newpos)
+{
+	trace_t tr = CL_Trace (start, end, 5, -1);
+	VectorCopy(tr.endpos, newpos);
+}
+
+
 /*
 =========================================================================
 
@@ -853,6 +870,7 @@ void CL_AddPacketEntities (frame_t *frame)
 
 	for (pnum = 0 ; pnum<frame->num_entities ; pnum++)
 	{
+		qboolean isclientviewer = false;
 		s1 = &cl_parse_entities[(frame->parse_entities+pnum)&(MAX_PARSE_ENTITIES-1)];
 
 		cent = &cl_entities[s1->number];
@@ -1033,8 +1051,10 @@ void CL_AddPacketEntities (frame_t *frame)
 				V_AddLight (ent.origin, 225, 1.0, 1.0, 0.0);	//PGM
 			else if (effects & EF_TRACKERTRAIL)					//PGM
 				V_AddLight (ent.origin, 225, -1.0, -1.0, -1.0);	//PGM
-
-			continue;
+			
+			isclientviewer = true;
+			if (!cl_3dcam->value)
+				continue;
 		}
 
 		// if set to invisible, skip
@@ -1084,6 +1104,8 @@ void CL_AddPacketEntities (frame_t *frame)
 		// duplicate for linked models
 		if (s1->modelindex2)
 		{
+			if (isclientviewer)
+				ent.flags |= RF_VIEWERMODEL;	// only draw from mirrors
 			if (s1->modelindex2 == 255)
 			{	// custom weapon
 				ci = &cl.clientinfo[s1->skinnum & 0xff];
@@ -1118,11 +1140,15 @@ void CL_AddPacketEntities (frame_t *frame)
 		}
 		if (s1->modelindex3)
 		{
+			if (isclientviewer)
+				ent.flags |= RF_VIEWERMODEL;	// only draw from mirrors
 			ent.model = cl.model_draw[s1->modelindex3];
 			V_AddEntity (&ent);
 		}
 		if (s1->modelindex4)
 		{
+			if (isclientviewer)
+				ent.flags |= RF_VIEWERMODEL;	// only draw from mirrors
 			ent.model = cl.model_draw[s1->modelindex4];
 			V_AddEntity (&ent);
 		}
@@ -1298,11 +1324,7 @@ void CL_AddViewWeapon (player_state_t *ps, player_state_t *ops)
 	vec3_t	anglemove, anglemove2; // RIOT - Centered gun
 	
 	// allow the gun to be completely removed
-	if (!cl_gun->value)
-		return;
-
-	// don't draw gun if in wide angle view
-	if (ps->fov > 90)
+	if (!cl_gun->value || cl_3dcam->value || ps->fov > 90)
 		return;
 
 	memset (&gun, 0, sizeof(gun));
@@ -1404,8 +1426,10 @@ void CL_CalcViewValues (void)
 
 		// smooth out stair climbing
 		delta = cls.realtime - cl.predicted_step_time;
-		if (delta < 100)
+		if (delta < 100) {
 			cl.refdef.vieworg[2] -= cl.predicted_step * (100 - delta) * 0.01;
+			cl.predicted_origin[2] -= cl.predicted_step * (100 - delta) * 0.01;
+		}
 	}
 	else
 	{	// just use interpolated values
@@ -1441,6 +1465,63 @@ void CL_CalcViewValues (void)
 
 	// add the weapon
 	CL_AddViewWeapon (ps, ops);
+	
+	if (cl_3dcam->value)
+	{
+		vec3_t end, oldorg, camPos, camforward;
+		float dist_up, dist_back, angle;
+
+		if (cl_3dcam_angle->value<0)
+			Cvar_SetValue( "cl_3dcam_angle", 0 );
+
+		if (cl_3dcam_angle->value>60)
+			Cvar_SetValue( "cl_3dcam_angle", 60 );
+
+		if (cl_3dcam_dist->value<0)
+			Cvar_SetValue( "cl_3dcam_dist", 0 );
+
+		//this'll use polar coords for cam offset
+		angle = M_PI * cl_3dcam_angle->value/180.0f;
+		dist_up = cl_3dcam_dist->value * sinf( angle );
+		dist_back =  cl_3dcam_dist->value * cosf( angle );
+		
+		VectorCopy(cl.refdef.vieworg, oldorg);
+
+		vec3_t temp;
+		vectoangles(cl.v_forward, temp);
+		temp[PITCH] = 0;
+		temp[ROLL] = 0;
+
+		vec3_t viewForward, viewUp;
+		AngleVectors(temp, viewForward, NULL, viewUp);
+
+		VectorScale(viewForward, dist_up * 0.5f, camforward);
+		
+		VectorMA(cl.refdef.vieworg, -dist_back, viewForward, end);
+		VectorMA(end, dist_up, viewUp, end);
+
+		ClipCam (cl.refdef.vieworg, end, camPos);
+
+		//now we will adjust aim...
+		{
+			vec3_t newDir, dir;
+
+			//find where 1st person view is aiming
+			VectorMA(cl.refdef.vieworg, 8000, cl.v_forward, dir);
+			ClipCam (cl.refdef.vieworg, dir, newDir);
+
+			VectorSubtract(newDir, camPos, dir);
+			VectorNormalize(dir);
+			vectoangles2(dir, newDir);
+
+			//now look there from the camera
+			AngleVectors(newDir, cl.v_forward, cl.v_right, cl.v_up);
+			VectorCopy(newDir, cl.refdef.viewangles);
+		}
+
+		VectorCopy(camPos, cl.refdef.vieworg);
+
+	}
 }
 
 /*

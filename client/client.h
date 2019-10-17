@@ -248,6 +248,10 @@ extern client_static_t	cls;
 extern	cvar_t	*cl_stereo_separation;
 extern	cvar_t	*cl_stereo;
 
+extern	cvar_t	*cl_3dcam;
+extern	cvar_t	*cl_3dcam_angle;
+extern	cvar_t	*cl_3dcam_dist;
+
 extern	cvar_t	*cl_gun;
 extern	cvar_t	*cl_add_blend;
 extern	cvar_t	*cl_add_lights;

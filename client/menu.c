@@ -1018,6 +1018,7 @@ extern cvar_t *in_joystick;
 extern cvar_t *cl_drawfps;
 extern cvar_t *cl_maxfps;
 extern cvar_t *gl_xflip;
+extern cvar_t *cl_3dcam;
 
 static menuframework_s	s_options_menu;
 static menuaction_s		s_options_defaults_action;
@@ -1033,6 +1034,7 @@ static menulist_s		s_options_lookspring_box;
 static menulist_s		s_options_fps_box;
 static menulist_s		s_options_crosshair_box;
 static menulist_s		s_options_specular_box;
+static menulist_s		s_options_third_box;
 static menuslider_s		s_options_sfxvolume_slider;
 static menuslider_s		s_options_cdvolume_slider;
 static menulist_s		s_options_joystick_box;
@@ -1143,6 +1145,11 @@ static void SpecularFunc( void *unused )
 	Cvar_SetValue( "gl_xflip", s_options_specular_box.curvalue );
 }
 
+static void ThirdFunc( void *unused )
+{
+	Cvar_SetValue( "cl_3dcam", s_options_third_box.curvalue );
+}
+
 static void framecapFunc( void *unused )
 {
 	Cvar_SetValue( "cl_maxfps", s_options_framecap_box.curvalue ? 30 : 90 );
@@ -1202,6 +1209,9 @@ static void ControlsSetMenuItemValues( void )
 
 	Cvar_SetValue( "gl_xflip", ClampCvar( 0, 1, gl_xflip->value ) );
 	s_options_specular_box.curvalue		= gl_xflip->value;
+	
+	Cvar_SetValue( "cl_3dcam", ClampCvar( 0, 1, cl_3dcam->value ) );
+	s_options_third_box.curvalue		= cl_3dcam->value;
 
 	Cvar_SetValue( "in_joystick", ClampCvar( 0, 1, in_joystick->value ) );
 	s_options_joystick_box.curvalue		= in_joystick->value;
@@ -1553,6 +1563,13 @@ void Options_MenuInit( void )
 	s_options_specular_box.generic.name	= "specular mode";
 	s_options_specular_box.generic.callback = SpecularFunc;
 	s_options_specular_box.itemnames = yesno_names;
+	
+	s_options_third_box.generic.type = MTYPE_SPINCONTROL;
+	s_options_third_box.generic.x	= 0;
+	s_options_third_box.generic.y	= 140;
+	s_options_third_box.generic.name	= "third person mode";
+	s_options_third_box.generic.callback = ThirdFunc;
+	s_options_third_box.itemnames = yesno_names;
 
 	s_options_customize_options_action.generic.type	= MTYPE_ACTION;
 	s_options_customize_options_action.generic.x		= 0;
@@ -1599,6 +1616,7 @@ void Options_MenuInit( void )
 	Menu_AddItem( &s_options_menu, ( void * ) &s_options_crosshair_box );
 	Menu_AddItem( &s_options_menu, ( void * ) &s_options_rumble_box );
 	Menu_AddItem( &s_options_menu, ( void * ) &s_options_specular_box );
+	Menu_AddItem( &s_options_menu, ( void * ) &s_options_third_box );
 	Menu_AddItem( &s_options_menu, ( void * ) &s_options_customize_options_action );
 	Menu_AddItem( &s_options_menu, ( void * ) &s_options_defaults_action );
 	Menu_AddItem( &s_options_menu, ( void * ) &s_options_console_action );
