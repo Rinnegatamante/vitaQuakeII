@@ -151,7 +151,7 @@ ZAERO_DIRS = zaero zaero/zaero zaero/shared zaero/savegame zaero/player zaero/mo
 	zaero/monster/insane zaero/monster/infantry zaero/monster/hover zaero/monster/hound zaero/monster/handler zaero/monster/gunner \
 	zaero/monster/gladiator zaero/monster/flyer zaero/monster/float zaero/monster/flipper zaero/monster/chick zaero/monster/brain \
 	zaero/monster/boss3 zaero/monster/boss2 zaero/monster/boss zaero/monster/berserker zaero/monster/actor
-ZAERO := $(foreach dir,$(XATRIX_DIRS), $(wildcard $(dir)/*.c))
+ZAERO := $(foreach dir,$(ZAERO_DIRS), $(wildcard $(dir)/*.c))
 
 CPPSOURCES	:= audiodec
 
