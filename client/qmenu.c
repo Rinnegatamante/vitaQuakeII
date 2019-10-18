@@ -441,6 +441,16 @@ void Menu_DrawString( int x, int y, const char *string )
 	}
 }
 
+void Menu_DrawCenteredString( int y, const char *string )
+{
+	unsigned i;
+	unsigned x = VID_WIDTH / 2 - 4 * strlen(string);
+	for ( i = 0; i < strlen( string ); i++ )
+	{
+		Draw_Char( ( x + i*8 ), y, string[i] );
+	}
+}
+
 void Menu_DrawStringDark( int x, int y, const char *string )
 {
 	unsigned i;

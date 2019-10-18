@@ -133,6 +133,7 @@ void	Menu_SlideItem( menuframework_s *s, int dir );
 int		Menu_TallySlots( menuframework_s *menu );
 
 void	 Menu_DrawString( int, int, const char * );
+void	 Menu_DrawCenteredString( int y, const char * );
 void	 Menu_DrawStringDark( int, int, const char * );
 void	 Menu_DrawStringR2L( int, int, const char * );
 void	 Menu_DrawStringR2LDark( int, int, const char * );

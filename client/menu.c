@@ -428,7 +428,9 @@ void M_Main_Draw (void)
 
 	re.DrawPic( xoffset - 30 - w, ystart + h + 5, "m_main_logo" );
 
-	Menu_DrawString( xoffset - 245 - w, ystart - 20, "Thanks to XandridFire, Tain Sueiras, nobodywasishere and RaveHeart for the awesome support on Patreon" );
+	Menu_DrawCenteredString( ystart - 22, "Thanks for the support on Patreon to:" );
+	Menu_DrawCenteredString( ystart - 14, "Tain Sueiras - drd7of14 - RaveHeart" );
+	Menu_DrawCenteredString( ystart -  6, "The Vita3K Project - polytoad" );
 }
 
 
@@ -1411,34 +1413,6 @@ void Options_MenuInit( void )
 	s_options_compatibility_list.itemnames		= compatibility_items;
 	s_options_compatibility_list.curvalue		= Cvar_VariableValue( "s_primary" );
 
-	#ifdef _3DS
-
-	s_options_circlepad_slider.generic.type	= MTYPE_SLIDER;
-	s_options_circlepad_slider.generic.x		= 0;
-	s_options_circlepad_slider.generic.y		= 30;
-	s_options_circlepad_slider.generic.name	= "circlepad speed";
-	s_options_circlepad_slider.generic.callback = CirclepadSpeedFunc;
-	s_options_circlepad_slider.minvalue		= 1;
-	s_options_circlepad_slider.maxvalue		= 10;
-
-	s_options_cstick_slider.generic.type	= MTYPE_SLIDER;
-	s_options_cstick_slider.generic.x		= 0;
-	s_options_cstick_slider.generic.y		= 40;
-	s_options_cstick_slider.generic.name	= "C-Stick speed";
-	s_options_cstick_slider.generic.callback = CirclepadSpeedFunc;
-	s_options_cstick_slider.minvalue		= 1;
-	s_options_cstick_slider.maxvalue		= 10;
-
-	s_options_sensitivity_slider.generic.type	= MTYPE_SLIDER;
-	s_options_sensitivity_slider.generic.x		= 0;
-	s_options_sensitivity_slider.generic.y		= 50;
-	s_options_sensitivity_slider.generic.name	= "look speed";
-	s_options_sensitivity_slider.generic.callback = CStickSpeedFunc;
-	s_options_sensitivity_slider.minvalue		= 2;
-	s_options_sensitivity_slider.maxvalue		= 22;
-
-
-	#elif defined(PSP2)
 	s_options_leftanalog_slider.generic.type	= MTYPE_SLIDER;
 	s_options_leftanalog_slider.generic.x		= 0;
 	s_options_leftanalog_slider.generic.y		= 30;
@@ -1491,15 +1465,6 @@ void Options_MenuInit( void )
 	s_options_hor_motioncam_slider.generic.callback = HorMotionCamSpeedFunc;
 	s_options_hor_motioncam_slider.minvalue		= 0;
 	s_options_hor_motioncam_slider.maxvalue		= 20;
-	#else
-	s_options_sensitivity_slider.generic.type	= MTYPE_SLIDER;
-	s_options_sensitivity_slider.generic.x		= 0;
-	s_options_sensitivity_slider.generic.y		= 90;
-	s_options_sensitivity_slider.generic.name	= "look speed";
-	s_options_sensitivity_slider.generic.callback = MouseSpeedFunc;
-	s_options_sensitivity_slider.minvalue		= 2;
-	s_options_sensitivity_slider.maxvalue		= 22;
-	#endif
 
 	s_options_alwaysrun_box.generic.type = MTYPE_SPINCONTROL;
 	s_options_alwaysrun_box.generic.x	= 0;
@@ -1573,19 +1538,19 @@ void Options_MenuInit( void )
 
 	s_options_customize_options_action.generic.type	= MTYPE_ACTION;
 	s_options_customize_options_action.generic.x		= 0;
-	s_options_customize_options_action.generic.y		= 160;
+	s_options_customize_options_action.generic.y		= 155;
 	s_options_customize_options_action.generic.name	= "customize controls";
 	s_options_customize_options_action.generic.callback = CustomizeControlsFunc;
 
 	s_options_defaults_action.generic.type	= MTYPE_ACTION;
 	s_options_defaults_action.generic.x		= 0;
-	s_options_defaults_action.generic.y		= 170;
+	s_options_defaults_action.generic.y		= 165;
 	s_options_defaults_action.generic.name	= "reset defaults";
 	s_options_defaults_action.generic.callback = ControlsResetDefaultsFunc;
 
 	s_options_console_action.generic.type	= MTYPE_ACTION;
 	s_options_console_action.generic.x		= 0;
-	s_options_console_action.generic.y		= 180;
+	s_options_console_action.generic.y		= 175;
 	s_options_console_action.generic.name	= "go to console";
 	s_options_console_action.generic.callback = ConsoleFunc;
 
