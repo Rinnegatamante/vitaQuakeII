@@ -1567,7 +1567,8 @@ void Options_MenuInit( void )
 	Menu_AddItem( &s_options_menu, ( void * ) &s_options_crosshair_box );
 	Menu_AddItem( &s_options_menu, ( void * ) &s_options_rumble_box );
 	Menu_AddItem( &s_options_menu, ( void * ) &s_options_specular_box );
-
+	Menu_AddItem( &s_options_menu, ( void * ) &s_options_third_box );
+	
 	Menu_AddItem( &s_options_menu, ( void * ) &s_options_customize_options_action );
 	Menu_AddItem( &s_options_menu, ( void * ) &s_options_defaults_action );
 	Menu_AddItem( &s_options_menu, ( void * ) &s_options_console_action );
