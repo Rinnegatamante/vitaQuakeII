@@ -42,10 +42,11 @@ Inv_DrawString
 */
 void Inv_DrawString (int x, int y, char *string)
 {
+	float scale = SCR_GetMenuScale();
 	while (*string)
 	{
-		re.DrawChar (x, y, *string);
-		x+=8;
+		re.DrawChar (x, y, *string, scale);
+		x+=8*scale;
 		string++;
 	}
 }
@@ -74,6 +75,8 @@ void CL_DrawInventory (void)
 	char	*bind;
 	int		selected;
 	int		top;
+	
+	float scale = SCR_GetMenuScale();
 
 	selected = cl.frame.playerstate.stats[STAT_SELECTED_ITEM];
 
@@ -97,19 +100,19 @@ void CL_DrawInventory (void)
 	if (top < 0)
 		top = 0;
 
-	x = (viddef.width-256)/2;
-	y = (viddef.height-240)/2;
+	x = (viddef.width-scale*256)/2;
+	y = (viddef.height-scale*240)/2;
 
 	// repaint everything next frame
 	SCR_DirtyScreen ();
 
-	re.DrawPic (x, y+8, "inventory");
+	re.DrawPic (x, y+8*scale, "inventory", scale);
 
-	y += 24;
-	x += 24;
+	y += 24*scale;
+	x += 24*scale;
 	Inv_DrawString (x, y, "hotkey ### item");
-	Inv_DrawString (x, y+8, "------ --- ----");
-	y += 16;
+	Inv_DrawString (x, y+8*scale, "------ --- ----");
+	y += 16*scale;
 	for (i=top ; i<num && i < top+DISPLAY_ITEMS ; i++)
 	{
 		item = index[i];
@@ -130,10 +133,10 @@ void CL_DrawInventory (void)
 		else	// draw a blinky cursor by the selected item
 		{
 			if ( (int)(cls.realtime*10) & 1)
-				re.DrawChar (x-8, y, 15);
+				re.DrawChar (x-8*scale, y, 15, scale);
 		}
 		Inv_DrawString (x, y, string);
-		y += 8;
+		y += 8*scale;
 	}
 
 

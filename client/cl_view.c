@@ -76,16 +76,6 @@ V_AddEntity
 */
 void V_AddEntity (entity_t *ent)
 {
-	if (ent->flags & RF_VIEWERMODEL) //here is our client
-	{
-		int i;
-		for (i=0;i<3;i++)
-			ent->oldorigin[i] = ent->origin[i] = cl.predicted_origin[i];
-
-		if (cl_3dcam->value)
-			ent->flags&=~RF_VIEWERMODEL;
-	}
-	
 	if (r_numentities >= MAX_ENTITIES)
 		return;
 	r_entities[r_numentities++] = *ent;
@@ -440,7 +430,7 @@ void SCR_DrawCrosshair (void)
 		return;
 
 	re.DrawPic (scr_vrect.x + ((scr_vrect.width - crosshair_width)>>1)
-	, scr_vrect.y + ((scr_vrect.height - crosshair_height)>>1), crosshair_pic);
+	, scr_vrect.y + ((scr_vrect.height - crosshair_height)>>1), crosshair_pic, 1.0f);
 }
 
 /*

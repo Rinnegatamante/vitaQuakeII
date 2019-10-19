@@ -17,7 +17,8 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 */
-
+#ifndef _REF_H_
+#define _REF_H_
 #include "../qcommon/qcommon.h"
 
 #define	MAX_DLIGHTS		32
@@ -162,9 +163,9 @@ typedef struct
 	void	(*RenderFrame) (refdef_t *fd);
 
 	void	(*DrawGetPicSize) (int *w, int *h, char *name);	// will return 0 0 if not found
-	void	(*DrawPic) (int x, int y, char *name);
+	void	(*DrawPic) (int x, int y, char *name, float scale);
 	void	(*DrawStretchPic) (int x, int y, int w, int h, char *name);
-	void	(*DrawChar) (int x, int y, int c);
+	void	(*DrawChar) (int x, int y, int c, float scale);
 	void	(*DrawTileClear) (int x, int y, int w, int h, char *name);
 	void	(*DrawFill) (int x, int y, int w, int h, int c);
 	void	(*DrawFadeScreen) (void);
@@ -222,3 +223,4 @@ typedef struct
 
 // this is the only function actually exported at the linker level
 typedef	refexport_t	(*GetRefAPI_t) (refimport_t);
+#endif
