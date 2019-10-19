@@ -22,5 +22,12 @@
 			<image>rogue.png</image>
 		</liveitem>
 	</frame>
+	
+	<frame id='frame3' multi='o' autoflip='3' >
+		<liveitem>
+			<target>psla:zaero</target>
+			<image>zaero.png</image>
+		</liveitem>
+	</frame>
 
 </livearea>

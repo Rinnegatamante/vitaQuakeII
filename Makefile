@@ -222,4 +222,4 @@ zaero.elf: $(OBJS_ZAERO)
 	$(CXX) $(CXXFLAGS) $^ $(LIBS) -o $@
 
 clean:
-	@rm -rf $(TARGET).velf $(TARGET).elf $(OBJS) $(OBJS_ROGUE) $(OBJS_XATRIX)
+	@rm -rf $(TARGET).velf $(TARGET).elf $(OBJS) $(OBJS_ROGUE) $(OBJS_XATRIX) $(OBJS_ZAERO)
