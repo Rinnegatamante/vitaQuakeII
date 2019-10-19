@@ -1398,22 +1398,7 @@ void Options_MenuInit( void )
 	s_options_scale2d_box.generic.name	= "scale 2d rendering";
 	s_options_scale2d_box.generic.callback = scale2dFunc;
 	s_options_scale2d_box.itemnames = yesno_names;
-
-	s_options_quality_list.generic.type	= MTYPE_SPINCONTROL;
-	s_options_quality_list.generic.x		= 0;
-	s_options_quality_list.generic.y		= 20;;
-	s_options_quality_list.generic.name		= "sound quality";
-	s_options_quality_list.generic.callback = UpdateSoundQualityFunc;
-	s_options_quality_list.itemnames		= quality_items;
-	s_options_quality_list.curvalue			= !Cvar_VariableValue( "s_loadas8bit" );
-
-	s_options_compatibility_list.generic.type	= MTYPE_SPINCONTROL;
-	s_options_compatibility_list.generic.x		= 0;
-	s_options_compatibility_list.generic.y		= 30;
-	s_options_compatibility_list.generic.name	= "sound compatibility";
-	s_options_compatibility_list.generic.callback = UpdateSoundQualityFunc;
-	s_options_compatibility_list.itemnames		= compatibility_items;
-	s_options_compatibility_list.curvalue		= Cvar_VariableValue( "s_primary" );
+	s_options_scale2d_box.curvalue		= Cvar_VariableValue( "scale_2d" );
 
 	s_options_rightanalog_slider.generic.type	= MTYPE_SLIDER;
 	s_options_rightanalog_slider.generic.x		= 0;
@@ -1422,13 +1407,15 @@ void Options_MenuInit( void )
 	s_options_rightanalog_slider.generic.callback = RightAnalogSpeedFunc;
 	s_options_rightanalog_slider.minvalue		= 2;
 	s_options_rightanalog_slider.maxvalue		= 22;
-
+	s_options_rightanalog_slider.curvalue		= Cvar_VariableValue( "rightanalog_sensitivity" ) * 2.0f;
+	
 	s_options_framecap_box.generic.type	= MTYPE_SPINCONTROL;
 	s_options_framecap_box.generic.x		= 0;
 	s_options_framecap_box.generic.y		= 90;
 	s_options_framecap_box.generic.name	= "limit framerate";
 	s_options_framecap_box.generic.callback = framecapFunc;
 	s_options_framecap_box.itemnames = yesno_names;
+	s_options_framecap_box.curvalue		= Cvar_VariableValue( "cl_maxfps" ) == 30;
 
 	s_options_use_gyro_box.generic.type = MTYPE_SPINCONTROL;
 	s_options_use_gyro_box.generic.x	= 0;
@@ -1436,6 +1423,7 @@ void Options_MenuInit( void )
 	s_options_use_gyro_box.generic.name	= "use gyro for camera";
 	s_options_use_gyro_box.generic.callback = UseGyroFunc;
 	s_options_use_gyro_box.itemnames = yesno_names;
+	s_options_use_gyro_box.curvalue		= Cvar_VariableValue( "use_gyro" );
 
 	s_options_invertgyro_box.generic.type = MTYPE_SPINCONTROL;
 	s_options_invertgyro_box.generic.x	= 0;
@@ -1443,7 +1431,8 @@ void Options_MenuInit( void )
 	s_options_invertgyro_box.generic.name	= "invert gyro camera";
 	s_options_invertgyro_box.generic.callback = InvertGyroFunc;
 	s_options_invertgyro_box.itemnames = yesno_names;
-
+	s_options_invertgyro_box.curvalue		= fabs(g_pitch->value) != -(fabs(g_pitch->value));
+	
 	s_options_vert_motioncam_slider.generic.type	= MTYPE_SLIDER;
 	s_options_vert_motioncam_slider.generic.x		= 0;
 	s_options_vert_motioncam_slider.generic.y		= 70;
@@ -1451,6 +1440,7 @@ void Options_MenuInit( void )
 	s_options_vert_motioncam_slider.generic.callback = VertMotionCamSpeedFunc;
 	s_options_vert_motioncam_slider.minvalue		= 0;
 	s_options_vert_motioncam_slider.maxvalue		= 20;
+	s_options_vert_motioncam_slider.curvalue		= Cvar_VariableValue( "vert_motioncam_sensitivity" ) * 2.0f;
 
 	s_options_hor_motioncam_slider.generic.type	= MTYPE_SLIDER;
 	s_options_hor_motioncam_slider.generic.x		= 0;
@@ -1459,13 +1449,7 @@ void Options_MenuInit( void )
 	s_options_hor_motioncam_slider.generic.callback = HorMotionCamSpeedFunc;
 	s_options_hor_motioncam_slider.minvalue		= 0;
 	s_options_hor_motioncam_slider.maxvalue		= 20;
-
-	s_options_alwaysrun_box.generic.type = MTYPE_SPINCONTROL;
-	s_options_alwaysrun_box.generic.x	= 0;
-	s_options_alwaysrun_box.generic.y	= 100;
-	s_options_alwaysrun_box.generic.name	= "always run";
-	s_options_alwaysrun_box.generic.callback = AlwaysRunFunc;
-	s_options_alwaysrun_box.itemnames = yesno_names;
+	s_options_hor_motioncam_slider.curvalue		= Cvar_VariableValue( "hor_motioncam_sensitivity" ) * 2.0f;
 
 	s_options_invertmouse_box.generic.type = MTYPE_SPINCONTROL;
 	s_options_invertmouse_box.generic.x	= 0;
@@ -1473,6 +1457,7 @@ void Options_MenuInit( void )
 	s_options_invertmouse_box.generic.name	= "invert camera";
 	s_options_invertmouse_box.generic.callback = InvertMouseFunc;
 	s_options_invertmouse_box.itemnames = yesno_names;
+	s_options_invertmouse_box.curvalue		= fabs(m_pitch->value) != -(fabs(m_pitch->value));
 
 	/*s_options_lookspring_box.generic.type = MTYPE_SPINCONTROL;
 	s_options_lookspring_box.generic.x	= 0;
@@ -1487,6 +1472,7 @@ void Options_MenuInit( void )
 	s_options_fps_box.generic.name	= "show fps";
 	s_options_fps_box.generic.callback = fpsFunc;
 	s_options_fps_box.itemnames = yesno_names;
+	s_options_fps_box.curvalue		= Cvar_VariableValue( "cl_drawfps");
 
 	/*s_options_freelook_box.generic.type = MTYPE_SPINCONTROL;
 	s_options_freelook_box.generic.x	= 0;
@@ -1501,6 +1487,7 @@ void Options_MenuInit( void )
 	s_options_crosshair_box.generic.name	= "show crosshair";
 	s_options_crosshair_box.generic.callback = CrosshairFunc;
 	s_options_crosshair_box.itemnames = crosshair_names;
+	s_options_crosshair_box.curvalue		= Cvar_VariableValue( "crosshair");
 /*
 	s_options_noalttab_box.generic.type = MTYPE_SPINCONTROL;
 	s_options_noalttab_box.generic.x	= 0;
@@ -1515,6 +1502,7 @@ void Options_MenuInit( void )
 	s_options_rumble_box.generic.name	= "rumble when hit";
 	s_options_rumble_box.generic.callback = RumbleFunc;
 	s_options_rumble_box.itemnames = yesno_names;
+	s_options_rumble_box.curvalue		= Cvar_VariableValue( "pstv_rumble");
 	
 	s_options_specular_box.generic.type = MTYPE_SPINCONTROL;
 	s_options_specular_box.generic.x	= 0;
@@ -1522,6 +1510,7 @@ void Options_MenuInit( void )
 	s_options_specular_box.generic.name	= "specular mode";
 	s_options_specular_box.generic.callback = SpecularFunc;
 	s_options_specular_box.itemnames = yesno_names;
+	s_options_specular_box.curvalue		= Cvar_VariableValue( "gl_xflip");
 	
 	s_options_third_box.generic.type = MTYPE_SPINCONTROL;
 	s_options_third_box.generic.x	= 0;
@@ -1529,6 +1518,7 @@ void Options_MenuInit( void )
 	s_options_third_box.generic.name	= "third person mode";
 	s_options_third_box.generic.callback = ThirdFunc;
 	s_options_third_box.itemnames = yesno_names;
+	s_options_third_box.curvalue		= Cvar_VariableValue( "cl_3dcam");
 
 	s_options_customize_options_action.generic.type	= MTYPE_ACTION;
 	s_options_customize_options_action.generic.x		= 0;
