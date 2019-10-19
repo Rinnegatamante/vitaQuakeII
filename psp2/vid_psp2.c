@@ -456,6 +456,7 @@ const char *VID_MenuKey( int k)
     {
     case K_AUX4:
         ApplyChanges( NULL );
+		CL_WriteConfiguration();
         return NULL;
     case K_KP_UPARROW:
     case K_UPARROW:

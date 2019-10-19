@@ -30,6 +30,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 cvar_t *scale_2d = NULL;
 
 static int	m_main_cursor;
+static menuframework_s	s_options_menu;
 
 #define NUM_CURSOR_FRAMES 15
 
@@ -165,6 +166,7 @@ const char *Default_MenuKey( menuframework_s *m, int key )
 	switch ( key )
 	{
 	case K_AUX4:
+		if (m == &s_options_menu) CL_WriteConfiguration();
 		M_PopMenu();
 		return menu_out_sound;
 	case K_KP_UPARROW:
@@ -1033,7 +1035,6 @@ extern cvar_t *cl_maxfps;
 extern cvar_t *gl_xflip;
 extern cvar_t *cl_3dcam;
 
-static menuframework_s	s_options_menu;
 static menuaction_s		s_options_defaults_action;
 static menuaction_s		s_options_customize_options_action;
 static menulist_s		s_options_framecap_box;
