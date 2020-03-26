@@ -472,6 +472,9 @@ int quake_main (unsigned int argc, void* argv){
 	}else Qcommon_Init (argc, argv);
 	#endif
 	oldtime = Sys_Milliseconds ();
+	
+	// Disabling all FPU exceptions traps on main thread
+	sceKernelChangeThreadVfpException(0x0800009FU, 0x0);
 
 	while (1)
 	{
