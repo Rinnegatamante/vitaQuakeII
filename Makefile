@@ -1,6 +1,7 @@
 TARGET		:= vitaQuakeII
 TITLE		:= QUAKE0002
 SOURCES		:= source
+SHADERS     := shaders
 INCLUDES	:= include
 
 LIBS = -lvitaGL -lvorbisfile -lvorbis -logg -lspeexdsp -lmpg123 -lmathneon \
@@ -156,6 +157,8 @@ ZAERO := $(foreach dir,$(ZAERO_DIRS), $(wildcard $(dir)/*.c))
 CPPSOURCES	:= audiodec
 
 CPPFILES   := $(foreach dir,$(CPPSOURCES), $(wildcard $(dir)/*.cpp))
+CGFILES  := $(foreach dir,$(SHADERS), $(wildcard $(dir)/*.cg))
+CGSHADERS  := $(CGFILES:.cg=.h)
 OBJS     := $(CLIENT) $(QCOMMON) $(SERVER) $(GAME) $(SYSTEM) $(REFGL) $(CPPFILES:.cpp=.o)
 OBJS_ROGUE := $(CLIENT) $(QCOMMON) $(SERVER) $(SYSTEM) $(REFGL) $(CPPFILES:.cpp=.o) $(ROGUE:.c=.o)
 OBJS_XATRIX := $(CLIENT) $(QCOMMON) $(SERVER) $(SYSTEM) $(REFGL) $(CPPFILES:.cpp=.o) $(XATRIX:.c=.o)
@@ -202,6 +205,14 @@ $(TARGET).vpk: $(TARGET).velf
 	#------------ Comment this if you don't have 7zip ------------------
 	7z a -tzip $(TARGET).vpk -r .\build\sce_sys\* .\build\eboot.bin  .\build\shaders\* .\build\rogue.bin .\build\xatrix.bin .\build\zaero.bin
 	#-------------------------------------------------------------------
+
+%_f.h:
+	psp2cgc -profile sce_fp_psp2 $(@:_f.h=_f.cg) -Wperf -fastprecision -O3 -o build/$(@:_f.h=_f.gxp)
+	
+%_v.h:
+	psp2cgc -profile sce_vp_psp2 $(@:_v.h=_v.cg) -Wperf -fastprecision -O3 -o build/$(@:_v.h=_v.gxp)
+
+shaders: $(CGSHADERS)
 
 %.velf: %.elf
 	cp $< $<.unstripped.elf
