@@ -577,7 +577,7 @@ void Con_DrawConsole (float frac)
 	char			*text;
 	int				row;
 	int				lines;
-	char			version[64];
+	char			version[48];
 	char			dlbar[1024];
 	float scale = SCR_GetMenuScale();
 
@@ -597,7 +597,7 @@ void Con_DrawConsole (float frac)
 	
 	int verLen = strlen(version);
 	
-	for (x=0 ; x<5 ; x++)
+	for (x=0 ; x<verLen ; x++)
 		re.DrawChar (viddef.width-((verLen*8+5) * scale) + x * 8 * scale, lines - 35 * scale, 128 + version[x], scale);
 
 // draw the text
