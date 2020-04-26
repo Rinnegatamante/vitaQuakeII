@@ -867,48 +867,6 @@ void	R_SetGL2D (void)
 	GL_Color (1,1,1,1);
 }
 
-static void GL_DrawColoredStereoLinePair( float r, float g, float b, float y )
-{
-	//->glColor3f( r, g, b );
-	//->glVertex2f( 0, y );
-	//->glVertex2f( vid.width, y );
-	//->glColor3f( 0, 0, 0 );
-	//->glVertex2f( 0, y + 1 );
-	//->glVertex2f( vid.width, y + 1 );
-}
-
-static void GL_DrawStereoPattern( void )
-{
-	//->int i;
-
-	//->if ( !( gl_config.renderer & GL_RENDERER_INTERGRAPH ) )
-	//->	return;
-
-	//->if ( !gl_state.stereo_enabled )
-	//->	return;
-
-	//->R_SetGL2D();
-
-	//->qglDrawBuffer( GL_BACK_LEFT );
-
-	//->for ( i = 0; i < 20; i++ )
-	//->{
-	//->	qglBegin( GL_LINES );
-	//->		GL_DrawColoredStereoLinePair( 1, 0, 0, 0 );
-	//->		GL_DrawColoredStereoLinePair( 1, 0, 0, 2 );
-	//->		GL_DrawColoredStereoLinePair( 1, 0, 0, 4 );
-	//->		GL_DrawColoredStereoLinePair( 1, 0, 0, 6 );
-	//->		GL_DrawColoredStereoLinePair( 0, 1, 0, 8 );
-	//->		GL_DrawColoredStereoLinePair( 1, 1, 0, 10);
-	//->		GL_DrawColoredStereoLinePair( 1, 1, 0, 12);
-	//->		GL_DrawColoredStereoLinePair( 0, 1, 0, 14);
-	//->	qglEnd();
-		
-	//->	GLimp_EndFrame();
-	//->}
-}
-
-
 /*
 ====================
 R_SetLightLevel
@@ -1112,7 +1070,6 @@ R_Init
 */
 qboolean R_Init( void *hinstance, void *hWnd )
 {	
-	int		err;
 	int		j;
 	extern float r_turbsin[256];
 
@@ -1141,7 +1098,7 @@ qboolean R_Init( void *hinstance, void *hWnd )
 	if ( !R_SetMode () )
 	{
         ri.Con_Printf (PRINT_ALL, "ref_gl::R_Init() - could not R_SetMode()\n" );
-		return -1;
+		return false;
 	}
 
 	ri.Con_Printf (PRINT_ALL, "Vid_MenuInit\n");
@@ -1162,7 +1119,7 @@ qboolean R_Init( void *hinstance, void *hWnd )
 	Mod_Init ();
 	R_InitParticleTexture ();
 	Draw_InitLocal ();
-
+	return true;
 }
 
 /*
@@ -1307,7 +1264,7 @@ unsigned r_rawpalette[256];
 void R_SetPalette ( const unsigned char *palette)
 {
 	int		i;
-
+	
 	byte *rp = ( byte * ) r_rawpalette;
 
 	if ( palette )
@@ -1330,8 +1287,7 @@ void R_SetPalette ( const unsigned char *palette)
 			rp[i*4+3] = 0xff;
 		}
 	}
-	GL_SetTexturePalette( r_rawpalette );
-
+	
 	glClearColor (0,0,0,0);
 	glClear (GL_COLOR_BUFFER_BIT);
 	glClearColor (1,0, 0.5 , 0.5);

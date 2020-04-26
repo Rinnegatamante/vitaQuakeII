@@ -24,6 +24,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 model_t	*loadmodel;
 int		modfilelen;
 
+extern long Com_HashFileName (const char *fname, int hashSize, qboolean sized);
+
 void Mod_LoadSpriteModel (model_t *mod, void *buffer);
 void Mod_LoadBrushModel (model_t *mod, void *buffer);
 void Mod_LoadAliasModel (model_t *mod, void *buffer);
@@ -566,9 +568,12 @@ void Mod_LoadTexinfo (lump_t *l)
 
 	for ( i=0 ; i<count ; i++, in++, out++)
 	{
-		for (j=0 ; j<8 ; j++)
-			out->vecs[0][j] = LittleFloat (in->vecs[0][j]);
-
+		for (j = 0; j < 4; j++)
+		{
+			out->vecs[0][j] = LittleFloat(in->vecs[0][j]);
+			out->vecs[1][j] = LittleFloat(in->vecs[1][j]);
+		}
+		
 		out->flags = LittleLong (in->flags);
 		next = LittleLong (in->nexttexinfo);
 		if (next > 0)

@@ -1280,7 +1280,6 @@ char	temp[32]; // temporary char where we store our fps string
 
 void SCR_DrawFps(void)
 {
-	int calc;
 	float scale = SCR_GetMenuScale();
 	
 	if ((cl.time + 1000) < fpscounter)

@@ -249,18 +249,12 @@ extern	vec3_t			lightspot;
 
 void GL_DrawAliasShadow (dmdl_t *paliashdr, int posenum)
 {
-	dtrivertx_t	*verts;
 	int		*order;
 	vec3_t	point;
 	float	height, lheight;
 	int		count;
-	daliasframe_t	*frame;
 
 	lheight = currententity->origin[2] - lightspot[2];
-
-	frame = (daliasframe_t *)((byte *)paliashdr + paliashdr->ofs_frames 
-		+ currententity->frame * paliashdr->framesize);
-	verts = frame->verts;
 
 	height = 0;
 
@@ -679,7 +673,7 @@ void R_DrawAliasModel (entity_t *e)
 		glMatrixMode( GL_PROJECTION );
 		glPushMatrix();
 		glLoadIdentity();
-	    MYgluPerspective( r_newrefdef.fov_y, ( float ) r_newrefdef.width / r_newrefdef.height,  4,  4096);
+		MYgluPerspective( r_newrefdef.fov_y, ( float ) r_newrefdef.width / r_newrefdef.height,  4,  4096);
 		if (r_lefthand->value == 1.0f) glScalef( -1, 1, 1 );
 		glMatrixMode( GL_MODELVIEW );
 

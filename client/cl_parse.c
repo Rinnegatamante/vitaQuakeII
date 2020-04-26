@@ -365,7 +365,7 @@ void CL_ParseBaseline (void)
 
 	memset (&nullstate, 0, sizeof(nullstate));
 
-	newnum = CL_ParseEntityBits (&bits);
+	newnum = CL_ParseEntityBits ((unsigned int*)&bits);
 	es = &cl_entities[newnum].baseline;
 	CL_ParseDelta (&nullstate, es, newnum, bits);
 }

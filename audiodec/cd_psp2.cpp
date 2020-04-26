@@ -221,9 +221,7 @@ void CDAudio_Update(void)
 
 
 int CDAudio_Init(void)
-{
-	int res;
-	
+{	
 	cd_volume = Cvar_Get ("cd_volume", "1", CVAR_ARCHIVE);
 	
 	// Creating audio mutex

@@ -46,20 +46,6 @@ int		gl_tex_alpha_format = 4;
 int		gl_filter_min = GL_LINEAR;
 int		gl_filter_max = GL_LINEAR;
 
-void GL_SetTexturePalette( unsigned palette[256] )
-{
-	int i;
-	unsigned char temptable[768];
-
-	for ( i = 0; i < 256; i++ )
-	{
-		temptable[i*3+0] = ( palette[i] >> 0 ) & 0xff;
-		temptable[i*3+1] = ( palette[i] >> 8 ) & 0xff;
-		temptable[i*3+2] = ( palette[i] >> 16 ) & 0xff;
-	}
-
-}
-
 void GL_TexEnv( GLenum mode )
 {
 	static int lastmodes[2] = { -1, -1 };
@@ -106,11 +92,7 @@ typedef struct
 
 glmode_t modes[] = {
 	{"GL_NEAREST", GL_NEAREST, GL_NEAREST},
-	{"GL_LINEAR", GL_LINEAR, GL_LINEAR},
-	{"GL_NEAREST_MIPMAP_NEAREST", GL_NEAREST_MIPMAP_NEAREST, GL_NEAREST},
-	{"GL_LINEAR_MIPMAP_NEAREST", GL_LINEAR_MIPMAP_NEAREST, GL_LINEAR},
-	{"GL_NEAREST_MIPMAP_LINEAR", GL_NEAREST_MIPMAP_LINEAR, GL_NEAREST},
-	{"GL_LINEAR_MIPMAP_LINEAR", GL_LINEAR_MIPMAP_LINEAR, GL_LINEAR}
+	{"GL_LINEAR", GL_LINEAR, GL_LINEAR}
 };
 
 #define NUM_GL_MODES (sizeof(modes) / sizeof (glmode_t))
@@ -122,14 +104,14 @@ typedef struct
 } gltmode_t;
 
 gltmode_t gl_alpha_modes[] = {
-	{"default", 4},
+	{"default", GL_RGBA},
 	{"GL_RGBA", GL_RGBA}
 };
 
 #define NUM_GL_ALPHA_MODES (sizeof(gl_alpha_modes) / sizeof (gltmode_t))
 
 gltmode_t gl_solid_modes[] = {
-	{"default", 3},
+	{"default", GL_RGB},
 	{"GL_RGB", GL_RGB}
 };
 
@@ -480,7 +462,6 @@ void LoadTGA (char *name, byte **pic, int *width, int *height)
 	int		row, column;
 	byte	*buf_p;
 	byte	*buffer;
-	int		length;
 	TargaHeader		targa_header;
 	byte			*targa_rgba;
 	byte tmp[2];
@@ -490,7 +471,7 @@ void LoadTGA (char *name, byte **pic, int *width, int *height)
 	//
 	// load the file
 	//
-	length = ri.FS_LoadFile (name, (void **)&buffer);
+	ri.FS_LoadFile (name, (void **)&buffer);
 	if (!buffer)
 	{
 		ri.Con_Printf (PRINT_DEVELOPER, "Bad tga file %s\n", name);
@@ -591,6 +572,7 @@ void LoadTGA (char *name, byte **pic, int *width, int *height)
 								red = *buf_p++;
 								alphabyte = 255;
 								break;
+						default:
 						case 32:
 								blue = *buf_p++;
 								green = *buf_p++;

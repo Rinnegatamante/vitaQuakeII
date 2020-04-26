@@ -143,6 +143,8 @@ qboolean	NET_CompareBaseAdr (netadr_t a, netadr_t b)
 			return true;
 		return false;
 	}
+	
+	return false;
 }
 
 char	*NET_AdrToString (netadr_t a)
@@ -352,7 +354,7 @@ void NET_SendPacket (netsrc_t sock, int length, void *data, netadr_t to)
 {
 	int		ret;
 	struct SceNetSockaddrIn	addr;
-	int		net_socket;
+	int		net_socket = 0;
 
 	if ( to.type == NA_LOOPBACK )
 	{
@@ -525,7 +527,7 @@ int NET_Socket (char *net_interface, int port)
 	}
 
 	// make it non-blocking
-	if (ret=sceNetSetsockopt(newsocket, SCE_NET_SOL_SOCKET, SCE_NET_SO_NBIO, &_true, sizeof(uint32_t)) < 0)
+	if ((ret=sceNetSetsockopt(newsocket, SCE_NET_SOL_SOCKET, SCE_NET_SO_NBIO, &_true, sizeof(uint32_t))) < 0)
 	{
 		errno = ret;
 		Com_Printf ("ERROR: UDP_OpenSocket: setsockopt SO_NBIO:%s\n", NET_ErrorString());
@@ -533,7 +535,7 @@ int NET_Socket (char *net_interface, int port)
 	}
 
 	// make it broadcast capable
-	if (ret=sceNetSetsockopt(newsocket, SCE_NET_SOL_SOCKET, SCE_NET_SO_BROADCAST, (char *)&i, sizeof(i)) < 0)
+	if ((ret=sceNetSetsockopt(newsocket, SCE_NET_SOL_SOCKET, SCE_NET_SO_BROADCAST, (char *)&i, sizeof(i))) < 0)
 	{
 		errno = ret;
 		Com_Printf ("ERROR: UDP_OpenSocket: setsockopt SO_BROADCAST:%s\n", NET_ErrorString());
@@ -552,7 +554,7 @@ int NET_Socket (char *net_interface, int port)
 
 	address.sin_family = SCE_NET_AF_INET;
 
-	if(ret=sceNetBind(newsocket, (void *)&address, sizeof(address)) < 0)
+	if((ret=sceNetBind(newsocket, (void *)&address, sizeof(address))) < 0)
 	{
 		errno = ret;
 		Com_Printf ("ERROR: UDP_OpenSocket: bind: %s\n", NET_ErrorString());

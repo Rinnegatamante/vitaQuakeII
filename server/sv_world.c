@@ -355,9 +355,6 @@ void SV_AreaEdicts_r (areanode_t *node)
 {
 	link_t		*l, *next, *start;
 	edict_t		*check;
-	int			count;
-
-	count = 0;
 
 	// touch linked edicts
 	if (area_type == AREA_SOLID)
@@ -434,7 +431,6 @@ int SV_PointContents (vec3_t p)
 	int			i, num;
 	int			contents, c2;
 	int			headnode;
-	float		*angles;
 
 	// get base contents from world
 	contents = CM_PointContents (p, sv.models[1]->headnode);
@@ -448,9 +444,6 @@ int SV_PointContents (vec3_t p)
 
 		// might intersect, so do an exact clip
 		headnode = SV_HullForEntity (hit);
-		angles = hit->s.angles;
-		if (hit->solid != SOLID_BSP)
-			angles = vec3_origin;	// boxes don't rotate
 
 		c2 = CM_TransformedPointContents (p, headnode, hit->s.origin, hit->s.angles);
 

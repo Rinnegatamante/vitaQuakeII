@@ -168,7 +168,7 @@ PREFIX  = arm-vita-eabi
 CC      = $(PREFIX)-gcc
 CXX      = $(PREFIX)-g++
 CFLAGS  = -ffast-math -mtune=cortex-a9 -mfpu=neon -fsigned-char -g -Wl,-q -O2 \
-		-ftree-vectorize -DREF_HARD_LINKED -DHAVE_OGGVORBIS -DHAVE_MPG123 \
+		-ftree-vectorize -DREF_HARD_LINKED -DHAVE_OGGVORBIS -DHAVE_MPG123 -Wall -Wno-missing-braces\
 		-DHAVE_LIBSPEEXDSP -DUSE_AUDIO_RESAMPLER -DRELEASE -DGAME_HARD_LINKED -DPSP2
 CFLAGS += -DOSTYPE=\"$(OSTYPE)\" -DARCH=\"$(ARCH)\"
 CXXFLAGS  = $(CFLAGS) -fno-exceptions -std=gnu++11 -fpermissive

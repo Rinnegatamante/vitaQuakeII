@@ -1682,7 +1682,7 @@ void CL_RailTrail (vec3_t start, vec3_t end)
 
 		p->alpha = 1.0;
 		p->alphavel = -1.0 / (0.6+frand()*0.2);
-		p->color = 0x0 + rand()&15;
+		p->color = rand()&15;
 
 		for (j=0 ; j<3 ; j++)
 		{
@@ -1821,7 +1821,7 @@ void CL_FlyParticles (vec3_t origin, int count)
 	int			i;
 	cparticle_t	*p;
 	float		angle;
-	float		sr, sp, sy, cr, cp, cy;
+	float		sp, sy, cp, cy;
 	vec3_t		forward;
 	float		dist = 64;
 	float		ltime;
@@ -1832,8 +1832,12 @@ void CL_FlyParticles (vec3_t origin, int count)
 
 	if (!avelocities[0][0])
 	{
-		for (i=0 ; i<NUMVERTEXNORMALS*3 ; i++)
-			avelocities[0][i] = (rand()&255) * 0.01;
+		for (i = 0; i < NUMVERTEXNORMALS; i++)
+		{
+			avelocities[i][0] = (rand() & 255) * 0.01f;
+			avelocities[i][1] = (rand() & 255) * 0.01f;
+			avelocities[i][2] = (rand() & 255) * 0.01f;
+		}
 	}
 
 
@@ -1846,9 +1850,6 @@ void CL_FlyParticles (vec3_t origin, int count)
 		angle = ltime * avelocities[i][1];
 		sp = sin(angle);
 		cp = cos(angle);
-		angle = ltime * avelocities[i][2];
-		sr = sin(angle);
-		cr = cos(angle);
 	
 		forward[0] = cp*cy;
 		forward[1] = cp*sy;
@@ -1923,7 +1924,7 @@ void CL_BfgParticles (entity_t *ent)
 	int			i;
 	cparticle_t	*p;
 	float		angle;
-	float		sr, sp, sy, cr, cp, cy;
+	float		sp, sy, cp, cy;
 	vec3_t		forward;
 	float		dist = 64;
 	vec3_t		v;
@@ -1931,8 +1932,12 @@ void CL_BfgParticles (entity_t *ent)
 	
 	if (!avelocities[0][0])
 	{
-		for (i=0 ; i<NUMVERTEXNORMALS*3 ; i++)
-			avelocities[0][i] = (rand()&255) * 0.01;
+		for (i = 0; i < NUMVERTEXNORMALS; i++)
+		{
+			avelocities[i][0] = (rand() & 255) * 0.01f;
+			avelocities[i][1] = (rand() & 255) * 0.01f;
+			avelocities[i][2] = (rand() & 255) * 0.01f;
+		}
 	}
 
 
@@ -1945,9 +1950,6 @@ void CL_BfgParticles (entity_t *ent)
 		angle = ltime * avelocities[i][1];
 		sp = sin(angle);
 		cp = cos(angle);
-		angle = ltime * avelocities[i][2];
-		sr = sin(angle);
-		cr = cos(angle);
 	
 		forward[0] = cp*cy;
 		forward[1] = cp*sy;
@@ -2078,7 +2080,7 @@ void CL_TrapParticles (entity_t *ent)
 				dir[2] = k * 8;
 	
 				VectorNormalize (dir);						
-				vel = 50 + rand()&63;
+				vel = 50 + (rand()&63);
 				VectorScale (dir, vel, p->vel);
 
 				p->accel[0] = p->accel[1] = 0;
@@ -2209,6 +2211,7 @@ void CL_AddParticles (void)
 		}
 		else
 		{
+			time = 0.0f;
 			alpha = p->alpha;
 		}
 

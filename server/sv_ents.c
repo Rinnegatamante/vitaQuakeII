@@ -130,12 +130,7 @@ void SV_EmitPacketEntities (client_frame_t *from, client_frame_t *to, sizebuf_t 
 	int		from_num_entities;
 	int		bits;
 
-#if 0
-	if (numprojs)
-		MSG_WriteByte (msg, svc_packetentities2);
-	else
-#endif
-		MSG_WriteByte (msg, svc_packetentities);
+	MSG_WriteByte (msg, svc_packetentities);
 
 	if (!from)
 		from_num_entities = 0;
@@ -144,6 +139,9 @@ void SV_EmitPacketEntities (client_frame_t *from, client_frame_t *to, sizebuf_t 
 
 	newindex = 0;
 	oldindex = 0;
+	newent = NULL;
+	oldent = NULL;
+	
 	while (newindex < to->num_entities || oldindex < from_num_entities)
 	{
 		if (newindex >= to->num_entities)

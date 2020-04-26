@@ -25,6 +25,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #define MAX_NUM_ARGVS	50
 
+extern void Sys_DefaultConfig();
 
 int		com_argc;
 char	*com_argv[MAX_NUM_ARGVS+1];

@@ -212,7 +212,7 @@ void CL_Record_f (void)
 	//
 	// write out messages to hold the startup information
 	//
-	SZ_Init (&buf, buf_data, sizeof(buf_data));
+	SZ_Init (&buf, (unsigned char*)buf_data, sizeof(buf_data));
 
 	// send the serverdata
 	MSG_WriteByte (&buf, svc_serverdata);
@@ -650,9 +650,9 @@ void CL_Disconnect (void)
 	// send a disconnect message to the server
 	final[0] = clc_stringcmd;
 	strcpy ((char *)final+1, "disconnect");
-	Netchan_Transmit (&cls.netchan, strlen(final), final);
-	Netchan_Transmit (&cls.netchan, strlen(final), final);
-	Netchan_Transmit (&cls.netchan, strlen(final), final);
+	Netchan_Transmit (&cls.netchan, strlen((char*)final), final);
+	Netchan_Transmit (&cls.netchan, strlen((char*)final), final);
+	Netchan_Transmit (&cls.netchan, strlen((char*)final), final);
 
 	CL_ClearState ();
 
@@ -1493,8 +1493,7 @@ void CL_InitLocal (void)
 	memset(&boot_param, 0, sizeof(SceAppUtilBootParam));
 	sceAppUtilInit(&init_param, &boot_param);
 	char nick[SCE_SYSTEM_PARAM_USERNAME_MAXSIZE];
-	sceAppUtilSystemParamGetString(SCE_SYSTEM_PARAM_ID_USERNAME, nick, SCE_SYSTEM_PARAM_USERNAME_MAXSIZE);
-	nick[20] = 0; // Max nickname length == 20
+	sceAppUtilSystemParamGetString(SCE_SYSTEM_PARAM_ID_USERNAME, (signed char*)nick, SCE_SYSTEM_PARAM_USERNAME_MAXSIZE);
 	Cvar_Set ("name", nick);
 
 	skin = Cvar_Get ("skin", "male/grunt", CVAR_USERINFO | CVAR_ARCHIVE);

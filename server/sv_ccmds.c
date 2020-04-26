@@ -925,7 +925,7 @@ void SV_ServerRecord_f (void)
 	//
 	// write a single giant fake message with all the startup info
 	//
-	SZ_Init (&buf, buf_data, sizeof(buf_data));
+	SZ_Init (&buf, (unsigned char*)buf_data, sizeof(buf_data));
 
 	//
 	// serverdata needs to go over for all types of servers

@@ -21,7 +21,9 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #include "../client/client.h"
 #include "../client/qmenu.h"
+
 extern viddef_t vid;
+extern void CL_WriteConfiguration();
 
 #define REF_OPENGL  0
 
@@ -33,8 +35,6 @@ cvar_t *scr_viewsize;
 extern int msaa;
 extern uint8_t is_uma0;
 
-static cvar_t *sw_mode;
-static cvar_t *sw_stipplealpha;
 static cvar_t *gl_picmip;
 static cvar_t *gl_mode;
 static cvar_t *gl_driver;
@@ -53,8 +53,6 @@ static menulist_s       s_msaa;
 static menuslider_s     s_tq_slider;
 static menuslider_s     s_screensize_slider;
 static menuslider_s     s_brightness_slider;
-static menulist_s       s_fs_box;
-static menulist_s       s_finish_box;
 static menuaction_s     s_cancel_action;
 static menuaction_s     s_defaults_action;
 static menulist_s       s_shadows_slider;
@@ -134,7 +132,7 @@ qboolean VID_GetModeInfo( int *width, int *height, int mode )
 
     *width  = vid_modes[mode].width;
     *height = vid_modes[mode].height;
-    printf("VID_GetModeInfo %dx%d mode %d\n",width,height,mode);
+    printf("VID_GetModeInfo %dx%d mode %d\n",*width,*height,mode);
 
     return true;
 }
@@ -302,7 +300,6 @@ void    VID_MenuInit (void)
         "yes",
         0
     };
-    int i;
 
 	if ( !gl_driver )
 		gl_driver = Cvar_Get( "gl_driver", "opengl32", 0 );

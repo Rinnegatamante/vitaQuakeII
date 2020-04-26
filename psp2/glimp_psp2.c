@@ -27,14 +27,12 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 ** GLimp_EndFrame
 ** GLimp_Init
 ** GLimp_Shutdown
-** GLimp_SwitchFullscreen
 **
 */
 #include <vitasdk.h>
 #include "vitaGL.h"
 #include "../ref_gl/gl_local.h"
 
-static qboolean GLimp_SwitchFullscreen( int width, int height );
 qboolean GLimp_InitGL (void);
 
 extern int isKeyboard;
@@ -136,7 +134,7 @@ GLuint fs[9];
 GLuint vs[4];
 GLuint programs[9];
 
-void* GL_LoadShader(const char* filename, GLuint idx, GLboolean fragment){
+void GL_LoadShader(const char* filename, GLuint idx, GLboolean fragment){
 	FILE* f = fopen(filename, "rb");
 	fseek(f, 0, SEEK_END);
 	long int size = ftell(f);

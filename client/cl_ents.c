@@ -21,6 +21,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #include "client.h"
 
+extern void vectoangles2 (vec3_t value1, vec3_t angles);
+extern void vectoangles (vec3_t value1, vec3_t angles);
 
 extern	struct model_s	*cl_mod_powerscreen;
 
@@ -429,7 +431,7 @@ void CL_ParsePacketEntities (frame_t *oldframe, frame_t *newframe)
 
 	while (1)
 	{
-		newnum = CL_ParseEntityBits (&bits);
+		newnum = CL_ParseEntityBits ((unsigned int*)&bits);
 		if (newnum >= MAX_EDICTS)
 			Com_Error (ERR_DROP,"CL_ParsePacketEntities: bad number:%i", newnum);
 
@@ -1390,7 +1392,6 @@ void CL_CalcViewValues (void)
 {
 	int			i;
 	float		lerp, backlerp;
-	centity_t	*ent;
 	frame_t		*oldframe;
 	player_state_t	*ps, *ops;
 
@@ -1408,7 +1409,6 @@ void CL_CalcViewValues (void)
 		|| abs(ops->pmove.origin[2] - ps->pmove.origin[2]) > 256*8)
 		ops = ps;		// don't interpolate
 
-	ent = &cl_entities[cl.playernum+1];
 	lerp = cl.lerpfrac;
 
 	// calculate the origin
@@ -1468,7 +1468,7 @@ void CL_CalcViewValues (void)
 	
 	if (cl_3dcam->value)
 	{
-		vec3_t end, oldorg, camPos, camforward;
+		vec3_t end, camPos, camforward;
 		float dist_up, dist_back, angle;
 
 		if (cl_3dcam_angle->value<0)
@@ -1484,8 +1484,6 @@ void CL_CalcViewValues (void)
 		angle = M_PI * cl_3dcam_angle->value/180.0f;
 		dist_up = cl_3dcam_dist->value * sinf( angle );
 		dist_back =  cl_3dcam_dist->value * cosf( angle );
-		
-		VectorCopy(cl.refdef.vieworg, oldorg);
 
 		vec3_t temp;
 		vectoangles(cl.v_forward, temp);

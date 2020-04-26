@@ -27,6 +27,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "client.h"
 #include "../client/qmenu.h"
 
+extern void CL_WriteConfiguration();
+
 cvar_t *scale_2d = NULL;
 
 static int	m_main_cursor;
@@ -1055,7 +1057,6 @@ static menuslider_s		s_options_cdvolume_slider;
 static menulist_s		s_options_joystick_box;
 static menulist_s		s_options_cdvolume_box;
 static menulist_s		s_options_quality_list;
-static menulist_s		s_options_compatibility_list;
 static menulist_s		s_options_console_action;
 
 extern cvar_t 	*leftanalog_sensitivity;
@@ -1078,11 +1079,6 @@ static void RumbleFunc( void *unused )
 	Cvar_SetValue( "pstv_rumble", s_options_rumble_box.curvalue );
 }
 
-static void JoystickFunc( void *unused )
-{
-	Cvar_SetValue( "in_joystick", s_options_joystick_box.curvalue );
-}
-
 static void CustomizeControlsFunc( void *unused )
 {
 	M_Menu_Keys_f();
@@ -1091,16 +1087,6 @@ static void CustomizeControlsFunc( void *unused )
 static void UseGyroFunc( void *unused )
 {
 	Cvar_SetValue( "use_gyro", s_options_use_gyro_box.curvalue );
-}
-
-static void AlwaysRunFunc( void *unused )
-{
-	Cvar_SetValue( "cl_run", s_options_alwaysrun_box.curvalue );
-}
-
-static void FreeLookFunc( void *unused )
-{
-	Cvar_SetValue( "freelook", s_options_freelook_box.curvalue );
 }
 
 /*static void MouseSpeedFunc( void *unused )
@@ -1120,10 +1106,10 @@ static void CStickSpeedFunc( void *unused )
 }
 #endif
 
-static void LeftAnalogSpeedFunc( void *unused )
+/*static void LeftAnalogSpeedFunc( void *unused )
 {
 	Cvar_SetValue( "leftanalog_sensitivity", s_options_leftanalog_slider.curvalue / 2.0F );
-}
+}*/
 
 static void RightAnalogSpeedFunc( void *unused )
 {
@@ -1163,11 +1149,6 @@ static void framecapFunc( void *unused )
 static void scale2dFunc( void *unused )
 {
 	Cvar_SetValue( "scale_2d", s_options_scale2d_box.curvalue );
-}
-
-static void NoAltTabFunc( void *unused )
-{
-	Cvar_SetValue( "win_noalttab", s_options_noalttab_box.curvalue );
 }
 
 static float ClampCvar( float min, float max, float value )
@@ -1268,11 +1249,6 @@ static void InvertGyroFunc( void *unused )
 	}
 }
 
-static void LookspringFunc( void *unused )
-{
-	Cvar_SetValue( "lookspring", s_options_lookspring_box.curvalue );
-}
-
 static void UpdateVolumeFunc( void *unused )
 {
 	Cvar_SetValue( "s_volume", s_options_sfxvolume_slider.curvalue / 10 );
@@ -1285,10 +1261,7 @@ static void UpdateCDVolumeFunc( void *unused )
 
 static void ConsoleFunc( void *unused )
 {
-	/*
-	** the proper way to do this is probably to have ToggleConsole_f accept a parameter
-	*/
-	extern void Key_ClearTyping( void );
+	SCR_EndLoadingPlaque(); /* get rid of loading plaque */
 
 	if ( cl.attractloop )
 	{
@@ -1303,49 +1276,8 @@ static void ConsoleFunc( void *unused )
 	cls.key_dest = key_console;
 }
 
-static void UpdateSoundQualityFunc( void *unused )
-{
-	if ( s_options_quality_list.curvalue )
-	{
-		Cvar_SetValue( "s_khz", 22 );
-		Cvar_SetValue( "s_loadas8bit", false );
-	}
-	else
-	{
-		Cvar_SetValue( "s_khz", 11 );
-		Cvar_SetValue( "s_loadas8bit", true );
-	}
-
-	Cvar_SetValue( "s_primary", s_options_compatibility_list.curvalue );
-
-	M_DrawTextBox( 8, 120 - 48, 36, 3 );
-	M_Print( 16 + 16, 120 - 48 + 8,  "Restarting the sound system. This" );
-	M_Print( 16 + 16, 120 - 48 + 16, "could take up to a minute, so" );
-	M_Print( 16 + 16, 120 - 48 + 24, "please be patient." );
-
-	// the text box won't show up unless we do a buffer swap
-	re.EndFrame();
-
-	CL_Snd_Restart_f();
-}
-
 void Options_MenuInit( void )
 {
-	static const char *cd_music_items[] =
-	{
-		"disabled",
-		"enabled",
-		0
-	};
-	static const char *quality_items[] =
-	{
-		"low", "high", 0
-	};
-
-	static const char *compatibility_items[] =
-	{
-		"max compatibility", "max performance", 0
-	};
 
 	static const char *yesno_names[] =
 	{
@@ -2146,14 +2078,6 @@ static void CreditsFunc( void *unused )
 
 void Game_MenuInit( void )
 {
-	static const char *difficulty_names[] =
-	{
-		"easy",
-		"medium",
-		"hard",
-		0
-	};
-
 	s_game_menu.x = viddef.width * 0.50;
 	s_game_menu.nitems = 0;
 
@@ -3946,6 +3870,8 @@ static qboolean PlayerConfig_ScanDirectories( void )
 	}
 	if ( dirnames )
 		FreeFileList( dirnames, ndirs );
+	
+	return true;
 }
 
 static int pmicmpfnc( const void *_a, const void *_b )
@@ -3973,7 +3899,6 @@ static int pmicmpfnc( const void *_a, const void *_b )
 qboolean PlayerConfig_MenuInit( void )
 {
 	extern cvar_t *name;
-	extern cvar_t *team;
 	extern cvar_t *skin;
 	char currentdirectory[1024];
 	char currentskin[1024];
@@ -4156,7 +4081,6 @@ void PlayerConfig_MenuDraw( void )
 	if ( s_pmi[s_player_model_box.curvalue].skindisplaynames )
 	{
 		static int yaw;
-		int maxframe = 29;
 		entity_t entity;
 
 		memset( &entity, 0, sizeof( entity ) );

@@ -340,34 +340,11 @@ void Sys_MkdirRecursive(char *path) {
 }
 
 static	char	findbase[MAX_OSPATH];
-static	char	findpath[MAX_OSPATH];
+static	char	findpath[512];
 static	char	findpattern[MAX_OSPATH];
 static	SceUID	fdir = -1;
 
 int glob_match(char *pattern, char *text);
-
-static qboolean CompareAttributes(char *path, char *name,
-	unsigned musthave, unsigned canthave )
-{
-	SceIoStat st;
-	char fn[MAX_OSPATH];
-
-// . and .. never match
-	if (strcmp(name, ".") == 0 || strcmp(name, "..") == 0)
-		return false;
-
-	sprintf(fn, "%s/%s", path, name);
-	if (sceIoGetstat(fn, &st) < 0)
-		return false; // shouldn't happen
-
-	if ( ( st.st_mode & SCE_SO_IFDIR ) && ( canthave & SFF_SUBDIR ) )
-		return false;
-
-	if ( ( musthave & SFF_SUBDIR ) && !( st.st_mode & SCE_SO_IFDIR ) )
-		return false;
-
-	return true;
-}
 
 char *Sys_FindFirst (char *path, unsigned musthave, unsigned canhave)
 {
@@ -394,12 +371,8 @@ char *Sys_FindFirst (char *path, unsigned musthave, unsigned canhave)
 		return NULL;
 	while ((sceIoDread(fdir, &d)) > 0) {
 		if (!*findpattern || glob_match(findpattern, d.d_name)) {
-			//if (*findpattern)
-			//	printf("%s matched %s\n", findpattern, d.d_name);
-			//if (CompareAttributes(findbase, d.d_name, musthave, canhave)) {
-				sprintf (findpath, "%s/%s", findbase, d.d_name);
-				return findpath;
-			//}
+			sprintf (findpath, "%s/%s", findbase, d.d_name);
+			return findpath;
 		}
 	}
 	return NULL;
@@ -486,10 +459,11 @@ int quake_main (unsigned int argc, void* argv){
 		
 		// OSK management for Console
 		if (cls.key_dest == key_console) {
-			SceCtrlData tmp_pad, oldpad;
+			SceCtrlData tmp_pad;
+			uint32_t oldpad = 0;
 			sceCtrlPeekBufferPositive(0, &tmp_pad, 1);
 			if (!isKeyboard) {
-				if ((tmp_pad.buttons & SCE_CTRL_SELECT) && (!(oldpad.buttons & SCE_CTRL_SELECT))) {
+				if ((tmp_pad.buttons & SCE_CTRL_SELECT) && (!(oldpad & SCE_CTRL_SELECT))) {
 					isKeyboard = 1;
 					memset(cmd_line, 0, 256);
 					targetKeyboard = cmd_line;
@@ -509,7 +483,7 @@ int quake_main (unsigned int argc, void* argv){
 					sceImeDialogInit(&param);
 				}
 			}
-			oldpad = tmp_pad;
+			oldpad = tmp_pad.buttons;
 		}
 		
 		do {
