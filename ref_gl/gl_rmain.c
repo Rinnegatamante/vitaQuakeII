@@ -1271,7 +1271,7 @@ void R_SetPalette ( const unsigned char *palette)
 	{
 		for ( i = 0; i < 256; i++ )
 		{
-			rp[i*4+0] = palette[i*3+0];
+			rp[i*4  ] = palette[i*3  ];
 			rp[i*4+1] = palette[i*3+1];
 			rp[i*4+2] = palette[i*3+2];
 			rp[i*4+3] = 0xff;
@@ -1281,16 +1281,12 @@ void R_SetPalette ( const unsigned char *palette)
 	{
 		for ( i = 0; i < 256; i++ )
 		{
-			rp[i*4+0] = d_8to24table[i] & 0xff;
-			rp[i*4+1] = ( d_8to24table[i] >> 8 ) & 0xff;
+			rp[i*4  ] = ( d_8to24table[i]       ) & 0xff;
+			rp[i*4+1] = ( d_8to24table[i] >> 8  ) & 0xff;
 			rp[i*4+2] = ( d_8to24table[i] >> 16 ) & 0xff;
 			rp[i*4+3] = 0xff;
 		}
 	}
-	
-	glClearColor (0,0,0,0);
-	glClear (GL_COLOR_BUFFER_BIT);
-	glClearColor (1,0, 0.5 , 0.5);
 }
 
 /*
@@ -1340,9 +1336,9 @@ void R_DrawBeam( entity_t *e )
 	g = ( d_8to24table[e->skinnum & 0xFF] >> 8 ) & 0xFF;
 	b = ( d_8to24table[e->skinnum & 0xFF] >> 16 ) & 0xFF;
 
-	r *= 1/255.0F;
-	g *= 1/255.0F;
-	b *= 1/255.0F;
+	r *= 0.00392f;
+	g *= 0.00392f;
+	b *= 0.00392f;
 
 	float color[4] = { r, g, b, e->alpha };
 
@@ -1462,5 +1458,4 @@ void Com_Printf (char *fmt, ...)
 
 	ri.Con_Printf (PRINT_ALL, "%s", text);
 }
-
 #endif
