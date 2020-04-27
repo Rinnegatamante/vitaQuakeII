@@ -367,16 +367,21 @@ qboolean GLimp_InitGL (void)
 	return true;
 }
 
+qboolean first_boot = true;
+
 /*
 ** GLimp_BeginFrame
 */
 void GLimp_BeginFrame( float camera_separation )
 {
-	vglStartRendering();
-	vglIndexPointerMapped(indices);
-	gVertexBuffer = gVertexBufferPtr;
-	gColorBuffer = gColorBufferPtr;
-	gTexCoordBuffer = gTexCoordBufferPtr;
+	if (first_boot) {
+		vglStartRendering();
+		vglIndexPointerMapped(indices);
+		gVertexBuffer = gVertexBufferPtr;
+		gColorBuffer = gColorBufferPtr;
+		gTexCoordBuffer = gTexCoordBufferPtr;
+		first_boot = false;
+	}
 }
 
 /*
@@ -393,6 +398,11 @@ void GLimp_EndFrame (void)
 		vglUpdateCommonDialog();
 		vglStopRenderingTerm();
 	}else vglStopRendering();
+	vglStartRendering();
+	vglIndexPointerMapped(indices);
+	gVertexBuffer = gVertexBufferPtr;
+	gColorBuffer = gColorBufferPtr;
+	gTexCoordBuffer = gTexCoordBufferPtr;
 }
 
 /*
