@@ -85,54 +85,11 @@ REFGL = 	ref_gl/gl_draw.o \
 			ref_gl/gl_rsurf.o \
 			ref_gl/gl_warp.o
 
-GAME = 		game/m_tank.o \
-			game/p_client.o \
-			game/p_hud.o \
-			game/p_trail.o \
-			game/p_view.o \
-			game/p_weapon.o \
-			game/q_shared.o \
-			game/g_ai.o \
-			game/g_chase.o \
-			game/g_cmds.o \
-			game/g_combat.o \
-			game/g_func.o \
-			game/g_items.o \
-			game/g_main.o \
-			game/g_misc.o \
-			game/g_monster.o \
-			game/g_phys.o \
-			game/g_save.o \
-			game/g_spawn.o \
-			game/g_svcmds.o \
-			game/g_target.o \
-			game/g_trigger.o \
-			game/g_turret.o \
-			game/g_utils.o \
-			game/g_weapon.o \
-			game/m_actor.o \
-			game/m_berserk.o \
-			game/m_boss2.o \
-			game/m_boss3.o \
-			game/m_boss31.o \
-			game/m_boss32.o \
-			game/m_brain.o \
-			game/m_chick.o \
-			game/m_flash.o \
-			game/m_flipper.o \
-			game/m_float.o \
-			game/m_flyer.o \
-			game/m_gladiator.o \
-			game/m_gunner.o \
-			game/m_hover.o \
-			game/m_infantry.o \
-			game/m_insane.o \
-			game/m_medic.o \
-			game/m_move.o \
-			game/m_mutant.o \
-			game/m_parasite.o \
-			game/m_soldier.o \
-			game/m_supertank.o
+BASEQ2_DIRS = game game/savegame game/player game/monster/berserker game/monster/boss2 game/monster/boss3 game/monster/brain \
+	game/monster/chick game/monster/flipper game/monster/float game/monster/flyer game/monster/gladiator game/monster/gunner \
+	game/monster/hover game/monster/infantry game/monster/insane game/monster/medic game/monster/misc game/monster/mutant \
+	game/monster/parasite game/monster/soldier game/monster/supertank game/monster/tank game/shared
+BASEQ2 := $(foreach dir,$(BASEQ2_DIRS), $(wildcard $(dir)/*.c))
 			
 ROGUE_DIRS = rogue rogue/shared rogue/savegame rogue/player rogue/dm rogue/monster/widow rogue/monster/turret rogue/monster/tank \
 	rogue/monster/supertank rogue/monster/stalker rogue/monster/soldier rogue/monster/parasite rogue/monster/mutant rogue/monster/misc \
@@ -159,7 +116,7 @@ CPPSOURCES	:= audiodec
 CPPFILES   := $(foreach dir,$(CPPSOURCES), $(wildcard $(dir)/*.cpp))
 CGFILES  := $(foreach dir,$(SHADERS), $(wildcard $(dir)/*.cg))
 CGSHADERS  := $(CGFILES:.cg=.h)
-OBJS     := $(CLIENT) $(QCOMMON) $(SERVER) $(GAME) $(SYSTEM) $(REFGL) $(CPPFILES:.cpp=.o)
+OBJS     := $(CLIENT) $(QCOMMON) $(SERVER) $(SYSTEM) $(REFGL) $(CPPFILES:.cpp=.o) $(BASEQ2:.c=.o)
 OBJS_ROGUE := $(CLIENT) $(QCOMMON) $(SERVER) $(SYSTEM) $(REFGL) $(CPPFILES:.cpp=.o) $(ROGUE:.c=.o)
 OBJS_XATRIX := $(CLIENT) $(QCOMMON) $(SERVER) $(SYSTEM) $(REFGL) $(CPPFILES:.cpp=.o) $(XATRIX:.c=.o)
 OBJS_ZAERO := $(CLIENT) $(QCOMMON) $(SERVER) $(SYSTEM) $(REFGL) $(CPPFILES:.cpp=.o) $(ZAERO:.c=.o)

@@ -1545,7 +1545,6 @@ void CL_InitLocal (void)
 	// the only thing this does is allow command completion
 	// to work -- all unknown commands are automatically
 	// forwarded to the server
-#if 0
 	Cmd_AddCommand ("wave", NULL);
 	Cmd_AddCommand ("inven", NULL);
 	Cmd_AddCommand ("kill", NULL);
@@ -1565,8 +1564,6 @@ void CL_InitLocal (void)
 	Cmd_AddCommand ("invdrop", NULL);
 	Cmd_AddCommand ("weapnext", NULL);
 	Cmd_AddCommand ("weapprev", NULL);
-#endif
-//JASON this crashes out?
 }
 
 
