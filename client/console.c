@@ -248,8 +248,10 @@ void Con_CheckResize (void)
 {
 	int		i, j, width, oldwidth, oldtotallines, numlines, numchars;
 	char	tbuf[CON_TEXTSIZE];
-
-	width = (viddef.width >> 3) - 2;
+	float scale = SCR_GetMenuScale();
+	
+	width = ((int)(viddef.width / scale) / 8) - 2;
+	width = width > MAXCMDLINE - 2 ? MAXCMDLINE - 2 : width;
 
 	if (width == con.linewidth)
 		return;
