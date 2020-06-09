@@ -70,8 +70,8 @@ cvar_t	*lookstrafe;
 cvar_t	*sensitivity;
 
 cvar_t	*m_pitch;
-cvar_t	*g_pitch;
 cvar_t	*m_yaw;
+cvar_t	*invert_gyro;
 cvar_t	*m_forward;
 cvar_t	*m_side;
 
@@ -1462,8 +1462,8 @@ void CL_InitLocal (void)
 	sensitivity = Cvar_Get ("sensitivity", "3", CVAR_ARCHIVE);
 
 	m_pitch = Cvar_Get ("m_pitch", "0.022", CVAR_ARCHIVE);
-	g_pitch = Cvar_Get ("g_pitch", "0.022", CVAR_ARCHIVE);
 	m_yaw = Cvar_Get ("m_yaw", "0.022", 0);
+	invert_gyro = Cvar_Get ("invert_gyro", "0", CVAR_ARCHIVE);
 	m_forward = Cvar_Get ("m_forward", "1", 0);
 	m_side = Cvar_Get ("m_side", "1", 0);
 
