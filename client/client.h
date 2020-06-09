@@ -281,8 +281,7 @@ extern	cvar_t	*lookspring;
 extern	cvar_t	*lookstrafe;
 extern	cvar_t	*sensitivity;
 
-extern	cvar_t	*m_pitch;
-extern	cvar_t	*m_yaw;
+extern	cvar_t	*invert_mouse;
 extern	cvar_t	*invert_gyro;
 extern	cvar_t	*m_forward;
 extern	cvar_t	*m_side;
