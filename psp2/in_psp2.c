@@ -128,13 +128,15 @@ void IN_Move (usercmd_t *cmd)
 	IN_RescaleAnalog(&right_x, &right_y, 30);
 	float x_cam = (right_x * rightanalog_sensitivity->value) * 0.008;
 	float y_cam = (right_y * rightanalog_sensitivity->value) * 0.008;
-	if (gl_xflip->value) cl.viewangles[YAW] += x_cam;
-	else cl.viewangles[YAW] -= x_cam;
+	if (gl_xflip->value == 1 ^ (invert_mouse->value == 2 || invert_mouse->value == 3)) 
+      cl.viewangles[YAW] += x_cam;
+	else 
+      cl.viewangles[YAW] -= x_cam;
 
-	if (m_pitch->value > 0)
-		cl.viewangles[PITCH] += y_cam;
+	if (invert_mouse->value == 1 || invert_mouse->value == 3)
+      cl.viewangles[PITCH] -= y_cam;
 	else
-		cl.viewangles[PITCH] -= y_cam;
+      cl.viewangles[PITCH] += y_cam;
 
   // gyro analog support for camera movement
 
@@ -147,10 +149,10 @@ void IN_Move (usercmd_t *cmd)
     float x_gyro_cam = motionstate.angularVelocity.y *  hor_motioncam_sensitivity->value; //motion_sensitivity.value;
     float y_gyro_cam = motionstate.angularVelocity.x * vert_motioncam_sensitivity->value; //motion_sensitivity.value;
 
-    if (invert_gyro->value == 2 || invert_gyro->value == 3)
-      cl.viewangles[YAW] += x_gyro_cam;
-    else
+    if (gl_xflip->value == 1 ^ (invert_gyro->value == 2 || invert_gyro->value == 3))
       cl.viewangles[YAW] -= x_gyro_cam;
+    else
+      cl.viewangles[YAW] += x_gyro_cam;
   
     if (invert_gyro->value == 1 || invert_gyro->value == 3)
       cl.viewangles[PITCH] += y_gyro_cam;

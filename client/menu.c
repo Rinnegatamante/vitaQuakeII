@@ -1178,7 +1178,9 @@ static void ControlsSetMenuItemValues( void )
 	Cvar_SetValue( "use_gyro", ClampCvar( 0, 1, use_gyro->value ) );
 	s_options_use_gyro_box.curvalue		= use_gyro->value;
 
-	s_options_invertmouse_box.curvalue	= m_pitch->value < 0;
+	Cvar_SetValue( "invert_mouse", ClampCvar( 0, 3, invert_mouse->value ) );
+	s_options_invertmouse_box.curvalue		= invert_mouse->value;
+	
 	Cvar_SetValue( "invert_gyro", ClampCvar( 0, 3, invert_gyro->value ) );
 	s_options_invertgyro_box.curvalue		= invert_gyro->value;
 
@@ -1228,19 +1230,12 @@ static void ControlsResetDefaultsFunc( void *unused )
 
 static void InvertMouseFunc( void *unused )
 {
-	if ( s_options_invertmouse_box.curvalue == 0 )
-	{
-		Cvar_SetValue( "m_pitch", fabs( m_pitch->value ) );
-	}
-	else
-	{
-		Cvar_SetValue( "m_pitch", -fabs( m_pitch->value ) );
-	}
+	Cvar_SetValue( "invert_mouse", s_options_invertmouse_box.curvalue );
 }
 
 static void InvertGyroFunc( void *unused )
 {
-		Cvar_SetValue( "invert_gyro", s_options_invertgyro_box.curvalue );
+	Cvar_SetValue( "invert_gyro", s_options_invertgyro_box.curvalue );
 }
 
 static void UpdateVolumeFunc( void *unused )
@@ -1392,8 +1387,8 @@ void Options_MenuInit( void )
 	s_options_invertmouse_box.generic.y	= 40;
 	s_options_invertmouse_box.generic.name	= "invert camera";
 	s_options_invertmouse_box.generic.callback = InvertMouseFunc;
-	s_options_invertmouse_box.itemnames = yesno_names;
-	s_options_invertmouse_box.curvalue		= fabs(m_pitch->value) != -(fabs(m_pitch->value));
+	s_options_invertmouse_box.itemnames = invert_names;
+	s_options_invertmouse_box.curvalue		= Cvar_VariableValue( "invert_mouse");
 
 	/*s_options_lookspring_box.generic.type = MTYPE_SPINCONTROL;
 	s_options_lookspring_box.generic.x	= 0;
