@@ -1179,7 +1179,8 @@ static void ControlsSetMenuItemValues( void )
 	s_options_use_gyro_box.curvalue		= use_gyro->value;
 
 	s_options_invertmouse_box.curvalue	= m_pitch->value < 0;
-	s_options_invertgyro_box.curvalue	= g_pitch->value < 0;
+	Cvar_SetValue( "invert_gyro", ClampCvar( 0, 3, invert_gyro->value ) );
+	s_options_invertgyro_box.curvalue		= invert_gyro->value;
 
 
 	Cvar_SetValue( "lookspring", ClampCvar( 0, 1, lookspring->value ) );
@@ -1239,14 +1240,7 @@ static void InvertMouseFunc( void *unused )
 
 static void InvertGyroFunc( void *unused )
 {
-	if ( s_options_invertgyro_box.curvalue == 0 )
-	{
-		Cvar_SetValue( "g_pitch", fabs( g_pitch->value ) );
-	}
-	else
-	{
-		Cvar_SetValue( "g_pitch", -fabs( g_pitch->value ) );
-	}
+		Cvar_SetValue( "invert_gyro", s_options_invertgyro_box.curvalue );
 }
 
 static void UpdateVolumeFunc( void *unused )
@@ -1292,6 +1286,15 @@ void Options_MenuInit( void )
 		"cross",
 		"dot",
 		"angle",
+		0
+	};
+	
+	static const char *invert_names[] =
+	{
+		"no",
+		"vertical",
+		"horizontal",
+		"full",
 		0
 	};
 
@@ -1363,8 +1366,8 @@ void Options_MenuInit( void )
 	s_options_invertgyro_box.generic.y	= 60;
 	s_options_invertgyro_box.generic.name	= "invert gyro camera";
 	s_options_invertgyro_box.generic.callback = InvertGyroFunc;
-	s_options_invertgyro_box.itemnames = yesno_names;
-	s_options_invertgyro_box.curvalue		= fabs(g_pitch->value) != -(fabs(g_pitch->value));
+	s_options_invertgyro_box.itemnames = invert_names;
+	s_options_invertgyro_box.curvalue		= Cvar_VariableValue( "invert_gyro");
 	
 	s_options_vert_motioncam_slider.generic.type	= MTYPE_SLIDER;
 	s_options_vert_motioncam_slider.generic.x		= 0;

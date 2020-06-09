@@ -147,9 +147,12 @@ void IN_Move (usercmd_t *cmd)
     float x_gyro_cam = motionstate.angularVelocity.y *  hor_motioncam_sensitivity->value; //motion_sensitivity.value;
     float y_gyro_cam = motionstate.angularVelocity.x * vert_motioncam_sensitivity->value; //motion_sensitivity.value;
 
-    cl.viewangles[YAW] -= x_gyro_cam;
-
-    if (g_pitch->value > 0)
+    if (invert_gyro->value == 2 || invert_gyro->value == 3)
+      cl.viewangles[YAW] += x_gyro_cam;
+    else
+      cl.viewangles[YAW] -= x_gyro_cam;
+  
+    if (invert_gyro->value == 1 || invert_gyro->value == 3)
       cl.viewangles[PITCH] += y_gyro_cam;
     else
       cl.viewangles[PITCH] -= y_gyro_cam;
