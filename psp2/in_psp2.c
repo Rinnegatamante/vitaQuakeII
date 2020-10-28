@@ -25,7 +25,7 @@ cvar_t *leftanalog_sensitivity;
 cvar_t *rightanalog_sensitivity;
 cvar_t *vert_motioncam_sensitivity;
 cvar_t *hor_motioncam_sensitivity;
-cvar_t *use_gyro;
+extern cvar_t *use_gyro;
 extern cvar_t *pstv_rumble;
 extern cvar_t *gl_xflip;
 
