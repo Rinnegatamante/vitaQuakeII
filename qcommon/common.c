@@ -44,7 +44,7 @@ cvar_t	*timescale;
 cvar_t	*fixedtime;
 cvar_t	*logfile_active;	// 1 = buffer log, 2 = flush after each print
 cvar_t	*showtrace;
-cvar_t	*dedicated;
+extern cvar_t	*dedicated;
 
 FILE	*logfile;
 

@@ -44,7 +44,7 @@ cvar_t *sv_airaccelerate;
 
 cvar_t	*sv_noreload;			// don't reload level state when reentering
 
-cvar_t	*maxclients;			// FIXME: rename sv_maxclients
+extern cvar_t	*maxclients;			// FIXME: rename sv_maxclients
 cvar_t	*sv_showclamp;
 
 cvar_t	*hostname;

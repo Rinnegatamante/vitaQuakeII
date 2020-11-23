@@ -133,8 +133,8 @@ cvar_t	*gl_lockpvs;
 
 cvar_t	*gl_3dlabs_broken;
 
-cvar_t	*vid_fullscreen;
-cvar_t	*vid_gamma;
+extern cvar_t	*vid_fullscreen;
+extern cvar_t	*vid_gamma;
 cvar_t	*vid_ref;
 
 cvar_t  *gl_xflip;

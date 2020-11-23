@@ -44,7 +44,7 @@ int			scr_draw_loading;
 vrect_t		scr_vrect;		// position of render window on screen
 
 
-cvar_t		*scr_viewsize;
+extern cvar_t		*scr_viewsize;
 cvar_t		*scr_conspeed;
 cvar_t		*scr_centertime;
 cvar_t		*scr_showturtle;

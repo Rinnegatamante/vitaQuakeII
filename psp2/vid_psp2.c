@@ -27,7 +27,7 @@ extern void CL_WriteConfiguration();
 
 #define REF_OPENGL  0
 
-cvar_t *vid_ref;
+extern cvar_t *vid_ref;
 cvar_t *vid_fullscreen;
 cvar_t *vid_gamma;
 cvar_t *scr_viewsize;
