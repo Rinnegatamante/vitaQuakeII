@@ -35,12 +35,17 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 qboolean GLimp_InitGL (void);
 
+extern uint32_t postfx_shader;
+static GLuint main_fb = 0xDEADBEEF, main_fb_tex;
+extern GLuint cur_shader[2];
+extern int postfx_idx;
+
 extern int isKeyboard;
 extern cvar_t *vid_fullscreen;
 extern cvar_t *vid_ref;
 extern uint8_t is_uma0;
 qboolean gl_set = false;
-int msaa, scr_width = 960, scr_height = 544;
+int msaa = 0, postfx = 0, scr_width = 960, scr_height = 544;
 float *gVertexBufferPtr;
 float *gColorBufferPtr;
 float *gTexCoordBufferPtr;
@@ -122,6 +127,14 @@ int GLimp_Init( void *hinstance, void *wndproc )
 		break;
 	}
 	vglUseVram(GL_TRUE);
+	
+	if (is_uma0) f = fopen("uma0:data/quake2/postfx.cfg", "rb");
+	else f = fopen("ux0:data/quake2/postfx.cfg", "rb");
+	if (f != NULL){
+		fread(res_str, 1, 64, f);
+		fclose(f);
+		sscanf(res_str, "%d", &postfx);
+	}
 
 	gl_config.allow_cds = true;
 	return true;
@@ -352,6 +365,9 @@ void GL_ResetShaders(){
 	}
 }
 
+float *fx_vertices;
+float *fx_texcoords;
+
 qboolean GLimp_InitGL (void)
 {
 	GL_ResetShaders();
@@ -363,6 +379,30 @@ qboolean GLimp_InitGL (void)
 	gVertexBufferPtr = (float*)malloc(0x400000);
 	gColorBufferPtr = (float*)malloc(0x200000);
 	gTexCoordBufferPtr = (float*)malloc(0x200000);
+	
+	fx_vertices = (float*)malloc(12 * sizeof(float));
+	fx_texcoords = (float*)malloc(8 * sizeof(float));
+	fx_vertices[0] =   0.0f;
+	fx_vertices[1] =   0.0f;
+	fx_vertices[2] =   0.0f;
+	fx_vertices[3] = 960.0f;
+	fx_vertices[4] =   0.0f;
+	fx_vertices[5] =   0.0f;
+	fx_vertices[6] = 960.0f;
+	fx_vertices[7] = 544.0f;
+	fx_vertices[8] =   0.0f;
+	fx_vertices[9] =   0.0f;
+	fx_vertices[10]= 544.0f;
+	fx_vertices[11]=   0.0f;
+	fx_texcoords[0] = 0.0f;
+	fx_texcoords[1] = 0.0f;
+	fx_texcoords[2] = 1.0f;
+	fx_texcoords[3] = 0.0f;
+	fx_texcoords[4] = 1.0f;
+	fx_texcoords[5] = 1.0f;
+	fx_texcoords[6] = 0.0f;
+	fx_texcoords[7] = 1.0f;
+	
 	gl_set = true;
 	return true;
 }
@@ -391,13 +431,39 @@ void GLimp_BeginFrame( float camera_separation )
 ** as yet to be determined.  Probably better not to make this a GLimp
 ** function and instead do a call to GLimp_SwapBuffers.
 */
+extern float *fx_vertices;
+extern float *fx_texcoords;
 void GLimp_EndFrame (void)
 {
-	if (isKeyboard){
+	if (isKeyboard && postfx_shader != 0){
 		vglStopRenderingInit();
 		vglUpdateCommonDialog();
 		vglStopRenderingTerm();
 	}else vglStopRendering();
+	if (postfx_shader != 0) {
+		if (main_fb == 0xDEADBEEF) {
+			glGenTextures(1, &main_fb_tex);
+			glBindTexture(GL_TEXTURE_2D, main_fb_tex);
+			glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, scr_width, scr_height, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
+			glGenFramebuffers(1, &main_fb);
+			glBindFramebuffer(GL_FRAMEBUFFER, main_fb);
+			glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, main_fb_tex, 0);
+		} else {
+			glBindFramebuffer(GL_FRAMEBUFFER, 0);
+			vglStartRendering();
+			glBindTexture(GL_TEXTURE_2D, main_fb_tex);
+			glUseProgram(cur_shader[postfx_idx]);
+			vglVertexAttribPointerMapped(0, fx_vertices);
+			vglVertexAttribPointerMapped(1, fx_texcoords);
+			vglDrawObjects(GL_TRIANGLE_FAN, 4, true);
+			if (isKeyboard) {
+				vglStopRenderingInit();
+				vglUpdateCommonDialog();
+				vglStopRenderingTerm();
+			} else vglStopRendering();
+			glBindFramebuffer(GL_FRAMEBUFFER, main_fb);
+		}
+	} else glBindFramebuffer(GL_FRAMEBUFFER, 0);
 	vglStartRendering();
 	vglIndexPointerMapped(indices);
 	gVertexBuffer = gVertexBufferPtr;

@@ -21,6 +21,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #include "../client/client.h"
 #include "../client/qmenu.h"
+#include <vitaGL.h>
 
 extern viddef_t vid;
 extern void CL_WriteConfiguration();
@@ -32,6 +33,7 @@ cvar_t *vid_fullscreen;
 cvar_t *vid_gamma;
 cvar_t *scr_viewsize;
 
+extern uint32_t postfx_shader;
 extern int msaa;
 extern uint8_t is_uma0;
 
@@ -50,6 +52,7 @@ static menuframework_s *s_current_menu;
 static menulist_s       s_mode_list;
 static menulist_s       s_ref_list;
 static menulist_s       s_msaa;
+static menulist_s       s_postfx;
 static menuslider_s     s_tq_slider;
 static menuslider_s     s_screensize_slider;
 static menuslider_s     s_brightness_slider;
@@ -152,6 +155,80 @@ static void ResCallback( void *unused )
 	fclose(f);
 }
 
+// PostFX effects
+enum {
+	POSTFX_NONE,
+	POSTFX_FXAA,
+	POSTFX_GREYSCALE,
+	POSTFX_SEPIA,
+	POSTFX_NEGATIVE
+};
+uint32_t postfx_shader = 0;
+GLuint cur_shader[2] = {0xDEADBEEF, 0xDEADBEEF};
+static GLuint fx_fs[2], fx_vs[2];
+int postfx_idx = 0;
+
+void GL_LoadFXShader(const char* filename, GLboolean fragment){
+	FILE* f = fopen(filename, "rb");
+	fseek(f, 0, SEEK_END);
+	long int size = ftell(f);
+	fseek(f, 0, SEEK_SET);
+	void* res = malloc(size);
+	fread(res, 1, size, f);
+	fclose(f);
+	if (fragment) glShaderBinary(1, &fx_fs[postfx_idx], 0, res, size);
+	else glShaderBinary(1, &fx_vs[postfx_idx], 0, res, size);
+	free(res);
+}
+
+void loadPostFxEffect(const char *vertex, const char *fragment)
+{
+	postfx_idx = (postfx_idx + 1) % 2;
+	if (cur_shader[postfx_idx] != 0xDEADBEEF) {
+		glDeleteProgram(cur_shader[postfx_idx]);
+		glDeleteShader(fx_vs[postfx_idx]);
+		glDeleteShader(fx_fs[postfx_idx]);
+	}
+	fx_vs[postfx_idx] = glCreateShader(GL_VERTEX_SHADER);
+	fx_fs[postfx_idx] = glCreateShader(GL_FRAGMENT_SHADER);
+	cur_shader[postfx_idx] = glCreateProgram();
+	GL_LoadFXShader(vertex, GL_FALSE);
+	GL_LoadFXShader(fragment, GL_TRUE);
+	glAttachShader(cur_shader[postfx_idx], fx_vs[postfx_idx]);
+	glAttachShader(cur_shader[postfx_idx], fx_fs[postfx_idx]);
+	vglBindAttribLocation(cur_shader[postfx_idx], 0, "position", 3, GL_FLOAT);
+	vglBindAttribLocation(cur_shader[postfx_idx], 1, "texcoord", 2, GL_FLOAT);
+	glLinkProgram(cur_shader[postfx_idx]);
+}
+
+static void PostFXCallback( void *unused )
+{
+	char res_str[64];
+	FILE *f = NULL;
+	if (is_uma0) f = fopen("uma0:data/quake2/postfx.cfg", "wb");
+	else f = fopen("ux0:data/quake2/postfx.cfg", "wb");
+	sprintf(res_str, "%d", s_postfx.curvalue);
+	fwrite(res_str, 1, strlen(res_str), f);
+	fclose(f);
+	switch (s_postfx.curvalue) {
+	case POSTFX_FXAA:
+		loadPostFxEffect("app0:shaders/fxaa_v.gxp", "app0:shaders/fxaa_f.gxp");
+		break;
+	case POSTFX_GREYSCALE:
+		loadPostFxEffect("app0:shaders/greyscale_v.gxp", "app0:shaders/greyscale_f.gxp");
+		break;
+	case POSTFX_SEPIA:
+		loadPostFxEffect("app0:shaders/sepia_v.gxp", "app0:shaders/sepia_f.gxp");
+		break;
+	case POSTFX_NEGATIVE:
+		loadPostFxEffect("app0:shaders/negative_v.gxp", "app0:shaders/negative_f.gxp");
+		break;
+	default:
+		break;
+	}
+	postfx_shader = s_postfx.curvalue;
+}
+
 static void MsaaCallback( void *unused )
 {
 	char res_str[64];
@@ -161,6 +238,7 @@ static void MsaaCallback( void *unused )
 	sprintf(res_str, "%d", s_msaa.curvalue);
 	fwrite(res_str, 1, strlen(res_str), f);
 	fclose(f);
+	msaa = s_msaa.curvalue;
 }
 
 static void ScreenSizeCallback( void *s )
@@ -268,6 +346,8 @@ void    VID_CheckChanges (void)
 {
 }
 
+GLboolean first_init = GL_TRUE;
+
 void    VID_MenuInit (void)
 {
 
@@ -285,6 +365,16 @@ void    VID_MenuInit (void)
 		"disabled",
 		"MSAA 2x",
 		"MSAA 4x",
+		0
+	};
+	
+	static const char *postfx_modes[] =
+	{
+		"disabled",
+		"FXAA",
+		"Greyscale",
+		"Sepia Tone",
+		"Negative",
 		0
 	};
 	
@@ -332,6 +422,8 @@ void    VID_MenuInit (void)
 	
     s_ref_list.curvalue = REF_OPENGL;
 	s_msaa.curvalue = msaa;
+	s_postfx.curvalue = postfx_shader;
+	
     s_opengl_menu.x = viddef.width * 0.50;
 	s_opengl_menu.nitems = 0;
 
@@ -374,6 +466,13 @@ void    VID_MenuInit (void)
 	s_msaa.generic.callback = MsaaCallback;
 	s_msaa.generic.statusbar = "you need to restart vitaQuakeII to apply changes";
 	s_msaa.itemnames = msaa_modes;
+	
+	s_postfx.generic.type = MTYPE_SPINCONTROL;
+	s_postfx.generic.name = "post processing";
+	s_postfx.generic.x = 0;
+	s_postfx.generic.y = 50;
+	s_postfx.generic.callback = PostFXCallback;
+	s_postfx.itemnames = postfx_modes;
 
     s_cancel_action.generic.type = MTYPE_ACTION;
     s_cancel_action.generic.name = "cancel";
@@ -407,6 +506,7 @@ void    VID_MenuInit (void)
 	Menu_AddItem( &s_opengl_menu, ( void * ) &s_screensize_slider );
     Menu_AddItem( &s_opengl_menu, ( void * ) &s_brightness_slider );
 	Menu_AddItem( &s_opengl_menu, ( void * ) &s_msaa );
+	Menu_AddItem( &s_opengl_menu, ( void * ) &s_postfx );
     Menu_AddItem( &s_opengl_menu, ( void * ) &s_tq_slider );
     Menu_AddItem( &s_opengl_menu, ( void * ) &s_shadows_slider );
 
@@ -417,6 +517,11 @@ void    VID_MenuInit (void)
     Menu_Center( &s_opengl_menu );
 
     s_opengl_menu.x -= 8;
+	
+	if (first_init) {
+		PostFXCallback(NULL);
+		first_init = GL_FALSE;
+	}
 }
 
 void    VID_MenuDraw (void)
