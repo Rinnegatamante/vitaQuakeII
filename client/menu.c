@@ -440,9 +440,10 @@ void M_Main_Draw (void)
 
 	re.DrawPic( (xoffset - 30 - w) * scale, (ystart + h + 5) * scale, "m_main_logo", scale );
 
-	Menu_DrawCenteredString( ystart - 22, "Thanks for the support on Patreon to:" );
-	Menu_DrawCenteredString( ystart - 14, "Tain Sueiras - drd7of14" );
-	Menu_DrawCenteredString( ystart -  6, "The Vita3K Project - polytoad" );
+	Menu_DrawCenteredString( ystart - 30, "Thanks for the support on Patreon to:" );
+	Menu_DrawCenteredString( ystart - 22, "Tain Sueiras - drd7of14 - @Sarkies_Proxy" );
+	Menu_DrawCenteredString( ystart - 14, "Freddy Parra - ArkSource - Badmanwazzy37" );
+	Menu_DrawCenteredString( ystart - 6,  "The Vita3K project - TitiClash - XandridFire" );
 }
 
 
