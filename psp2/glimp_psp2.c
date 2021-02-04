@@ -117,13 +117,13 @@ int GLimp_Init( void *hinstance, void *wndproc )
 	// Initializing vitaGL
 	switch (msaa) {
 	case 1:
-		vglInitExtended(0x800000, scr_width, scr_height, 0x1000000, SCE_GXM_MULTISAMPLE_2X);
+		vglInitExtended(0, scr_width, scr_height, 0x1000000, SCE_GXM_MULTISAMPLE_2X);
 		break;
 	case 2:
-		vglInitExtended(0x800000, scr_width, scr_height, 0x1000000, SCE_GXM_MULTISAMPLE_4X);
+		vglInitExtended(0, scr_width, scr_height, 0x1000000, SCE_GXM_MULTISAMPLE_4X);
 		break;
 	default:
-		vglInitExtended(0x800000, scr_width, scr_height, 0x1000000, SCE_GXM_MULTISAMPLE_NONE);
+		vglInitExtended(0, scr_width, scr_height, 0x1000000, SCE_GXM_MULTISAMPLE_NONE);
 		break;
 	}
 	vglUseVram(GL_TRUE);
@@ -403,25 +403,30 @@ qboolean GLimp_InitGL (void)
 	fx_texcoords[6] = 0.0f;
 	fx_texcoords[7] = 1.0f;
 	
+	vglIndexPointerMapped(indices);
+	gVertexBuffer = gVertexBufferPtr;
+	gColorBuffer = gColorBufferPtr;
+	gTexCoordBuffer = gTexCoordBufferPtr;
+	
 	gl_set = true;
 	return true;
 }
-
-qboolean first_boot = true;
 
 /*
 ** GLimp_BeginFrame
 */
 void GLimp_BeginFrame( float camera_separation )
 {
-	if (first_boot) {
-		vglStartRendering();
-		vglIndexPointerMapped(indices);
-		gVertexBuffer = gVertexBufferPtr;
-		gColorBuffer = gColorBufferPtr;
-		gTexCoordBuffer = gTexCoordBufferPtr;
-		first_boot = false;
-	}
+	if (postfx_shader != 0) {
+		if (main_fb == 0xDEADBEEF) {
+			glGenTextures(1, &main_fb_tex);
+			glBindTexture(GL_TEXTURE_2D, main_fb_tex);
+			glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, scr_width, scr_height, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
+			glGenFramebuffers(1, &main_fb);
+			glBindFramebuffer(GL_FRAMEBUFFER, main_fb);
+			glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, main_fb_tex, 0);
+		} else glBindFramebuffer(GL_FRAMEBUFFER, main_fb);
+	} else glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
 /*
@@ -435,36 +440,15 @@ extern float *fx_vertices;
 extern float *fx_texcoords;
 void GLimp_EndFrame (void)
 {
-	if (isKeyboard && postfx_shader != 0){
-		vglStopRenderingInit();
-		vglUpdateCommonDialog();
-		vglStopRenderingTerm();
-	}else vglStopRendering();
 	if (postfx_shader != 0) {
-		if (main_fb == 0xDEADBEEF) {
-			glGenTextures(1, &main_fb_tex);
-			glBindTexture(GL_TEXTURE_2D, main_fb_tex);
-			glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, scr_width, scr_height, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
-			glGenFramebuffers(1, &main_fb);
-			glBindFramebuffer(GL_FRAMEBUFFER, main_fb);
-			glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, main_fb_tex, 0);
-		} else {
-			glBindFramebuffer(GL_FRAMEBUFFER, 0);
-			vglStartRendering();
-			glBindTexture(GL_TEXTURE_2D, main_fb_tex);
-			glUseProgram(cur_shader[postfx_idx]);
-			vglVertexAttribPointerMapped(0, fx_vertices);
-			vglVertexAttribPointerMapped(1, fx_texcoords);
-			vglDrawObjects(GL_TRIANGLE_FAN, 4, true);
-			if (isKeyboard) {
-				vglStopRenderingInit();
-				vglUpdateCommonDialog();
-				vglStopRenderingTerm();
-			} else vglStopRendering();
-			glBindFramebuffer(GL_FRAMEBUFFER, main_fb);
-		}
-	} else glBindFramebuffer(GL_FRAMEBUFFER, 0);
-	vglStartRendering();
+		glBindFramebuffer(GL_FRAMEBUFFER, 0);
+		glBindTexture(GL_TEXTURE_2D, main_fb_tex);
+		glUseProgram(cur_shader[postfx_idx]);
+		vglVertexAttribPointerMapped(0, fx_vertices);
+		vglVertexAttribPointerMapped(1, fx_texcoords);
+		vglDrawObjects(GL_TRIANGLE_FAN, 4, true);
+	}
+	vglSwapBuffers(isKeyboard);
 	vglIndexPointerMapped(indices);
 	gVertexBuffer = gVertexBufferPtr;
 	gColorBuffer = gColorBufferPtr;
