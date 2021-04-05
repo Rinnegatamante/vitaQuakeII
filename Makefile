@@ -125,8 +125,8 @@ OBJS_ZAERO := $(CLIENT) $(QCOMMON) $(SERVER) $(SYSTEM) $(REFGL) $(CPPFILES:.cpp=
 PREFIX  = arm-vita-eabi
 CC      = $(PREFIX)-gcc
 CXX      = $(PREFIX)-g++
-CFLAGS  = -ffast-math -mtune=cortex-a9 -mfpu=neon -fsigned-char -g -Wl,-q -O2 \
-		-ftree-vectorize -DREF_HARD_LINKED -DHAVE_OGGVORBIS -DHAVE_MPG123 -Wall -Wno-missing-braces\
+CFLAGS  = -ffast-math -mtune=cortex-a9 -mfpu=neon -fsigned-char -g -Wl,-q -O3 \
+		-DREF_HARD_LINKED -DHAVE_OGGVORBIS -DHAVE_MPG123 -Wall -Wno-missing-braces\
 		-DHAVE_LIBSPEEXDSP -DUSE_AUDIO_RESAMPLER -DRELEASE -DGAME_HARD_LINKED -DPSP2
 CFLAGS += -DOSTYPE=\"$(OSTYPE)\" -DARCH=\"$(ARCH)\"
 CXXFLAGS  = $(CFLAGS) -fno-exceptions -std=gnu++11 -fpermissive
@@ -144,19 +144,19 @@ zaero: zaero.bin
 zaero: CFLAGS += -DZAERO
 
 baseq2: $(TARGET).velf
-	vita-make-fself -s $< build\eboot.bin
+	vita-make-fself -c -s $< build\eboot.bin
 	
 rogue.bin: rogue.velf
-	vita-make-fself -s $< build\rogue.bin
+	vita-make-fself -c -s $< build\rogue.bin
 	
 xatrix.bin: xatrix.velf
-	vita-make-fself -s $< build\xatrix.bin
+	vita-make-fself -c -s $< build\xatrix.bin
 	
 zaero.bin: zaero.velf
-	vita-make-fself -s $< build\zaero.bin
+	vita-make-fself -c -s $< build\zaero.bin
 
 $(TARGET).vpk: $(TARGET).velf
-	vita-make-fself -s $< build\eboot.bin
+	vita-make-fself -c -s $< build\eboot.bin
 	vita-mksfoex -s TITLE_ID=$(TITLE) -d ATTRIBUTE2=12 "$(TARGET)" param.sfo
 	cp -f param.sfo build/sce_sys/param.sfo
 	
@@ -165,10 +165,10 @@ $(TARGET).vpk: $(TARGET).velf
 	#-------------------------------------------------------------------
 
 %_f.h:
-	psp2cgc -profile sce_fp_psp2 $(@:_f.h=_f.cg) -Wperf -fastprecision -O3 -o build/$(@:_f.h=_f.gxp)
+	psp2cgc -profile sce_fp_psp2 $(@:_f.h=_f.cg) -Wperf -O2 -o build/$(@:_f.h=_f.gxp)
 	
 %_v.h:
-	psp2cgc -profile sce_vp_psp2 $(@:_v.h=_v.cg) -Wperf -fastprecision -O3 -o build/$(@:_v.h=_v.gxp)
+	psp2cgc -profile sce_vp_psp2 $(@:_v.h=_v.cg) -Wperf -O2 -o build/$(@:_v.h=_v.gxp)
 
 shaders: $(CGSHADERS)
 
