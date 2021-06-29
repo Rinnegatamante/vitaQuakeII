@@ -33,6 +33,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include <vitaGL.h>
 
 int _newlib_heap_size_user = 192 * 1024 * 1024;
+int sceUserMainThreadStackSize = 8 * 1024 * 1024;
 int	curtime;
 unsigned	sys_frame_time;
 char cmd_line[256];
@@ -419,7 +420,36 @@ extern void ascii2utf(uint16_t* dst, char* src);
 extern void utf2ascii(char* dst, uint16_t* src);
 
 //=============================================================================
-int quake_main (unsigned int argc, void* argv){
+int main (int argc, char **argv)
+{
+
+	sceAppUtilInit(&(SceAppUtilInitParam){}, &(SceAppUtilBootParam){});
+	sceCommonDialogSetConfigParam(&(SceCommonDialogConfigParam){});
+
+	// Setting maximum clocks
+	scePowerSetArmClockFrequency(444);
+	scePowerSetBusClockFrequency(222);
+	scePowerSetGpuClockFrequency(222);
+	scePowerSetGpuXbarClockFrequency(166);
+	
+	sceSysmoduleLoadModule(SCE_SYSMODULE_NET);
+	sceCtrlSetSamplingMode(SCE_CTRL_MODE_ANALOG_WIDE);
+
+	FILE *f = fopen("uma0:/data/quake2/baseq2/pak0.pak", "rb");
+	if (f) {
+		fclose(f);
+		is_uma0 = 1;
+	}
+	
+	char res_str[64];
+	if (is_uma0) f = fopen("uma0:data/quake2/resolution.cfg", "rb");
+	else f = fopen("ux0:data/quake2/resolution.cfg", "rb");
+	if (f != NULL){
+		fread(res_str, 1, 64, f);
+		fclose(f);
+		sscanf(res_str, "%dx%d", &scr_width, &scr_height);
+	}
+	
 	int	time, oldtime, newtime;
 	
 	// Official mission packs support
@@ -495,47 +525,6 @@ int quake_main (unsigned int argc, void* argv){
 	}
 	vglEnd();
 	return 0;
-}
-
-
-int main (int argc, char **argv)
-{
-
-	sceAppUtilInit(&(SceAppUtilInitParam){}, &(SceAppUtilBootParam){});
-	sceCommonDialogSetConfigParam(&(SceCommonDialogConfigParam){});
-
-	// Setting maximum clocks
-	scePowerSetArmClockFrequency(444);
-	scePowerSetBusClockFrequency(222);
-	scePowerSetGpuClockFrequency(222);
-	scePowerSetGpuXbarClockFrequency(166);
-	
-	sceSysmoduleLoadModule(SCE_SYSMODULE_NET);
-	sceCtrlSetSamplingMode(SCE_CTRL_MODE_ANALOG_WIDE);
-
-	FILE *f = fopen("uma0:/data/quake2/baseq2/pak0.pak", "rb");
-	if (f) {
-		fclose(f);
-		is_uma0 = 1;
-	}
-	
-	char res_str[64];
-	if (is_uma0) f = fopen("uma0:data/quake2/resolution.cfg", "rb");
-	else f = fopen("ux0:data/quake2/resolution.cfg", "rb");
-	if (f != NULL){
-		fread(res_str, 1, 64, f);
-		fclose(f);
-		sscanf(res_str, "%dx%d", &scr_width, &scr_height);
-	}
-	
-	// We need a bigger stack to run Quake 2, so we create a new thread with a proper stack size
-	SceUID main_thread = sceKernelCreateThread("Quake II", quake_main, 0x40, 0x800000, 0, 0, NULL);
-	if (main_thread >= 0){
-		sceKernelStartThread(main_thread, 0, NULL);
-		sceKernelWaitThreadEnd(main_thread, NULL, NULL);
-	}
-	return 0;
-	
 }
 
 
