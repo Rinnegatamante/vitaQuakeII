@@ -358,6 +358,8 @@ void Cmd_Help_f (edict_t *ent)
 G_SetStats
 ===============
 */
+extern void IN_StartRumble (void);
+
 void G_SetStats (edict_t *ent)
 {
 	gitem_t		*item;
@@ -370,6 +372,13 @@ void G_SetStats (edict_t *ent)
 	// health
 	//
 	ent->client->ps.stats[STAT_HEALTH_ICON] = level.pic_health;
+	
+	// Health is decreasing, trigger a rumble on PSTV
+	if (ent->client->ps.stats[STAT_HEALTH] > ent->health)
+	{
+		IN_StartRumble();
+	}
+
 	ent->client->ps.stats[STAT_HEALTH] = ent->health;
 
 	//

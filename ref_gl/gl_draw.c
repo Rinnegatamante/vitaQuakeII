@@ -254,10 +254,10 @@ Draw_FadeScreen
 
 ================
 */
-void Draw_FadeScreen (void)
+void Draw_FadeScreen (int transparent)
 {
 	glEnable (GL_BLEND);
-	DrawQuad_NoTex(0, 0, vid.width, vid.height, 0, 0, 0, 0.8f);
+	DrawQuad_NoTex(0, 0, vid.width, vid.height, 0, 0, 0, transparent ? 0.8f : 1.0f);
 	GL_Color (1,1,1,1);
 	glDisable (GL_BLEND);
 }

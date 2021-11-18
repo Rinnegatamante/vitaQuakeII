@@ -941,7 +941,7 @@ void R_Register( void )
 	gl_particle_att_b = ri.Cvar_Get( "gl_particle_att_b", "0.0", CVAR_ARCHIVE );
 	gl_particle_att_c = ri.Cvar_Get( "gl_particle_att_c", "0.01", CVAR_ARCHIVE );
 
-	gl_modulate = ri.Cvar_Get ("gl_modulate", "1", CVAR_ARCHIVE );
+	gl_modulate = ri.Cvar_Get ("gl_modulate", "4", CVAR_ARCHIVE );
 	gl_log = ri.Cvar_Get( "gl_log", "0", 0 );
 	gl_bitdepth = ri.Cvar_Get( "gl_bitdepth", "0", 0 );
 	gl_mode = ri.Cvar_Get( "gl_mode", "3", CVAR_ARCHIVE );
@@ -978,7 +978,7 @@ void R_Register( void )
 	gl_playermip = ri.Cvar_Get ("gl_playermip", "0", 0);
 	gl_monolightmap = ri.Cvar_Get( "gl_monolightmap", "0", 0 );
 	gl_driver = ri.Cvar_Get( "gl_driver", "opengl32", CVAR_ARCHIVE );
-	gl_texturemode = ri.Cvar_Get( "gl_texturemode", "GL_LINEAR", CVAR_ARCHIVE );
+	gl_texturemode = ri.Cvar_Get( "gl_texturemode", "GL_NEAREST_MIPMAP_LINEAR", CVAR_ARCHIVE );
 	gl_texturealphamode = ri.Cvar_Get( "gl_texturealphamode", "default", CVAR_ARCHIVE );
 	gl_texturesolidmode = ri.Cvar_Get( "gl_texturesolidmode", "default", CVAR_ARCHIVE );
 	gl_lockpvs = ri.Cvar_Get( "gl_lockpvs", "0", 0 );
@@ -1383,7 +1383,7 @@ void	Draw_Pic (int x, int y, char *name, float factor);
 void	Draw_Char (int x, int y, int c, float factor);
 void	Draw_TileClear (int x, int y, int w, int h, char *name);
 void	Draw_Fill (int x, int y, int w, int h, int c);
-void	Draw_FadeScreen (void);
+void	Draw_FadeScreen (int transparent);
 
 /*
 @@@@@@@@@@@@@@@@@@@@@

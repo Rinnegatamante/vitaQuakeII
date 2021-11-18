@@ -9,7 +9,8 @@ LIBS = -lvitaGL -lvorbisfile -lvorbis -logg -lspeexdsp -lmpg123 -lmathneon \
 	-lSceCtrl_stub -lSceTouch_stub -lm -lSceNet_stub -lSceNetCtl_stub \
 	-lSceAppUtil_stub -lc -lScePower_stub -lSceMotion_stub -lSceCommonDialog_stub \
 	-lSceAudio_stub -lSceGxm_stub -lSceDisplay_stub -lSceNet_stub -lSceNetCtl_stub \
-	-lvitashark -lSceShaccCg_stub
+	-lvitashark -lSceShaccCg_stub -lSceRazorHud_stub -lSceRazorCapture_stub \
+	-lSceKernelDmacMgr_stub
 
 SYSTEM = 	psp2/vid_psp2.o \
 			psp2/snddma_psp2.o \

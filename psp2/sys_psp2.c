@@ -40,9 +40,9 @@ char cmd_line[256];
 	
 int		hunkcount;
 
-static byte	*membase;
-static int		hunkmaxsize;
-static int		cursize;
+static byte	*membase = NULL;
+static int		hunkmaxsize = 0;
+static int		cursize = 0;
 
 int isKeyboard;
 
@@ -285,18 +285,35 @@ void *Hunk_Alloc (int size)
 
 int Hunk_End (void)
 {
+	/* We would prefer to shrink the allocated memory
+	 * buffer to 'cursize' bytes here, but there exists
+	 * no robust cross-platform method for doing this
+	 * given that pointers to arbitrary locations in
+	 * the buffer are stored and used throughout the
+	 * codebase...
+	 * (i.e. realloc() would invalidate these pointers,
+	 * and break everything)
+	 * Attempts were made to allocate hunks dynamically,
+	 * storing them in an RBUF array - but the codebase
+	 * plays such dirty tricks with the returned pointers
+	 * that this turned out to be impractical (it would
+	 * have required a major rewrite of the renderers...) */
+#if 0
 	byte *n;
 
 	n = realloc(membase, cursize);
 
 	if (n != membase)
 		Sys_Error("Hunk_End:  Could not remap virtual block (%d)", errno);
-
+#endif
 	return cursize;
 }
 
 void Hunk_Free (void *base)
 {
+	if (base == membase)
+		membase = NULL;
+
 	if (base)
 		free(base);
 }
@@ -453,16 +470,16 @@ int main (int argc, char **argv)
 	int	time, oldtime, newtime;
 	
 	// Official mission packs support
-	#ifdef ROGUE
+#ifdef ROGUE
 	char* int_argv[4] = {"", "+set", "game", "rogue"};
 	Qcommon_Init(4, int_argv);
-	#elif defined(XATRIX)
+#elif defined(XATRIX)
 	char* int_argv[4] = {"", "+set", "game", "xatrix"};
 	Qcommon_Init(4, int_argv);
-	#elif defined(ZAERO)
+#elif defined(ZAERO)
 	char* int_argv[4] = {"", "+set", "game", "zaero"};
 	Qcommon_Init(4, int_argv);
-	#else
+#else
 	SceAppUtilAppEventParam eventParam;
 	memset(&eventParam, 0, sizeof(SceAppUtilAppEventParam));
 	sceAppUtilReceiveAppEvent(&eventParam);
@@ -473,7 +490,7 @@ int main (int argc, char **argv)
 		sprintf(fname, "app0:%s.bin", buffer);
 		sceAppMgrLoadExec(fname, NULL, NULL);	
 	}else Qcommon_Init (argc, argv);
-	#endif
+#endif
 	oldtime = Sys_Milliseconds ();
 	
 	// Disabling all FPU exceptions traps on main thread
