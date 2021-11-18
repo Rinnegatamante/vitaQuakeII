@@ -43,8 +43,8 @@ int		gl_alpha_format = 4;
 int		gl_tex_solid_format = 3;
 int		gl_tex_alpha_format = 4;
 
-int		gl_filter_min = GL_LINEAR;
-int		gl_filter_max = GL_LINEAR;
+int		gl_filter_min = GL_NEAREST_MIPMAP_LINEAR;
+int		gl_filter_max = GL_NEAREST_MIPMAP_LINEAR;
 
 void GL_TexEnv( GLenum mode )
 {

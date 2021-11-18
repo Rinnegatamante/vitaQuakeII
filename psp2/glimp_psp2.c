@@ -115,6 +115,7 @@ int GLimp_Init( void *hinstance, void *wndproc )
 	}
 	
 	// Initializing vitaGL
+	vglSetVDMBufferSize(1024 * 1024);
 	switch (msaa) {
 	case 1:
 		vglInitExtended(0, scr_width, scr_height, 0x1000000, SCE_GXM_MULTISAMPLE_2X);
@@ -307,12 +308,14 @@ void GL_ResetShaders(){
 				glAttachShader(programs[i], vs[TEXTURE2D]);
 				vglBindAttribLocation(programs[i], 0, "position", 3, GL_FLOAT);
 				vglBindAttribLocation(programs[i], 1, "texcoord", 2, GL_FLOAT);
+				glLinkProgram(programs[i]);
 				break;
 			case TEX2D_MODUL:
 				glAttachShader(programs[i], fs[MODULATE]);
 				glAttachShader(programs[i], vs[TEXTURE2D]);
 				vglBindAttribLocation(programs[i], 0, "position", 3, GL_FLOAT);
 				vglBindAttribLocation(programs[i], 1, "texcoord", 2, GL_FLOAT);
+				glLinkProgram(programs[i]);
 				modulcolor[0] = glGetUniformLocation(programs[i], "vColor");
 				break;
 			case TEX2D_MODUL_CLR:
@@ -321,17 +324,20 @@ void GL_ResetShaders(){
 				vglBindAttribLocation(programs[i], 0, "position", 3, GL_FLOAT);
 				vglBindAttribLocation(programs[i], 1, "texcoord", 2, GL_FLOAT);
 				vglBindAttribLocation(programs[i], 2, "color", 4, GL_FLOAT);
+				glLinkProgram(programs[i]);
 				break;
 			case RGBA_COLOR:
 				glAttachShader(programs[i], fs[RGBA_COLOR]);
 				glAttachShader(programs[i], vs[COLOR]);
 				vglBindAttribLocation(programs[i], 0, "aPosition", 3, GL_FLOAT);
 				vglBindAttribLocation(programs[i], 1, "aColor", 4, GL_FLOAT);
+				glLinkProgram(programs[i]);
 				break;
 			case NO_COLOR:
 				glAttachShader(programs[i], fs[MONO_COLOR]);
 				glAttachShader(programs[i], vs[VERTEX_ONLY]);
 				vglBindAttribLocation(programs[i], 0, "aPosition", 3, GL_FLOAT);
+				glLinkProgram(programs[i]);
 				monocolor = glGetUniformLocation(programs[i], "color");
 				break;
 			case TEX2D_REPL_A:
@@ -339,12 +345,14 @@ void GL_ResetShaders(){
 				glAttachShader(programs[i], vs[TEXTURE2D]);
 				vglBindAttribLocation(programs[i], 0, "position", 3, GL_FLOAT);
 				vglBindAttribLocation(programs[i], 1, "texcoord", 2, GL_FLOAT);
+				glLinkProgram(programs[i]);
 				break;
 			case TEX2D_MODUL_A:
 				glAttachShader(programs[i], fs[MODULATE_A]);
 				glAttachShader(programs[i], vs[TEXTURE2D]);
 				vglBindAttribLocation(programs[i], 0, "position", 3, GL_FLOAT);
 				vglBindAttribLocation(programs[i], 1, "texcoord", 2, GL_FLOAT);
+				glLinkProgram(programs[i]);
 				modulcolor[1] = glGetUniformLocation(programs[i], "vColor");
 				break;
 			case FULL_A:
@@ -353,15 +361,16 @@ void GL_ResetShaders(){
 				vglBindAttribLocation(programs[i], 0, "position", 3, GL_FLOAT);
 				vglBindAttribLocation(programs[i], 1, "texcoord", 2, GL_FLOAT);
 				vglBindAttribLocation(programs[i], 2, "color", 4, GL_FLOAT);
+				glLinkProgram(programs[i]);
 				break;
 			case RGBA_CLR_A:
 				glAttachShader(programs[i], fs[RGBA_A]);
 				glAttachShader(programs[i], vs[COLOR]);
 				vglBindAttribLocation(programs[i], 0, "aPosition", 3, GL_FLOAT);
 				vglBindAttribLocation(programs[i], 1, "aColor", 4, GL_FLOAT);
+				glLinkProgram(programs[i]);
 				break;
 		}
-		glLinkProgram(programs[i]);
 	}
 }
 
