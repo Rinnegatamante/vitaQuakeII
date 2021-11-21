@@ -19,10 +19,7 @@
 #include <time.h>
 
 typedef unsigned char byte;
-#define qboolean uint8_t
-#define false 0
-#define true 1
-//typedef enum {false, true}  qboolean;
+typedef enum {false, true}  qboolean;
 
 #ifndef NULL
  #define NULL ((void *)0)
