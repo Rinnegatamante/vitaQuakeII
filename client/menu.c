@@ -1926,7 +1926,7 @@ void M_Credits_MenuDraw( void )
 		{
 			int x;
 
-			x = ( viddef.width - strlen( credits[i] ) * 8 - stringoffset * 8 ) / 2 + ( j + stringoffset ) * 8;
+			x = ( viddef.width / scale - strlen( credits[i] ) * 8 - stringoffset * 8 ) / 2 + ( j + stringoffset ) * 8;
 
 			if ( bold )
 				re.DrawChar( x * scale, y * scale, credits[i][j+stringoffset] + 128, scale );
