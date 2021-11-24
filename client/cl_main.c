@@ -599,6 +599,10 @@ void CL_ClearState (void)
 	S_StopAllSounds ();
 	CL_ClearEffects ();
 	CL_ClearTEnts ();
+	
+	// wipe the entire cl structure
+	if (cl.cinematic_file)
+		fclose (cl.cinematic_file);
 
 // wipe the entire cl structure
 	memset (&cl, 0, sizeof(cl));
