@@ -19,6 +19,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 #include "client.h"
 
+cvar_t *cin_force43;
+
 typedef struct
 {
 	byte	*data;
@@ -482,7 +484,6 @@ byte *SCR_ReadNextFrame (void)
 	return pic;
 }
 
-
 /*
 ==================
 SCR_RunCinematic
@@ -540,13 +541,17 @@ should be skipped
 */
 qboolean SCR_DrawCinematic (void)
 {
+	int x, y, w, h;
+	static int darkest_color = 0;
+
 	if (cl.cinematictime <= 0)
 	{
 		return false;
 	}
 
+	/* Blank screen and pause if menu is up */
 	if (cls.key_dest == key_menu)
-	{	// blank screen and pause if menu is up
+	{
 		re.CinematicSetPalette(NULL);
 		cl.cinematicpalette_active = false;
 		return true;
@@ -561,8 +566,38 @@ qboolean SCR_DrawCinematic (void)
 	if (!cin.pic)
 		return true;
 
-	re.DrawStretchRaw (0, 0, viddef.width, viddef.height,
-		cin.width, cin.height, cin.pic);
+	if (cin_force43->value)
+	{
+		w  = viddef.height * 4 / 3;
+		w  = (w > viddef.width) ? viddef.width : w;
+		w &= ~3;
+		h  = w * 3 / 4;
+		x  = (viddef.width - w) >> 1;
+		y  = (viddef.height - h) >> 1;
+
+		/* Draw border, if required */
+		if (x > 0)
+			re.DrawFill(0, 0, x, viddef.height, 0);
+
+		if (x + w < viddef.width)
+			re.DrawFill(x + w, 0, viddef.width - (x + w), viddef.height, 0);
+
+		if (y > 0)
+			re.DrawFill(x, 0, w, y, 0);
+
+		if (y + h < viddef.height)
+			re.DrawFill(x, y + h, w, viddef.height - (y + h), 0);
+	}
+	else
+	{
+		x = 0;
+		y = 0;
+		w = viddef.width;
+		h = viddef.height;
+	}
+
+	/* Draw video frame */
+	re.DrawStretchRaw(x, y, w, h, cin.width, cin.height, cin.pic);
 
 	return true;
 }

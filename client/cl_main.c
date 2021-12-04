@@ -1436,6 +1436,8 @@ void CL_InitLocal (void)
 //
 // register our variables
 //
+	cin_force43 = Cvar_Get("cin_force43", "1", 0);
+
 	cl_stereo_separation = Cvar_Get( "cl_stereo_separation", "0.4", CVAR_ARCHIVE );
 	cl_stereo = Cvar_Get( "cl_stereo", "0", 0 );
 

@@ -78,7 +78,7 @@ typedef struct
 } menulayer_t;
 
 menulayer_t	m_layers[MAX_MENU_DEPTH];
-int		m_menudepth;
+int		m_menudepth = 0;
 
 static void M_Banner( char *name )
 {

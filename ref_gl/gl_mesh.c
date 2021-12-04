@@ -21,6 +21,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #include "gl_local.h"
 
+#define RF_NOSHADOW 8192 // don't draw a shadow
+
 /*
 =============================================================
 
@@ -255,11 +257,7 @@ void GL_DrawAliasShadow (dmdl_t *paliashdr, int posenum)
 	int		count;
 
 	lheight = currententity->origin[2] - lightspot[2];
-
-	height = 0;
-
 	order = (int *)((byte *)paliashdr + paliashdr->ofs_glcmds);
-
 	height = -lheight + 1.0;
 
 	glEnable(GL_STENCIL_TEST);
@@ -757,10 +755,14 @@ void R_DrawAliasModel (entity_t *e)
 	if (currententity->flags & RF_DEPTHHACK)
 		glDepthRange (gldepthmin, gldepthmax);
 
-	if (gl_shadows->value && !(currententity->flags & (RF_TRANSLUCENT | RF_WEAPONMODEL)))
+	if (gl_shadows->value && !(currententity->flags & (RF_TRANSLUCENT | RF_WEAPONMODEL | RF_NOSHADOW)))
 	{
 		glPushMatrix ();
-		R_RotateForEntity (e);
+		
+		/* Don't rotate shadows on ungodly axes */
+		glTranslatef(currententity->origin[0], currententity->origin[1], currententity->origin[2]);
+		glRotatef(currententity->angles[1], 0, 0, 1);
+
 		GL_DisableState (GL_TEXTURE_COORD_ARRAY);
 		glEnable (GL_BLEND);
 		GL_DrawAliasShadow (paliashdr, currententity->frame );
