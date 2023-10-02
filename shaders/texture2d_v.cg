@@ -1,10 +1,10 @@
 ﻿void main(
 	float3 position,
 	float2 texcoord,
-	uniform float4x4 wvp,
+	uniform float4x4 gl_ModelViewProjectionMatrix,
 	float4 out vPosition : POSITION,
 	float2 out vTexcoord : TEXCOORD0)
 {
-	vPosition = mul(wvp, float4(position, 1.f));
+	vPosition = mul(gl_ModelViewProjectionMatrix, float4(position, 1.f));
 	vTexcoord = texcoord;
 }

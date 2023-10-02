@@ -1,8 +1,8 @@
 void main(
 	float3 aPosition,
-	uniform float4x4 wvp,
+	uniform float4x4 gl_ModelViewProjectionMatrix,
 	float4 out vPosition: POSITION)
 {
-	vPosition = mul(wvp, float4(aPosition, 1.f));
+	vPosition = mul(gl_ModelViewProjectionMatrix, float4(aPosition, 1.f));
 }
 
