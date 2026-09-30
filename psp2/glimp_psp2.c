@@ -127,7 +127,7 @@ int GLimp_Init( void *hinstance, void *wndproc )
 		vglInitExtended(0, scr_width, scr_height, 0x1000000, SCE_GXM_MULTISAMPLE_NONE);
 		break;
 	}
-	vglUseVram(GL_TRUE);
+	/* Current vitaGL already prefers VRAM for GPU allocations. */
 	
 	if (is_uma0) f = fopen("uma0:data/quake2/postfx.cfg", "rb");
 	else f = fopen("ux0:data/quake2/postfx.cfg", "rb");
@@ -249,7 +249,7 @@ float cur_clr[4];
 void GL_DrawPolygon(GLenum prim, int num){
 	if (state_mask == 0x05) glUniform4fv(modulcolor[0], 1, cur_clr);
 	else if (state_mask == 0x0D) glUniform4fv(modulcolor[1], 1, cur_clr);
-	vglDrawObjects(prim, num, GL_TRUE);
+	vglDrawObjects(prim, num);
 }
 
 void GL_Color(float r, float g, float b, float a){
@@ -455,7 +455,7 @@ void GLimp_EndFrame (void)
 		glUseProgram(cur_shader[postfx_idx]);
 		vglVertexAttribPointerMapped(0, fx_vertices);
 		vglVertexAttribPointerMapped(1, fx_texcoords);
-		vglDrawObjects(GL_TRIANGLE_FAN, 4, true);
+		vglDrawObjects(GL_TRIANGLE_FAN, 4);
 	}
 	vglSwapBuffers(isKeyboard);
 	vglIndexPointerMapped(indices);

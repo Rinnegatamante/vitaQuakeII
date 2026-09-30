@@ -7,6 +7,7 @@
  */
 
 #include "../header/shared.h"
+#include <ctype.h>
 
 #define DEG2RAD(a) (a * M_PI) / 180.0F
 
