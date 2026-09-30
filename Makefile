@@ -126,11 +126,11 @@ OBJS_ZAERO := $(CLIENT) $(QCOMMON) $(SERVER) $(SYSTEM) $(REFGL) $(CPPFILES:.cpp=
 PREFIX  = arm-vita-eabi
 CC      = $(PREFIX)-gcc
 CXX      = $(PREFIX)-g++
-CFLAGS  = -ffast-math -mtune=cortex-a9 -mfpu=neon -fsigned-char -g -Wl,-q -O3 \
+CFLAGS  = -std=gnu17 -ffast-math -mtune=cortex-a9 -mfpu=neon -fsigned-char -g -Wl,-q -O3 \
 		-DREF_HARD_LINKED -DHAVE_OGGVORBIS -DHAVE_MPG123 -Wall -Wno-missing-braces\
 		-DHAVE_LIBSPEEXDSP -DUSE_AUDIO_RESAMPLER -DRELEASE -DGAME_HARD_LINKED -DPSP2
 CFLAGS += -DOSTYPE=\"$(OSTYPE)\" -DARCH=\"$(ARCH)\"
-CXXFLAGS  = $(CFLAGS) -fno-exceptions -std=gnu++11 -fpermissive
+CXXFLAGS  = $(filter-out -std=gnu17,$(CFLAGS)) -fno-exceptions -std=gnu++11 -fpermissive
 ASFLAGS = $(CFLAGS)
 
 all: $(TARGET).vpk
@@ -145,25 +145,29 @@ zaero: zaero.bin
 zaero: CFLAGS += -DZAERO
 
 baseq2: $(TARGET).velf
-	vita-make-fself -c -s $< build\eboot.bin
+	vita-make-fself -c -s $< build/eboot.bin
 	
 rogue.bin: rogue.velf
-	vita-make-fself -c -s $< build\rogue.bin
+	vita-make-fself -c -s $< build/rogue.bin
 	
 xatrix.bin: xatrix.velf
-	vita-make-fself -c -s $< build\xatrix.bin
+	vita-make-fself -c -s $< build/xatrix.bin
 	
 zaero.bin: zaero.velf
-	vita-make-fself -c -s $< build\zaero.bin
+	vita-make-fself -c -s $< build/zaero.bin
 
 $(TARGET).vpk: $(TARGET).velf
-	vita-make-fself -c -s $< build\eboot.bin
+	vita-make-fself -c -s $< build/eboot.bin
 	vita-mksfoex -s TITLE_ID=$(TITLE) -d ATTRIBUTE2=12 "$(TARGET)" param.sfo
 	cp -f param.sfo build/sce_sys/param.sfo
 	
-	#------------ Comment this if you don't have 7zip ------------------
-	7z a -tzip $(TARGET).vpk -r .\build\sce_sys\* .\build\eboot.bin  .\build\shaders\* .\build\rogue.bin .\build\xatrix.bin .\build\zaero.bin
-	#-------------------------------------------------------------------
+	vita-pack-vpk -s param.sfo -b build/eboot.bin \
+		--add build/sce_sys/icon0.png=sce_sys/icon0.png \
+		--add build/sce_sys/livearea=sce_sys/livearea \
+		--add build/shaders=shaders \
+		--add build/rogue.bin=rogue.bin \
+		--add build/xatrix.bin=xatrix.bin \
+		--add build/zaero.bin=zaero.bin $(TARGET).vpk
 
 %_f.h:
 	psp2cgc -profile sce_fp_psp2 $(@:_f.h=_f.cg) -Wperf -O2 -o build/$(@:_f.h=_f.gxp)

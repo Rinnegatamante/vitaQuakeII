@@ -28,6 +28,10 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "../client/qmenu.h"
 
 extern void CL_WriteConfiguration();
+extern void Key_ClearTyping(void);
+#ifdef PSP2
+extern void Sys_DefaultConfig(void);
+#endif
 
 cvar_t *scale_2d = NULL;
 
@@ -1546,7 +1550,7 @@ END GAME MENU
 */
 static int credits_start_time;
 static const char **credits;
-static char *creditsIndex[256];
+static const char *creditsIndex[256];
 static char *creditsBuffer;
 static const char *idcredits[] =
 {
@@ -1964,7 +1968,9 @@ void M_Menu_Credits_f( void )
 	int		isdeveloper = 0;
 
 	creditsBuffer = NULL;
-	count = FS_LoadFile ("credits", &creditsBuffer);
+	void *loaded_credits = NULL;
+	count = FS_LoadFile ("credits", &loaded_credits);
+	creditsBuffer = loaded_credits;
 	if (count != -1)
 	{
 		p = creditsBuffer;
@@ -2510,7 +2516,7 @@ START SERVER MENU
 =============================================================================
 */
 static menuframework_s s_startserver_menu;
-static char **mapnames;
+static const char **mapnames;
 static int	  nummaps;
 
 static menuaction_s	s_startserver_start_action;
@@ -2817,8 +2823,9 @@ void StartServer_MenuInit( void )
 		strcpy( longname, COM_Parse( &s ) );
 		Com_sprintf( scratch, sizeof( scratch ), "%s\n%s", longname, shortname );
 
-		mapnames[i] = malloc( strlen( scratch ) + 1 );
-		strcpy( mapnames[i], scratch );
+		char *mapname = malloc( strlen( scratch ) + 1 );
+		strcpy( mapname, scratch );
+		mapnames[i] = mapname;
 	}
 	mapnames[nummaps] = 0;
 
@@ -2967,7 +2974,7 @@ const char *StartServer_MenuKey( int key )
 			int i;
 
 			for ( i = 0; i < nummaps; i++ )
-				free( mapnames[i] );
+				free( (void *)mapnames[i] );
 			free( mapnames );
 		}
 		mapnames = 0;
@@ -3642,13 +3649,13 @@ static menuaction_s		s_player_download_action;
 typedef struct
 {
 	int		nskins;
-	char	**skindisplaynames;
+	const char	**skindisplaynames;
 	char	displayname[MAX_DISPLAYNAME];
 	char	directory[MAX_QPATH];
 } playermodelinfo_s;
 
 static playermodelinfo_s s_pmi[MAX_PLAYERMODELS];
-static char *s_pmnames[MAX_PLAYERMODELS];
+static const char *s_pmnames[MAX_PLAYERMODELS];
 static int s_numplayermodels;
 
 static int rate_tbl[] = { 2500, 3200, 5000, 10000, 25000, 0 };
@@ -3771,7 +3778,7 @@ static qboolean PlayerConfig_ScanDirectories( void )
 		int k, s;
 		char *a, *b, *c;
 		char **pcxnames;
-		char **skinnames;
+		const char **skinnames;
 		int npcxfiles;
 		int nskins = 0;
 
@@ -4143,7 +4150,7 @@ const char *PlayerConfig_MenuKey (int key)
 			for ( j = 0; j < s_pmi[i].nskins; j++ )
 			{
 				if ( s_pmi[i].skindisplaynames[j] )
-					free( s_pmi[i].skindisplaynames[j] );
+					free( (void *)s_pmi[i].skindisplaynames[j] );
 				s_pmi[i].skindisplaynames[j] = 0;
 			}
 			free( s_pmi[i].skindisplaynames );

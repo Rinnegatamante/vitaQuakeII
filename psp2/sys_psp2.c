@@ -540,7 +540,6 @@ int main (int argc, char **argv)
 		Qcommon_Frame (time);
 		oldtime = newtime;
 	}
-	vglEnd();
 	return 0;
 }
 
